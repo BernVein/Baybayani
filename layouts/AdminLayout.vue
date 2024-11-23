@@ -7,8 +7,16 @@
       <div
         class="flex lg:justify-start justify-between gap-10 max-w-[1150px] w-full px-3 py-5 mx-auto"
       >
-        <NuxtLink to="/" class="min-w-[170px]">
-          <img width="170" src="/baybayani-logo.png" />
+        <!-- Logo with Press and Color Animation -->
+        <NuxtLink
+          to="/"
+          class="min-w-[170px] transform transition-transform duration-300 ease-in-out hover:scale-105 active:scale-95"
+        >
+          <img
+            width="170"
+            src="/baybayani-logo.png"
+            class="transition-colors duration-300 ease-in-out hover:brightness-90"
+          />
         </NuxtLink>
 
         <div class="max-w-[700px] w-full md:block hidden pt-2">
@@ -26,7 +34,7 @@
                 v-if="isSearching"
                 name="eos-icons:loading"
                 size="25"
-                class="mr-2"
+                class="mr-2 animate-spin"
               />
               <button
                 class="flex items-center h-[100%] p-1.5 px-2 bg-[#0C6539]"
@@ -56,13 +64,15 @@
           </div>
         </div>
 
-        <NuxtLink to="/shoppingcart" class="flex items-center pt-2">
-          <button
-            class="relative md:block hidden"
+        <!-- Cart Button with Hover and Color Animation -->
+        <button @click="handleCartClick" class="flex items-center pt-2">
+          <div
+            class="relative md:block hidden transform transition-transform duration-300 ease-in-out hover:scale-105"
             @mouseenter="isCartHover = true"
             @mouseleave="isCartHover = false"
           >
             <span
+              v-if="filteredCartCount > 0"
               class="absolute flex items-center justify-center -right-[3px] top-0 bg-[#FF4646] h-[17px] min-w-[17px] text-xs text-white px-0.5 rounded-full"
             >
               {{ filteredCartCount }}
@@ -72,26 +82,29 @@
                 name="ph:shopping-cart-simple-light"
                 size="33"
                 :color="isCartHover ? '#FF4646' : '0C6539'"
+                class="transition-colors duration-300 ease-in-out"
               />
             </div>
-          </button>
-        </NuxtLink>
+          </div>
+        </button>
 
-        <div id="ProfileMenu" class="md:block hidden pt-3">
+        <!-- Profile Menu with Username Below on Hover -->
+        <div id="ProfileMenu" class="md:block hidden pt-3 relative group">
           <ul class="flex items-center justify-end text-sm text-[#333333] font-bold">
-            <li class="relative flex items-center px-2.5 hover:text-[#FF4646] h-full gap-4">
-              <Icon
-                name="ph:user-light"
-                size="32"
-                class="text-[#0C6539]"
-              />
-              <template v-if="user">
-                <span>
-                  {{ userStore.profile ? userStore.profile.name : "User" }}
-                </span>
+            <li class="flex items-center px-2.5 hover:text-[#FF4646] h-full gap-4 cursor-pointer relative">
+              <Icon name="ph:user-light" size="32" class="text-[#0C6539] transition-colors duration-300 ease-in-out group-hover:text-[#FF4646]" />
+              <!-- Username Pop-Up Below -->
+              <div
+                v-if="userStore.user"
+                class="absolute bg-white shadow-md rounded-md py-1 px-3 text-sm text-[#333333] top-full mt-2 transform transition-opacity duration-300 opacity-0 group-hover:opacity-100 z-50"
+              >
+                {{ userStore.profile ? `${userStore.profile.name}` : "" }}
+              </div>
+
+              <template v-if="userStore.user">
                 <button
                   @click="signOut"
-                  class="ml-4 bg-[#FF4646] text-white rounded px-3 py-1 font-bold"
+                  class="ml-4 bg-[#FF4646] text-white rounded px-3 py-1 font-bold hover:bg-[#d43f3f] transition-colors duration-300 ease-in-out"
                 >
                   Logout
                 </button>
@@ -99,7 +112,7 @@
               <template v-else>
                 <NuxtLink
                   to="/login"
-                  class="ml-4 bg-[#0C6539] text-white rounded px-3 py-1 font-bold"
+                  class="ml-4 bg-[#0C6539] text-white rounded px-3 py-1 font-bold hover:bg-[#218838] transition-colors duration-300 ease-in-out"
                 >
                   Login
                 </NuxtLink>
@@ -126,7 +139,7 @@
 
 <script setup>
 import { useUserStore } from "~/stores/user";
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 
 const userStore = useUserStore();
 
@@ -172,5 +185,14 @@ watch(
 
 const signOut = async () => {
   userStore.logout();
+};
+
+// Handle cart click, redirect to login if not logged in
+const handleCartClick = () => {
+  if (!userStore.user) {
+    window.location.href = "/login";
+  } else {
+    window.location.href = "/shoppingcart";
+  }
 };
 </script>
