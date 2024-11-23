@@ -6,18 +6,19 @@
         class="h-[500px] flex items-center justify-center"
       >
         <div class="pt-20">
-          <img class="mx-auto" width="250" src="/cart-empty.png" />
+          <img class="mx-auto" width="250" src="/baybayani-logo.png" />
 
           <div class="text-xl text-center mt-4">No items yet?</div>
 
           <!-- If not logged, goto login page -->
           <div v-if="!user" class="flex text-center">
             <NuxtLink
-              to="/auth"
-              class="bg-[#FD374F] w-full text-white text-[21px] font-semibold p-1.5 rounded-full mt-4"
+              to="./login"
+              class="bg-[#28a745] w-full text-white text-[21px] font-semibold p-1.5 rounded-full mt-4 transition-transform duration-300 ease-in-out transform hover:scale-105 hover:bg-[#218838]"
             >
               Sign in
             </NuxtLink>
+
           </div>
         </div>
       </div>
