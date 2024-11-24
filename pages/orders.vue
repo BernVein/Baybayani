@@ -46,10 +46,13 @@ import MainLayout from "~/layouts/MainLayout.vue";
 import { useUserStore } from "~/stores/user";
 const userStore = useUserStore();
 const user = useSupabaseUser();
+const route = useRoute();
 
-watchEffect(async () => {
-  if (!user.value) {
-    await navigateTo("/login");
+await userStore.isAdmin();
+
+watchEffect(() => {
+  if (route.fullPath == "/orders" && userStore.isAdmin === true) {
+    navigateTo("/admin/dashboard");
   }
 });
 

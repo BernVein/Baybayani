@@ -1,7 +1,10 @@
 <template>
   <div class="flex h-screen">
     <!-- Sidebar Layout -->
-    <SideBarLayout class="sidebar fixed lg:relative lg:transform lg:translate-x-0 lg:w-64 w-64 transform -translate-x-full transition-transform duration-300 ease-in-out lg:shadow-none shadow-lg" :class="{ 'translate-x-0': isSidebarOpen }" />
+    <SideBarLayout
+      class="sidebar fixed lg:relative lg:transform lg:translate-x-0 lg:w-64 w-64 transform -translate-x-full transition-transform duration-300 ease-in-out lg:shadow-none shadow-lg"
+      :class="{ 'translate-x-0': isSidebarOpen }"
+    />
 
     <!-- Admin Layout -->
     <AdminLayout class="admin-layout">
@@ -11,19 +14,27 @@
 
         <!-- Dashboard Summary Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-red-600">
+          <div
+            class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-red-600"
+          >
             <p class="text-lg font-medium">Total Products</p>
             <p class="text-4xl font-bold">10</p>
           </div>
-          <div class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-green-600">
+          <div
+            class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-green-600"
+          >
             <p class="text-lg font-medium">Products Sold</p>
             <p class="text-4xl font-bold">100</p>
           </div>
-          <div class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-blue-600">
+          <div
+            class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-blue-600"
+          >
             <p class="text-lg font-medium">Total Revenue</p>
             <p class="text-4xl font-bold">₱50,000</p>
           </div>
-          <div class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-yellow-600">
+          <div
+            class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-yellow-600"
+          >
             <p class="text-lg font-medium">Revenue Today</p>
             <p class="text-4xl font-bold">₱5,000</p>
           </div>
@@ -35,9 +46,17 @@
           <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow">
             <div class="flex justify-between items-center mb-4">
               <h2 class="text-xl font-semibold">
-                <Icon name="mdi:cash-register" size="24" class="inline-block mr-2" />Total Revenue
+                <Icon
+                  name="mdi:cash-register"
+                  size="24"
+                  class="inline-block mr-2"
+                />Total Revenue
               </h2>
-              <select v-model="totalRevenueFilter" @change="updateTotalRevenueChart" class="border p-2 rounded-md">
+              <select
+                v-model="totalRevenueFilter"
+                @change="updateTotalRevenueChart"
+                class="border p-2 rounded-md"
+              >
                 <option value="weekly">Weekly</option>
                 <option value="monthly">Monthly</option>
               </select>
@@ -49,17 +68,30 @@
           <div class="bg-white p-6 rounded-lg shadow">
             <div class="flex justify-between items-center mb-4">
               <h2 class="text-xl font-semibold">
-                <Icon name="mdi:fire" size="24" class="inline-block mr-2" />Top Products
+                <Icon name="mdi:fire" size="24" class="inline-block mr-2" />Top
+                Products
               </h2>
-              <select v-model="topProductsFilter" @change="updateTopProducts" class="border p-2 rounded-md">
+              <select
+                v-model="topProductsFilter"
+                @change="updateTopProducts"
+                class="border p-2 rounded-md"
+              >
                 <option value="weekly">Weekly</option>
                 <option value="monthly">Monthly</option>
               </select>
             </div>
             <ul class="space-y-3">
-              <li class="flex items-center justify-between" v-for="product in filteredTopProducts" :key="product.name">
+              <li
+                class="flex items-center justify-between"
+                v-for="product in filteredTopProducts"
+                :key="product.name"
+              >
                 <div class="flex items-center space-x-3">
-                  <div class='w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center'>Placeholder</div>
+                  <div
+                    class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center"
+                  >
+                    Placeholder
+                  </div>
                   <span>{{ product.name }}</span>
                 </div>
                 <span>{{ product.sold }}kg Sold</span>
@@ -74,9 +106,17 @@
           <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow">
             <div class="flex justify-between items-center mb-4">
               <h2 class="text-xl font-semibold">
-                <Icon name="mdi:chart-line" size="24" class="inline-block mr-2" />Product Sales
+                <Icon
+                  name="mdi:chart-line"
+                  size="24"
+                  class="inline-block mr-2"
+                />Product Sales
               </h2>
-              <select v-model="productSalesFilter" @change="updateProductSalesChart" class="border p-2 rounded-md">
+              <select
+                v-model="productSalesFilter"
+                @change="updateProductSalesChart"
+                class="border p-2 rounded-md"
+              >
                 <option value="weekly">Weekly</option>
                 <option value="monthly">Monthly</option>
               </select>
@@ -88,9 +128,17 @@
           <div class="bg-white p-6 rounded-lg shadow">
             <div class="flex justify-between items-center mb-4">
               <h2 class="text-xl font-semibold">
-                <Icon name="mdi:chart-pie" size="24" class="inline-block mr-2" />Product Sales Trend
+                <Icon
+                  name="mdi:chart-pie"
+                  size="24"
+                  class="inline-block mr-2"
+                />Product Sales Trend
               </h2>
-              <select v-model="productSalesTrendFilter" @change="updateProductSalesTrendChart" class="border p-2 rounded-md">
+              <select
+                v-model="productSalesTrendFilter"
+                @change="updateProductSalesTrendChart"
+                class="border p-2 rounded-md"
+              >
                 <option value="weekly">Weekly</option>
                 <option value="monthly">Monthly</option>
               </select>
@@ -109,11 +157,28 @@ import AdminLayout from "~/layouts/AdminLayout.vue";
 import SideBarLayout from "~/layouts/SideBarLayout.vue";
 import Chart from "chart.js/auto";
 
+import { useUserStore } from "~/stores/user";
+const userStore = useUserStore();
+const user = useSupabaseUser();
+const route = useRoute();
+
 const isSidebarOpen = ref(false);
 
 const toggleSidebar = () => {
   isSidebarOpen.value = !isSidebarOpen.value;
 };
+
+watchEffect(() => {
+  console.log("IsAdmin(Sa Dashboard)??");
+  userStore.isAdmin();
+  console.log(userStore.isAdmin === true);
+  if (
+    route.fullPath == "/admin/dashboard" &&
+    (!user.value || userStore.isAdmin === false)
+  ) {
+    navigateTo("/login");
+  }
+});
 
 const totalRevenueFilter = ref("weekly");
 const topProductsFilter = ref("weekly");
@@ -142,24 +207,87 @@ const updateTopProducts = () => {
 };
 
 const updateTotalRevenueChart = () => {
-  const labels = totalRevenueFilter.value === "weekly" ? ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Yesterday", "Today"] : ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-  const data = totalRevenueFilter.value === "weekly" ? [10000, 5000, 8000, 11000, 13000, 4000, 9000] : [50000, 70000, 60000, 80000, 90000, 85000, 75000, 95000, 87000, 93000, 91000, 88000];
+  const labels =
+    totalRevenueFilter.value === "weekly"
+      ? [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday",
+          "Yesterday",
+          "Today",
+        ]
+      : [
+          "January",
+          "February",
+          "March",
+          "April",
+          "May",
+          "June",
+          "July",
+          "August",
+          "September",
+          "October",
+          "November",
+          "December",
+        ];
+  const data =
+    totalRevenueFilter.value === "weekly"
+      ? [10000, 5000, 8000, 11000, 13000, 4000, 9000]
+      : [
+          50000, 70000, 60000, 80000, 90000, 85000, 75000, 95000, 87000, 93000,
+          91000, 88000,
+        ];
   totalRevenueChart.data.labels = labels;
   totalRevenueChart.data.datasets[0].data = data;
   totalRevenueChart.update();
 };
 
 const updateProductSalesChart = () => {
-  const labels = productSalesFilter.value === "weekly" ? ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Yesterday", "Today"] : ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-  const data = productSalesFilter.value === "weekly" ? [30, 45, 25, 50, 40, 60, 35] : [150, 180, 160, 200, 220, 210, 190, 230, 240, 210, 200, 250];
+  const labels =
+    productSalesFilter.value === "weekly"
+      ? [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday",
+          "Yesterday",
+          "Today",
+        ]
+      : [
+          "January",
+          "February",
+          "March",
+          "April",
+          "May",
+          "June",
+          "July",
+          "August",
+          "September",
+          "October",
+          "November",
+          "December",
+        ];
+  const data =
+    productSalesFilter.value === "weekly"
+      ? [30, 45, 25, 50, 40, 60, 35]
+      : [150, 180, 160, 200, 220, 210, 190, 230, 240, 210, 200, 250];
   productSalesChart.data.labels = labels;
   productSalesChart.data.datasets[0].data = data;
   productSalesChart.update();
 };
 
 const updateProductSalesTrendChart = () => {
-  const labels = productSalesTrendFilter.value === "weekly" ? ["Tomato", "Onion", "Carrot", "Eggplant"] : ["Tomato", "Onion", "Carrot", "Eggplant"];
-  const data = productSalesTrendFilter.value === "weekly" ? [50, 30, 25, 10] : [200, 150, 180, 120];
+  const labels =
+    productSalesTrendFilter.value === "weekly"
+      ? ["Tomato", "Onion", "Carrot", "Eggplant"]
+      : ["Tomato", "Onion", "Carrot", "Eggplant"];
+  const data =
+    productSalesTrendFilter.value === "weekly"
+      ? [50, 30, 25, 10]
+      : [200, 150, 180, 120];
   productSalesTrendChart.data.labels = labels;
   productSalesTrendChart.data.datasets[0].data = data;
   productSalesTrendChart.update();
@@ -169,11 +297,21 @@ let totalRevenueChart, productSalesChart, productSalesTrendChart;
 
 onMounted(() => {
   // Total Revenue Chart
-  const totalRevenueCtx = document.getElementById("totalRevenueChart").getContext("2d");
+  const totalRevenueCtx = document
+    .getElementById("totalRevenueChart")
+    .getContext("2d");
   totalRevenueChart = new Chart(totalRevenueCtx, {
     type: "bar",
     data: {
-      labels: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Yesterday", "Today"],
+      labels: [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Yesterday",
+        "Today",
+      ],
       datasets: [
         {
           label: "Revenue in Peso",
@@ -185,11 +323,21 @@ onMounted(() => {
   });
 
   // Product Sales Chart
-  const productSalesCtx = document.getElementById("productSalesChart").getContext("2d");
+  const productSalesCtx = document
+    .getElementById("productSalesChart")
+    .getContext("2d");
   productSalesChart = new Chart(productSalesCtx, {
     type: "line",
     data: {
-      labels: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Yesterday", "Today"],
+      labels: [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Yesterday",
+        "Today",
+      ],
       datasets: [
         {
           label: "All products sold per kg",
@@ -203,7 +351,9 @@ onMounted(() => {
   });
 
   // Product Sales Trend Chart
-  const productSalesTrendCtx = document.getElementById("productSalesTrendChart").getContext("2d");
+  const productSalesTrendCtx = document
+    .getElementById("productSalesTrendChart")
+    .getContext("2d");
   productSalesTrendChart = new Chart(productSalesTrendCtx, {
     type: "pie",
     data: {

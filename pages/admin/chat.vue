@@ -5,7 +5,9 @@
 
     <!-- Admin Layout -->
     <AdminLayout class="admin-layout">
-      <div class="main-content flex-1 flex flex-col items-center justify-center">
+      <div
+        class="main-content flex-1 flex flex-col items-center justify-center"
+      >
         <!-- Centered Button -->
         <button
           :class="{
@@ -20,7 +22,8 @@
 
         <!-- Instruction Text -->
         <p class="mt-4 text-center text-sm text-gray-600">
-          Click "Open Dashboard" if you aren't directed to the chat dashboard directly.
+          Click "Open Dashboard" if you aren't directed to the chat dashboard
+          directly.
         </p>
       </div>
     </AdminLayout>
@@ -31,6 +34,7 @@
 import { ref, onMounted } from "vue";
 import SideBarLayout from "~/layouts/SideBarLayout.vue";
 import AdminLayout from "~/layouts/AdminLayout.vue";
+import { useUserStore } from "~/stores/user";
 
 export default {
   name: "ChatPage",
@@ -39,6 +43,22 @@ export default {
     AdminLayout,
   },
   setup() {
+    const userStore = useUserStore();
+
+    userStore.isAdmin();
+
+    const user = useSupabaseUser();
+    const route = useRoute();
+
+    watchEffect(() => {
+      if (
+        route.fullPath == "/admin/chat" &&
+        (!user.value || userStore.isAdmin === false)
+      ) {
+        navigateTo("/login");
+      }
+    });
+
     const isDashboardOpen = ref(false);
     let dashboardWindow = null;
 
@@ -48,7 +68,10 @@ export default {
         dashboardWindow.focus();
       } else {
         // Open a new tab and store the window reference
-        dashboardWindow = window.open("https://dashboard.tawk.to/#/chat", "_blank");
+        dashboardWindow = window.open(
+          "https://dashboard.tawk.to/#/chat",
+          "_blank"
+        );
         if (dashboardWindow) {
           isDashboardOpen.value = true;
 

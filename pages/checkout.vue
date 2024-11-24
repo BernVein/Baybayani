@@ -5,12 +5,16 @@
         <!-- Pickup Information -->
         <div class="md:w-[65%]">
           <div class="bg-[#F8F9FA] rounded-lg p-4">
-            <div class="text-xl font-semibold mb-2 text-[#0C6539]">Pickup Information</div>
+            <div class="text-xl font-semibold mb-2 text-[#0C6539]">
+              Pickup Information
+            </div>
             <div class="pt-2 border-t border-[#E0E0E0]">
               <ul class="text-sm">
                 <li class="flex items-center gap-2">
                   <div>Address:</div>
-                  <div class="font-bold text-[#0C6539]">Baybay City Public Market</div>
+                  <div class="font-bold text-[#0C6539]">
+                    Baybay City Public Market
+                  </div>
                 </li>
                 <li class="flex items-center gap-2">
                   <div>Landmark:</div>
@@ -42,7 +46,9 @@
         <div class="md:hidden block my-4" />
         <div class="md:w-[35%]">
           <div id="PlaceOrder" class="bg-[#F8F9FA] rounded-lg p-4">
-            <div class="text-2xl font-extrabold mb-2 text-[#0C6539]">Summary</div>
+            <div class="text-2xl font-extrabold mb-2 text-[#0C6539]">
+              Summary
+            </div>
 
             <div class="border-t my-5 border-[#E0E0E0]" />
 
@@ -78,20 +84,16 @@ const route = useRoute();
 
 let total = ref(0);
 
-// watchEffect(() => {
-//   if (route.fullPath == "/checkout" && !user.value) {
-//     navigateTo("/login");
-//   } else if (route.fullPath == "/checkout" && userStore.checkout.length === 0) {
-//     navigateTo("/shoppingcart");
-//   }
-// });
-
-onMounted(() => {
+await userStore.isAdmin();
+watchEffect(() => {
   if (route.fullPath == "/checkout" && !user.value) {
     navigateTo("/login");
   } else if (route.fullPath == "/checkout" && userStore.checkout.length === 0) {
     navigateTo("/shoppingcart");
   }
+});
+
+onMounted(() => {
   userStore.checkout.forEach((item) => {
     console.log(item); // Print the item to inspect its properties
     total.value += item.product.price * item.quantity;

@@ -116,6 +116,22 @@
 import { ref, onBeforeMount, computed } from "vue";
 import AdminLayout from "~/layouts/AdminLayout.vue";
 
+import { useUserStore } from "~/stores/user";
+const userStore = useUserStore();
+const user = useSupabaseUser();
+const route = useRoute();
+
+await userStore.isAdmin();
+
+watchEffect(() => {
+  if (
+    route.fullPath == "/admin/addfarmer" &&
+    (!user.value || !userStore.isAdmin)
+  ) {
+    navigateTo("/login");
+  }
+});
+
 // Reactive variables for the farmer's form data
 const farmer = ref({
   name: "",

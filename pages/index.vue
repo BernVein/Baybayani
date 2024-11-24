@@ -10,7 +10,9 @@
           :key="product.id"
           class="transition-all duration-500 ease-in-out transform hover:scale-105 group rounded-md overflow-hidden"
         >
-          <div class="transition-all duration-500 ease-in-out group-hover:saturate-150 group-hover:shadow-lg group-hover:bg-white group-hover:-translate-y-1 rounded-md">
+          <div
+            class="transition-all duration-500 ease-in-out group-hover:saturate-150 group-hover:shadow-lg group-hover:bg-white group-hover:-translate-y-1 rounded-md"
+          >
             <ProductComponent :product="product" />
           </div>
         </div>
@@ -25,6 +27,17 @@ import { useUserStore } from "~/stores/user";
 import { ref, onBeforeMount, computed } from "vue";
 
 const userStore = useUserStore();
+const user = useSupabaseUser();
+const route = useRoute();
+
+watchEffect(() => {
+  console.log("IsAdmin??");
+  //userStore.isAdmin();
+  console.log(userStore.isAdmin === true);
+  if (route.fullPath == "/" && userStore.isAdmin === true) {
+    navigateTo("/admin/dashboard");
+  }
+});
 
 let products = ref(null);
 
@@ -36,7 +49,9 @@ onBeforeMount(async () => {
 // Compute filtered products to exclude hidden and deleted products
 const filteredProducts = computed(() => {
   if (products.value && products.value.data) {
-    return products.value.data.filter((product) => !product.hidden && !product.isDeleted);
+    return products.value.data.filter(
+      (product) => !product.hidden && !product.isDeleted
+    );
   }
   return [];
 });

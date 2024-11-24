@@ -18,7 +18,6 @@
             >
               Sign in
             </NuxtLink>
-
           </div>
         </div>
       </div>
@@ -95,6 +94,14 @@ import { ref, computed } from "vue";
 
 const userStore = useUserStore();
 const user = useSupabaseUser();
+const route = useRoute();
+await userStore.isAdmin();
+
+watchEffect(() => {
+  if (route.fullPath == "/shoppingcart" && userStore.isAdmin === true) {
+    navigateTo("/admin/dashboard");
+  }
+});
 
 let selectedArray = ref([]);
 
@@ -110,7 +117,10 @@ const totalItemsCount = computed(() => {
 });
 
 const totalSelectedWeight = computed(() => {
-  return selectedArray.value.reduce((sum, item) => sum + (item.val ? parseFloat(item.quantity) : 0), 0);
+  return selectedArray.value.reduce(
+    (sum, item) => sum + (item.val ? parseFloat(item.quantity) : 0),
+    0
+  );
 });
 
 const totalPriceComputed = computed(() => {

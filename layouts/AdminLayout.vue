@@ -91,9 +91,17 @@
 
         <!-- Profile Menu with Username Below on Hover -->
         <div id="ProfileMenu" class="md:block hidden pt-3 relative group">
-          <ul class="flex items-center justify-end text-sm text-[#333333] font-bold">
-            <li class="flex items-center px-2.5 hover:text-[#FF4646] h-full gap-4 cursor-pointer relative">
-              <Icon name="ph:user-light" size="32" class="text-[#0C6539] transition-colors duration-300 ease-in-out group-hover:text-[#FF4646]" />
+          <ul
+            class="flex items-center justify-end text-sm text-[#333333] font-bold"
+          >
+            <li
+              class="flex items-center px-2.5 hover:text-[#FF4646] h-full gap-4 cursor-pointer relative"
+            >
+              <Icon
+                name="ph:user-light"
+                size="32"
+                class="text-[#0C6539] transition-colors duration-300 ease-in-out group-hover:text-[#FF4646]"
+              />
               <!-- Username Pop-Up Below -->
               <div
                 v-if="userStore.user"
@@ -134,8 +142,6 @@
 
   <div class="lg:pt-[150px] md:pt-[130px] pt-[80px]" />
   <slot />
-
-  
 </template>
 
 <script setup>
@@ -145,6 +151,7 @@ import { ref, computed, watch } from "vue";
 const userStore = useUserStore();
 
 // Fetch cart items if not already loaded
+await userStore.fetchUser();
 await userStore.fetchCartItems();
 
 const client = useSupabaseClient();

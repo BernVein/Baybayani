@@ -11,19 +11,27 @@
 
         <!-- Order Summary Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-red-600">
+          <div
+            class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-red-600"
+          >
             <p class="text-lg font-medium">Total Orders</p>
             <p class="text-4xl font-bold">{{ totalOrders }}</p>
           </div>
-          <div class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-green-600">
+          <div
+            class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-green-600"
+          >
             <p class="text-lg font-medium">Pending Orders</p>
             <p class="text-4xl font-bold">{{ pendingOrders }}</p>
           </div>
-          <div class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-blue-600">
+          <div
+            class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-blue-600"
+          >
             <p class="text-lg font-medium">Cancelled Orders</p>
             <p class="text-4xl font-bold">{{ cancelledOrders }}</p>
           </div>
-          <div class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-yellow-600">
+          <div
+            class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-yellow-600"
+          >
             <p class="text-lg font-medium">Order Success Rate</p>
             <p class="text-4xl font-bold">{{ orderSuccessRate }}%</p>
           </div>
@@ -59,9 +67,17 @@
                 <span>Filter</span>
               </button>
               <!-- Filter Dropdown -->
-              <div v-if="isFilterVisible" class="absolute top-full mt-2 right-0 bg-white border border-gray-300 rounded-md shadow-md p-4 w-48">
-                <label class="block mb-2 font-medium text-gray-700">Filter by Status:</label>
-                <select v-model="filterStatus" class="w-full p-2 border border-gray-300 rounded-md">
+              <div
+                v-if="isFilterVisible"
+                class="absolute top-full mt-2 right-0 bg-white border border-gray-300 rounded-md shadow-md p-4 w-48"
+              >
+                <label class="block mb-2 font-medium text-gray-700"
+                  >Filter by Status:</label
+                >
+                <select
+                  v-model="filterStatus"
+                  class="w-full p-2 border border-gray-300 rounded-md"
+                >
                   <option value="">All</option>
                   <option value="In Progress">In Progress</option>
                   <option value="Completed">Completed</option>
@@ -72,33 +88,65 @@
           </div>
 
           <!-- Orders Table -->
-          <div class="overflow-x-auto bg-white border border-gray-300 rounded-md shadow-sm">
+          <div
+            class="overflow-x-auto bg-white border border-gray-300 rounded-md shadow-sm"
+          >
             <table class="w-full table-auto">
               <thead class="bg-gray-100">
                 <tr>
-                  <th class="py-3 px-4 text-left font-semibold text-gray-700">Order ID.</th>
-                  <th class="py-3 px-4 text-left font-semibold text-gray-700">Date</th>
-                  <th class="py-3 px-4 text-left font-semibold text-gray-700">Customer Name</th>
-                  <th class="py-3 px-4 text-left font-semibold text-gray-700">Phone No.</th>
-                  <th class="py-3 px-4 text-left font-semibold text-gray-700">Product</th>
-                  <th class="py-3 px-4 text-left font-semibold text-gray-700">Qty.</th>
-                  <th class="py-3 px-4 text-left font-semibold text-gray-700">Unit Price</th>
-                  <th class="py-3 px-4 text-left font-semibold text-gray-700">Total</th>
-                  <th class="py-3 px-4 text-center font-semibold text-gray-700">Status</th>
+                  <th class="py-3 px-4 text-left font-semibold text-gray-700">
+                    Order ID.
+                  </th>
+                  <th class="py-3 px-4 text-left font-semibold text-gray-700">
+                    Date
+                  </th>
+                  <th class="py-3 px-4 text-left font-semibold text-gray-700">
+                    Customer Name
+                  </th>
+                  <th class="py-3 px-4 text-left font-semibold text-gray-700">
+                    Phone No.
+                  </th>
+                  <th class="py-3 px-4 text-left font-semibold text-gray-700">
+                    Product
+                  </th>
+                  <th class="py-3 px-4 text-left font-semibold text-gray-700">
+                    Qty.
+                  </th>
+                  <th class="py-3 px-4 text-left font-semibold text-gray-700">
+                    Unit Price
+                  </th>
+                  <th class="py-3 px-4 text-left font-semibold text-gray-700">
+                    Total
+                  </th>
+                  <th class="py-3 px-4 text-center font-semibold text-gray-700">
+                    Status
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="order in filteredOrders" :key="order.id" class="hover:bg-gray-50">
+                <tr
+                  v-for="order in filteredOrders"
+                  :key="order.id"
+                  class="hover:bg-gray-50"
+                >
                   <td class="py-4 px-4 border-b">{{ order.id }}</td>
                   <td class="py-4 px-4 border-b">{{ order.date }}</td>
                   <td class="py-4 px-4 border-b">{{ order.customerName }}</td>
                   <td class="py-4 px-4 border-b">{{ order.phone }}</td>
                   <td class="py-4 px-4 border-b">
-                    <img :src="order.productImage" alt="Product Image" class="w-10 h-10 rounded-full object-cover" />
+                    <img
+                      :src="order.productImage"
+                      alt="Product Image"
+                      class="w-10 h-10 rounded-full object-cover"
+                    />
                   </td>
                   <td class="py-4 px-4 border-b">{{ order.quantity }}kg</td>
-                  <td class="py-4 px-4 border-b">&#8369;{{ order.unitPrice.toFixed(2) }}</td>
-                  <td class="py-4 px-4 border-b">&#8369;{{ order.total.toFixed(2) }}</td>
+                  <td class="py-4 px-4 border-b">
+                    &#8369;{{ order.unitPrice.toFixed(2) }}
+                  </td>
+                  <td class="py-4 px-4 border-b">
+                    &#8369;{{ order.total.toFixed(2) }}
+                  </td>
                   <td class="py-4 px-4 border-b text-center">
                     <select
                       v-model="order.status"
@@ -129,19 +177,85 @@ import { ref, computed } from "vue";
 import AdminLayout from "~/layouts/AdminLayout.vue";
 import SideBarLayout from "~/layouts/SideBarLayout.vue";
 
+import { useUserStore } from "~/stores/user";
+const userStore = useUserStore();
+const user = useSupabaseUser();
+const route = useRoute();
+
+await userStore.isAdmin();
+
+watchEffect(() => {
+  if (
+    route.fullPath == "/admin/orders" &&
+    (!user.value || !userStore.isAdmin)
+  ) {
+    navigateTo("/login");
+  }
+});
+
 // Dummy order data
 const orders = ref([
-  { id: "#12345AB", date: "Oct. 4, 2024", customerName: "Juan Dela Cruz", phone: "09573196842", productImage: "/path/to/tomato.jpg", quantity: 5, unitPrice: 50, total: 250, status: "In Progress" },
-  { id: "#40D6F2D", date: "Oct. 4, 2024", customerName: "Juan Dela Cruz", phone: "09573196842", productImage: "/path/to/eggplant.jpg", quantity: 3, unitPrice: 100, total: 300, status: "Completed" },
-  { id: "#3AFA384", date: "Oct. 2, 2024", customerName: "Eduardo Guerrera", phone: "09401392253", productImage: "/path/to/cabbage.jpg", quantity: 10, unitPrice: 60, total: 600, status: "In Progress" },
-  { id: "#F666AF7", date: "Oct. 1, 2024", customerName: "Alberto Mendez", phone: "09418742398", productImage: "/path/to/tomato.jpg", quantity: 5, unitPrice: 50, total: 250, status: "In Progress" },
+  {
+    id: "#12345AB",
+    date: "Oct. 4, 2024",
+    customerName: "Juan Dela Cruz",
+    phone: "09573196842",
+    productImage: "/path/to/tomato.jpg",
+    quantity: 5,
+    unitPrice: 50,
+    total: 250,
+    status: "In Progress",
+  },
+  {
+    id: "#40D6F2D",
+    date: "Oct. 4, 2024",
+    customerName: "Juan Dela Cruz",
+    phone: "09573196842",
+    productImage: "/path/to/eggplant.jpg",
+    quantity: 3,
+    unitPrice: 100,
+    total: 300,
+    status: "Completed",
+  },
+  {
+    id: "#3AFA384",
+    date: "Oct. 2, 2024",
+    customerName: "Eduardo Guerrera",
+    phone: "09401392253",
+    productImage: "/path/to/cabbage.jpg",
+    quantity: 10,
+    unitPrice: 60,
+    total: 600,
+    status: "In Progress",
+  },
+  {
+    id: "#F666AF7",
+    date: "Oct. 1, 2024",
+    customerName: "Alberto Mendez",
+    phone: "09418742398",
+    productImage: "/path/to/tomato.jpg",
+    quantity: 5,
+    unitPrice: 50,
+    total: 250,
+    status: "In Progress",
+  },
 ]);
 
 // Computed properties for stats
 const totalOrders = computed(() => orders.value.length);
-const pendingOrders = computed(() => orders.value.filter((order) => order.status === 'In Progress').length);
-const cancelledOrders = computed(() => orders.value.filter((order) => order.status === 'Cancelled').length);
-const orderSuccessRate = computed(() => ((orders.value.filter((order) => order.status === 'Completed').length / orders.value.length) * 100).toFixed(0));
+const pendingOrders = computed(
+  () => orders.value.filter((order) => order.status === "In Progress").length
+);
+const cancelledOrders = computed(
+  () => orders.value.filter((order) => order.status === "Cancelled").length
+);
+const orderSuccessRate = computed(() =>
+  (
+    (orders.value.filter((order) => order.status === "Completed").length /
+      orders.value.length) *
+    100
+  ).toFixed(0)
+);
 
 // Search and Filter functionality
 const searchQuery = ref("");
@@ -153,7 +267,9 @@ const filteredOrders = computed(() => {
   if (searchQuery.value !== "") {
     filtered = filtered.filter(
       (order) =>
-        order.customerName.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+        order.customerName
+          .toLowerCase()
+          .includes(searchQuery.value.toLowerCase()) ||
         order.id.toLowerCase().includes(searchQuery.value.toLowerCase())
     );
   }
