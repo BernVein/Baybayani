@@ -135,7 +135,63 @@
   <div class="lg:pt-[150px] md:pt-[130px] pt-[80px]" />
   <slot />
 
-  
+  <!-- Enhanced Footer with Spacing -->
+  <div class="mt-20"></div>
+  <footer class="bg-[#0C6539] text-white py-8 mt-10">
+    <div class="max-w-[1200px] mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8">
+      <!-- Footer Section: Company Info -->
+      <div>
+        <h3 class="text-2xl font-bold mb-4">Baybayani</h3>
+        <p class="text-gray-200">
+          Your trusted source for local products. We connect you to the best and freshest produce from our local community.
+        </p>
+      </div>
+
+      <!-- Footer Section: Quick Links -->
+      <div>
+        <h4 class="text-xl font-semibold mb-4">Quick Links</h4>
+        <ul class="space-y-2">
+          <li>
+            <NuxtLink
+              to="/about"
+              class="hover:text-[#42e442] transition-colors duration-300 ease-in-out"
+            >About Us</NuxtLink>
+          </li>
+          <li>
+            <NuxtLink
+              to="/products"
+              class="hover:text-[#42e442] transition-colors duration-300 ease-in-out"
+            >Products</NuxtLink>
+          </li>
+          <li>
+            <NuxtLink
+              to="/contact"
+              class="hover:text-[#42e442] transition-colors duration-300 ease-in-out"
+            >Contact Us</NuxtLink>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Footer Section: Social Media Links -->
+      <div>
+        <h4 class="text-xl font-semibold mb-4">Follow Us</h4>
+        <div class="flex space-x-4">
+          <a href="https://facebook.com" target="_blank" class="hover:scale-110 transition-transform duration-300">
+            <Icon name="mdi:facebook" size="28" />
+          </a>
+          <a href="https://twitter.com" target="_blank" class="hover:scale-110 transition-transform duration-300">
+            <Icon name="mdi:twitter" size="28" />
+          </a>
+          <a href="https://instagram.com" target="_blank" class="hover:scale-110 transition-transform duration-300">
+            <Icon name="mdi:instagram" size="28" />
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="mt-8 text-center text-sm text-gray-300">
+      &copy; 2024 Baybayani. All rights reserved.
+    </div>
+  </footer>
 </template>
 
 <script setup>
