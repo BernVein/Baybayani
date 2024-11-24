@@ -162,14 +162,12 @@
             {{ editMode ? "Edit Product" : "Add Product" }}
           </h2>
           <button @click="closeModal" class="text-gray-500 hover:text-gray-800">
-            ✖
+            ✕
           </button>
         </div>
 
         <!-- Modal Content -->
-        <form
-          @submit.prevent="editMode ? updateProduct() : addProductAndReload()"
-        >
+        <form @submit.prevent="editMode ? updateProduct() : addProduct()">
           <div class="space-y-4">
             <div>
               <label for="title" class="block text-sm font-medium text-gray-700"
@@ -234,8 +232,7 @@
               </button>
               <button
                 type="submit"
-                :disabled="product.isSubmitting"
-                class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
+                class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
               >
                 {{ editMode ? "Update Product" : "Add Product" }}
               </button>
@@ -264,7 +261,7 @@
 
 <script>
 import axios from "axios";
-import { ref, computed, onMounted, nextTick } from "vue";
+import { ref, computed, onMounted } from "vue";
 import AdminLayout from "~/layouts/AdminLayout.vue";
 import SideBarLayout from "~/layouts/SideBarLayout.vue";
 import { useRuntimeConfig } from "#imports";
@@ -309,7 +306,6 @@ export default {
       price: null,
       url: "",
       hidden: false,
-      isSubmitting: false,
     });
     const orderItems = ref([]);
 
@@ -333,7 +329,6 @@ export default {
         price: null,
         url: "",
         hidden: false,
-        isSubmitting: false,
       };
     };
 
@@ -368,6 +363,7 @@ export default {
         );
         if (response.status === 200) {
           orderItems.value = response.data;
+          console.log("Order Items:", orderItems.value); // Print the order items in the console
         } else {
           throw new Error("Failed to fetch order items");
         }
@@ -382,10 +378,8 @@ export default {
       );
     };
 
-    const addProductAndReload = async () => {
+    const addProduct = async () => {
       try {
-        product.value.isSubmitting = true; // Disable button to prevent multiple clicks
-        isModalVisible.value = false; // Close the modal immediately after clicking submit
         const response = await axios.post(`${apiUrl}/api/prisma/add-product`, {
           title: product.value.title,
           description: product.value.description,
@@ -400,7 +394,7 @@ export default {
         ) {
           showNotification("Product successfully added!", "success");
           products.value.push(response.data.body.product);
-          window.location.reload(); // Refresh page after adding product
+          closeModal();
         } else {
           console.error(
             `Error adding product: ${
@@ -417,14 +411,11 @@ export default {
       } catch (err) {
         console.error("Unexpected error:", err);
         showNotification("Unexpected error: " + err.message, "error");
-      } finally {
-        product.value.isSubmitting = false; // Re-enable button
       }
     };
 
     const updateProduct = async () => {
       try {
-        product.value.isSubmitting = true; // Disable button to prevent multiple clicks
         const response = await axios.put(
           `${apiUrl}/api/prisma/update-product/${product.value.id}`,
           {
@@ -445,15 +436,12 @@ export default {
             products.value[index] = { ...product.value };
           }
           closeModal();
-          window.location.reload(); // Refresh page after updating product
         } else {
           throw new Error("Failed to update product");
         }
       } catch (err) {
         console.error("Error updating product:", err);
         showNotification("Error updating product: " + err.message, "error");
-      } finally {
-        product.value.isSubmitting = false; // Re-enable button
       }
     };
 
@@ -568,7 +556,7 @@ export default {
       openModal,
       openEditModal,
       closeModal,
-      addProductAndReload,
+      addProduct,
       updateProduct,
       toggleProductVisibility,
       markProductAsDeleted,

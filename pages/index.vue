@@ -9,6 +9,7 @@
           v-for="product in filteredProducts"
           :key="product.id"
           class="transition-all duration-500 ease-in-out transform hover:scale-105 group rounded-md overflow-hidden"
+          @click="handleProductClick(product)"
         >
           <div
             class="transition-all duration-500 ease-in-out group-hover:saturate-150 group-hover:shadow-lg group-hover:bg-white group-hover:-translate-y-1 rounded-md"
@@ -25,6 +26,7 @@
 import AdminLayout from "~/layouts/AdminLayout.vue";
 import { useUserStore } from "~/stores/user";
 import { ref, onBeforeMount, computed } from "vue";
+import { useRouter } from "vue-router";
 
 const userStore = useUserStore();
 const user = useSupabaseUser();
@@ -38,6 +40,7 @@ watchEffect(() => {
     navigateTo("/admin/dashboard");
   }
 });
+const router = useRouter();
 
 let products = ref(null);
 
