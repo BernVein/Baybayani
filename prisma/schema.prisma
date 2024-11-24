@@ -50,6 +50,8 @@ model Orders {
   // Relation to User model
   user User @relation(fields: [userId], references: [id])
    totalPrice Int?
+  orderStatus OrderStatus @default(PENDING)
+
 }
 
 model OrderItem {
@@ -89,4 +91,12 @@ enum Status {
   ACTIVE
   INACTIVE
   SUSPENDED
+}
+
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  FULFILLED
+  CANCELED
 }
