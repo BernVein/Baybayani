@@ -51,7 +51,7 @@
             <div class="text-2xl font-extrabold mb-2">Summary</div>
             <div class="flex items-center justify-between my-4">
               <div class="font-semibold">Total</div>
-              <div class="text-2xl font-semibold text-[#FD374F]">
+              <div class="text-2sxl font-semibold text-[#FD374F]">
                 ₱<span class="font-extrabold text-[#FD374F]">{{ totalPriceComputed }}</span>
               </div>
             </div>
@@ -88,7 +88,6 @@ const filteredCartItems = computed(() => {
 
   return userStore.cartItems.filter((item) => {
     if (!item.product) {
-      console.warn("Cart item is missing product:", item);
       return false; // Exclude invalid items
     }
     return !item.product.hidden && !item.product.isDeleted;
