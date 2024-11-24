@@ -9,9 +9,7 @@
         <!-- Category and Product Title -->
         <div class="flex items-center">
           <span
-            class="bg-[#0C6539] text-white text-[11px] font-semibold px-1.5 rounded-sm min-w-[60px] text-center"
-            >Vegetables</span
-          >
+            class="bg-[#0C6539] text-white text-[11px] font-semibold px-1.5 rounded-sm min-w-[60px] text-center">Vegetables</span>
           <div class="truncate pl-2">{{ product.title }}</div>
         </div>
 
@@ -24,9 +22,7 @@
             }}</span>
           </div>
           <div class="text-sm font-semibold mt-1">
-            x<span class="font-bold text-[#FD374F]"
-              >{{ product.quantity }} kg</span
-            >
+            x<span class="font-bold text-[#FD374F]">{{ product.quantity }} kg</span>
           </div>
         </div>
       </div>
