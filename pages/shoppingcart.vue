@@ -1,6 +1,14 @@
 <template>
   <AdminLayout>
     <div id="ShoppingCartPage" class="mt-4 max-w-[1200px] mx-auto px-2">
+      <!-- Dropdown Notification -->
+      <div
+        v-if="showNotice"
+        class="fixed top-0 left-0 w-full bg-red-500 text-white text-center py-3 z-50"
+      >
+        Please select at least one item before proceeding to checkout.
+      </div>
+
       <div
         v-if="!filteredCartItems.length"
         class="h-[500px] flex items-center justify-center"
@@ -18,7 +26,6 @@
             >
               Sign in
             </NuxtLink>
-
           </div>
         </div>
       </div>
@@ -63,7 +70,7 @@
               <div class="text-2xl font-semibold text-[#FD374F]">
                 ₱
                 <span class="font-extrabold text-[#FD374F]">{{
-                  totalPriceComputed
+                  formatPrice(totalPriceComputed)
                 }}</span>
               </div>
             </div>
@@ -97,6 +104,7 @@ const userStore = useUserStore();
 const user = useSupabaseUser();
 
 let selectedArray = ref([]);
+let showNotice = ref(false);
 
 // Filter out products that are hidden or deleted
 const filteredCartItems = computed(() => {
@@ -120,6 +128,10 @@ const totalPriceComputed = computed(() => {
   );
 });
 
+const formatPrice = (price) => {
+  return price.toLocaleString();
+};
+
 const selectedRadioFunc = (e) => {
   const existingIndex = selectedArray.value.findIndex(
     (item) => item.id === e.id
@@ -141,7 +153,14 @@ const selectedRadioFunc = (e) => {
 const goToCheckout = () => {
   const ids = selectedArray.value.map((item) => item.id);
 
-  if (ids.length === 0 || !filteredCartItems.value.length) {
+  if (ids.length === 0) {
+    showNotice.value = true;
+
+    // Hide the notification after 3 seconds
+    setTimeout(() => {
+      showNotice.value = false;
+    }, 3000);
+
     return;
   }
 
