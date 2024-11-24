@@ -8,7 +8,7 @@
           <div class="flex flex-col">
             <img
               v-if="currentImage"
-              class="rounded-lg object-cover w-full h-[400px]"
+              class="rounded-lg object-cover w-full h-[400px] transition-transform duration-500 ease-in-out hover:scale-105 hover:shadow-2xl"
               :src="currentImage"
               alt="Product Image"
             />
@@ -18,7 +18,7 @@
                 v-for="(image, index) in images"
                 :key="index"
                 :src="image"
-                class="h-20 w-20 object-cover rounded-lg border cursor-pointer"
+                class="h-20 w-20 object-cover rounded-lg border cursor-pointer transition-transform duration-300 ease-in-out hover:scale-110 hover:border-green-500"
                 @click="currentImage = image"
                 alt="Thumbnail"
               />
@@ -27,21 +27,21 @@
         </div>
 
         <!-- Right Section: Product Details -->
-        <div class="w-[50%] bg-white p-6 rounded-lg shadow-md">
+        <div class="w-[50%] bg-white p-6 rounded-lg shadow-md transition-all duration-500 ease-in-out hover:shadow-lg">
           <div v-if="product && product.data">
             <!-- Product Title -->
-            <h1 class="text-4xl font-semibold text-gray-800">
+            <h1 class="text-4xl font-semibold text-gray-800 transition-colors duration-300 ease-in-out hover:text-green-600">
               {{ product.data.title }}
             </h1>
 
             <!-- Product Price -->
-            <div class="text-3xl font-bold p-2 text-red-500">
+            <div class="text-3xl font-bold p-2 text-red-500 transition-colors duration-300 ease-in-out hover:text-red-600">
               ₱{{ product.data.price }} / kg
             </div>
 
             <!-- Product Description -->
             <p class="mt-6 font-light text-lg text-gray-600">Product Details:</p>
-            <p class="text-md text-gray-700 mb-4">
+            <p class="text-md text-gray-700 mb-4 transition-colors duration-300 ease-in-out hover:text-gray-900">
               {{ product.data.description }}
             </p>
 
@@ -50,13 +50,13 @@
               <button
                 @click="addToCart"
                 :disabled="isInCart"
-                class="px-6 py-3 rounded-lg text-white text-lg font-semibold bg-green-600 hover:bg-green-700"
+                class="px-6 py-3 rounded-lg text-white text-lg font-semibold bg-green-600 hover:bg-green-700 transition-transform duration-300 ease-in-out hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <span v-if="isInCart">Added to Cart</span>
                 <span v-else>Add to Cart</span>
               </button>
               <button
-                class="px-6 py-3 rounded-lg text-green-600 border border-green-600 text-lg font-semibold hover:bg-green-50"
+                class="px-6 py-3 rounded-lg text-green-600 border border-green-600 text-lg font-semibold hover:bg-green-50 transition-transform duration-300 ease-in-out hover:scale-105"
               >
                 Chat Seller
               </button>
