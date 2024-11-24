@@ -44,13 +44,4 @@ const filteredProducts = computed(() => {
   return [];
 });
 
-// Handle product click to check if user is logged in
-const handleProductClick = (product) => {
-  if (!userStore.isAuthenticated) {
-    router.push("./login");
-  } else {
-    // Let the user perform search or other actions
-    // No specific redirection or action needed, as they are already authenticated
-  }
-};
 </script>
