@@ -91,7 +91,23 @@ export default defineEventHandler(async (event) => {
 
     console.log("Order created successfully:", order);
 
-    // 5. Return the created order along with the items
+    // 5. Delete the specific cart items that were ordered
+    const cartItemsToDelete = checkoutItem.map((item) => ({
+      productId: item.productId, // Match based on productId
+      quantity: item.quantity, // Match based on quantity
+    }));
+
+    for (const item of cartItemsToDelete) {
+      await prisma.cartItem.deleteMany({
+        where: {
+          cartId: cart.id, // Ensure we're deleting from the correct cart
+          productId: item.productId, // Match by productId
+        },
+      });
+      console.log(`Deleted cart item with productId: ${item.productId}`);
+    }
+
+    // 6. Return the created order along with the items
     return {
       status: "success",
       order: order, // Return the order with its items

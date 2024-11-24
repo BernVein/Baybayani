@@ -21,18 +21,10 @@ export default defineEventHandler(async (event) => {
     };
   } catch (error) {
     console.error("Error deleting product:", error);
-
-    let errorMessage = "Error deleting product";
-
-    // Check if the error is due to a foreign key constraint violation
-    if (error.code === 'P2003') {
-      errorMessage = "Cannot delete product. It is referenced in related records, such as cart items.";
-    }
-
     return {
       statusCode: 500,
       body: {
-        message: errorMessage,
+        message: "Error deleting product",
         error: error.message,
       },
     };

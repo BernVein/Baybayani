@@ -78,8 +78,12 @@ export const useUserStore = defineStore("user", {
     // New action to fetch the cart items
     async fetchCartItems() {
       console.log("TRY HERE");
-      if (this.isAdmin || (this.cartItems.length > 0 && this.refreshFlag === 0))
-        return;
+      console.log(this.refreshFlag);
+      console.log(this.cartItems.length);
+      console.log("TRY HERE2");
+      if (this.isAdmin === true) return;
+
+      if (this.cartItems.length > 0 && this.refreshFlag === 0) return;
       console.log("FETCH CART RUNNING");
       this.isLoading = true;
       let cartResponse = ref(null);
