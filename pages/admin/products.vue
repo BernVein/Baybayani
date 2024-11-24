@@ -88,22 +88,22 @@
                 </td>
                 <td class="py-4 px-4 border-b">₱{{ parseFloat(product.price).toFixed(2) }}</td>
                 <td class="py-4 px-4 border-b text-center flex items-center justify-center space-x-4">
-                  <button
-                    @click="toggleProductVisibility(product)"
-                    :disabled="isProductInOrderItem(product.id)"
+                  <button 
+                    @click="toggleProductVisibility(product)" 
+                    :disabled="isProductInOrderItem(product.id)" 
                     class="text-gray-600 hover:text-blue-600 disabled:opacity-50"
                   >
                     <Icon :name="product.hidden ? 'ph:eye-slash-bold' : 'ph:eye-bold'" size="20" />
                   </button>
-                  <button
-                    @click="openEditModal(product)"
+                  <button 
+                    @click="openEditModal(product)" 
                     class="text-gray-600 hover:text-gray-800"
                   >
                     <Icon name="ph:pencil-simple-bold" size="20" />
                   </button>
-                  <button
-                    @click="markProductAsDeleted(product.id)"
-                    :disabled="isProductInOrderItem(product.id)"
+                  <button 
+                    @click="markProductAsDeleted(product.id)" 
+                    :disabled="isProductInOrderItem(product.id)" 
                     class="text-gray-600 hover:text-red-800 disabled:opacity-50"
                   >
                     <Icon name="ph:trash-bold" size="20" />
@@ -130,12 +130,12 @@
             @click="closeModal"
             class="text-gray-500 hover:text-gray-800"
           >
-            ✖
+            ✕
           </button>
         </div>
 
         <!-- Modal Content -->
-        <form @submit.prevent="editMode ? updateProduct() : addProductAndReload()">
+        <form @submit.prevent="editMode ? updateProduct() : addProduct()">
           <div class="space-y-4">
             <div>
               <label for="title" class="block text-sm font-medium text-gray-700">Title</label>
@@ -190,8 +190,7 @@
               </button>
               <button
                 type="submit"
-                :disabled="product.isSubmitting"
-                class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
+                class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
               >
                 {{ editMode ? 'Update Product' : 'Add Product' }}
               </button>
@@ -212,7 +211,7 @@
 
 <script>
 import axios from 'axios';
-import { ref, computed, onMounted, nextTick } from "vue";
+import { ref, computed, onMounted } from "vue";
 import AdminLayout from "~/layouts/AdminLayout.vue";
 import SideBarLayout from "~/layouts/SideBarLayout.vue";
 import { useRuntimeConfig } from '#imports';
@@ -238,7 +237,6 @@ export default {
       price: null,
       url: "",
       hidden: false,
-      isSubmitting: false,
     });
     const orderItems = ref([]);
 
@@ -255,15 +253,7 @@ export default {
 
     const closeModal = () => {
       isModalVisible.value = false;
-      product.value = {
-        id: null,
-        title: "",
-        description: "",
-        price: null,
-        url: "",
-        hidden: false,
-        isSubmitting: false,
-      };
+      product.value = { id: null, title: "", description: "", price: null, url: "", hidden: false };
     };
 
     const showNotification = (message, type = 'success') => {
@@ -277,7 +267,7 @@ export default {
       try {
         const response = await axios.get(`${apiUrl}/api/prisma/get-all-products`);
         if (response.status === 200) {
-          products.value = response.data.filter((product) => !product.isDeleted);
+          products.value = response.data.filter(product => !product.isDeleted);
         } else {
           throw new Error("Failed to fetch products");
         }
@@ -291,6 +281,7 @@ export default {
         const response = await axios.get(`${apiUrl}/api/prisma/get-order-items`);
         if (response.status === 200) {
           orderItems.value = response.data;
+          console.log("Order Items:", orderItems.value); // Print the order items in the console
         } else {
           throw new Error("Failed to fetch order items");
         }
@@ -300,13 +291,11 @@ export default {
     };
 
     const isProductInOrderItem = (productId) => {
-      return orderItems.value.some((orderItem) => orderItem.productId === productId);
+      return orderItems.value.some(orderItem => orderItem.productId === productId);
     };
 
-    const addProductAndReload = async () => {
+    const addProduct = async () => {
       try {
-        product.value.isSubmitting = true; // Disable button to prevent multiple clicks
-        isModalVisible.value = false; // Close the modal immediately after clicking submit
         const response = await axios.post(`${apiUrl}/api/prisma/add-product`, {
           title: product.value.title,
           description: product.value.description,
@@ -316,24 +305,21 @@ export default {
         });
 
         if (response.status === 201 && response.data.body.message === "Product added successfully!") {
-          showNotification("Product successfully added!", "success");
+          showNotification("Product successfully added!", 'success');
           products.value.push(response.data.body.product);
-          window.location.reload(); // Refresh page after adding product
+          closeModal();
         } else {
           console.error(`Error adding product: ${response.data.body.message || "Unexpected error"}`);
-          showNotification(`Error adding product: ${response.data.body.message || "Unexpected error"}`, "error");
+          showNotification(`Error adding product: ${response.data.body.message || "Unexpected error"}`, 'error');
         }
       } catch (err) {
         console.error("Unexpected error:", err);
-        showNotification("Unexpected error: " + err.message, "error");
-      } finally {
-        product.value.isSubmitting = false; // Re-enable button
+        showNotification("Unexpected error: " + err.message, 'error');
       }
     };
 
     const updateProduct = async () => {
       try {
-        product.value.isSubmitting = true; // Disable button to prevent multiple clicks
         const response = await axios.put(`${apiUrl}/api/prisma/update-product/${product.value.id}`, {
           title: product.value.title,
           description: product.value.description,
@@ -343,27 +329,24 @@ export default {
         });
 
         if (response.status === 200) {
-          showNotification("Product successfully updated!", "success");
+          showNotification("Product successfully updated!", 'success');
           const index = products.value.findIndex((p) => p.id === product.value.id);
           if (index !== -1) {
             products.value[index] = { ...product.value };
           }
           closeModal();
-          window.location.reload(); // Refresh page after updating product
         } else {
           throw new Error("Failed to update product");
         }
       } catch (err) {
         console.error("Error updating product:", err);
-        showNotification("Error updating product: " + err.message, "error");
-      } finally {
-        product.value.isSubmitting = false; // Re-enable button
+        showNotification("Error updating product: " + err.message, 'error');
       }
     };
 
     const toggleProductVisibility = async (product) => {
       if (isProductInOrderItem(product.id)) {
-        showNotification("Cannot change visibility of a product that is part of an order.", "error");
+        showNotification("Cannot change visibility of a product that is part of an order.", 'error');
         return;
       }
 
@@ -375,23 +358,23 @@ export default {
 
         if (response.status === 200) {
           product.hidden = updatedProduct.hidden;
-          showNotification("Product visibility updated!", "success");
+          showNotification("Product visibility updated!", 'success');
         } else {
           throw new Error("Failed to update product visibility");
         }
       } catch (err) {
         if (err.response && err.response.status === 400) {
-          showNotification("Cannot update product. It is part of an order.", "error");
+          showNotification("Cannot update product. It is part of an order.", 'error');
         } else {
           console.error("Error updating product visibility:", err);
-          showNotification("Error updating product visibility: " + err.message, "error");
+          showNotification("Error updating product visibility: " + err.message, 'error');
         }
       }
     };
 
     const markProductAsDeleted = async (productId) => {
       if (isProductInOrderItem(productId)) {
-        showNotification("Cannot delete a product that is part of an order.", "error");
+        showNotification("Cannot delete a product that is part of an order.", 'error');
         return;
       }
 
@@ -401,17 +384,17 @@ export default {
         });
 
         if (response.status === 200) {
-          showNotification("Product successfully marked as deleted!", "success");
+          showNotification("Product successfully marked as deleted!", 'success');
           products.value = products.value.filter((p) => p.id !== productId);
         } else {
           throw new Error("Failed to delete product");
         }
       } catch (err) {
         if (err.response && err.response.status === 400) {
-          showNotification("Cannot delete product. It is part of a cart.", "error");
+          showNotification("Cannot delete product. It is part of a cart.", 'error');
         } else {
           console.error("Error deleting product:", err);
-          showNotification("Error deleting product: " + err.message, "error");
+          showNotification("Error deleting product: " + err.message, 'error');
         }
       }
     };
@@ -442,7 +425,7 @@ export default {
       openModal,
       openEditModal,
       closeModal,
-      addProductAndReload,
+      addProduct,
       updateProduct,
       toggleProductVisibility,
       markProductAsDeleted,
@@ -459,12 +442,10 @@ export default {
 </script>
 
 <style scoped>
-.fade-enter-active,
-.fade-leave-active {
+.fade-enter-active, .fade-leave-active {
   transition: opacity 0.5s;
 }
-.fade-enter,
-.fade-leave-to {
+.fade-enter, .fade-leave-to {
   opacity: 0;
 }
 .main-content {
