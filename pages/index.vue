@@ -4,8 +4,15 @@
       <div
         class="grid xl:grid-cols-6 lg:grid-cols-5 md:grid-cols-4 sm:grid-cols-3 grid-cols-2 gap-4"
       >
-        <div v-if="filteredProducts" v-for="product in filteredProducts" :key="product.id">
-          <ProductComponent :product="product" />
+        <div
+          v-if="filteredProducts"
+          v-for="product in filteredProducts"
+          :key="product.id"
+          class="transition-all duration-500 ease-in-out transform hover:scale-105 group rounded-md overflow-hidden"
+        >
+          <div class="transition-all duration-500 ease-in-out group-hover:saturate-150 group-hover:shadow-lg group-hover:bg-white group-hover:-translate-y-1 rounded-md">
+            <ProductComponent :product="product" />
+          </div>
         </div>
       </div>
     </div>
