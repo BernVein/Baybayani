@@ -50,8 +50,8 @@ export default {
               widgetID: "ce919709-5388-4331-a9c4-64c5ced133f5",  // Replace with your Widget ID
               target: "#cometchat",   // Target div for embedding the widget
               roundedCorners: "true",
-              height: "500px",
-              width: "800px",
+              height: `100%`, // Use calculated height
+              width: `100%`,
               defaultID: "baybayaniadmin", // Default UID or GUID to show
               defaultType: "user",          // "user" for one-on-one chat, "group" for group chat
             });
