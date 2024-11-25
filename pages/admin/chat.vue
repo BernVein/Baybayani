@@ -5,36 +5,16 @@
 
     <!-- Admin Layout -->
     <AdminLayout class="admin-layout">
-      <div
-        class="main-content flex-1 flex flex-col items-center justify-center"
-      >
-        <!-- Centered Button -->
-        <button
-          :class="{
-            'bg-red-500 hover:bg-red-600 text-white': isDashboardOpen,
-            'bg-green-500 hover:bg-green-600 text-white': !isDashboardOpen,
-          }"
-          class="px-6 py-3 rounded-lg font-semibold text-xl"
-          @click="toggleDashboard"
-        >
-          {{ isDashboardOpen ? "Dashboard Opened" : "Open Dashboard" }}
-        </button>
-
-        <!-- Instruction Text -->
-        <p class="mt-4 text-center text-sm text-gray-600">
-          Click "Open Dashboard" if you aren't directed to the chat dashboard
-          directly.
-        </p>
-      </div>
+      <!-- CometChat Embedded Widget -->
+      <div id="cometchat"></div>
     </AdminLayout>
   </div>
 </template>
 
 <script>
-import { ref, onMounted } from "vue";
+import { onMounted } from "vue";
 import SideBarLayout from "~/layouts/SideBarLayout.vue";
 import AdminLayout from "~/layouts/AdminLayout.vue";
-import { useUserStore } from "~/stores/user";
 
 export default {
   name: "ChatPage",
@@ -43,58 +23,48 @@ export default {
     AdminLayout,
   },
   setup() {
-    const userStore = useUserStore();
-
-    userStore.isAdmin();
-
-    const user = useSupabaseUser();
-    const route = useRoute();
-
-    watchEffect(() => {
-      if (
-        route.fullPath == "/admin/chat" &&
-        (!user.value || userStore.isAdmin === false)
-      ) {
-        navigateTo("/login");
-      }
-    });
-
-    const isDashboardOpen = ref(false);
-    let dashboardWindow = null;
-
-    const toggleDashboard = () => {
-      if (isDashboardOpen.value && dashboardWindow && !dashboardWindow.closed) {
-        // Focus on the already open tab
-        dashboardWindow.focus();
-      } else {
-        // Open a new tab and store the window reference
-        dashboardWindow = window.open(
-          "https://dashboard.tawk.to/#/chat",
-          "_blank"
-        );
-        if (dashboardWindow) {
-          isDashboardOpen.value = true;
-
-          // Track if the window gets closed
-          const checkClosed = setInterval(() => {
-            if (dashboardWindow.closed) {
-              isDashboardOpen.value = false;
-              clearInterval(checkClosed);
-            }
-          }, 500);
-        }
-      }
-    };
-
     onMounted(() => {
-      // Automatically open the dashboard tab when the page loads
-      toggleDashboard();
-    });
+      // Load the CometChat Widget script dynamically
+      const script = document.createElement("script");
+      script.src = "https://widget-js.cometchat.io/v3/cometchatwidget.js";
+      script.defer = true;
 
-    return {
-      toggleDashboard,
-      isDashboardOpen,
-    };
+
+      script.onload = () => {
+        // Initialize the CometChat widget after the script is loaded
+        CometChatWidget.init({
+          appID: "267505e7582e8c70",       // Replace with your App ID
+          appRegion: "us", // Replace with your App Region
+          authKey: "aab766213fba5c11e11ede09f1f0d0d0735dd6f9",     // Replace with your Auth Key
+        }).then(() => {
+          console.log("Initialization completed successfully");
+
+          // Log in a user
+          CometChatWidget.login({
+            uid: "baybayaniadmin", // Replace with the user's UID
+          }).then(() => {
+            console.log("User login successful");
+
+            // Launch the widget
+            CometChatWidget.launch({
+              widgetID: "ce919709-5388-4331-a9c4-64c5ced133f5",  // Replace with your Widget ID
+              target: "#cometchat",   // Target div for embedding the widget
+              roundedCorners: "true",
+              height: "500px",
+              width: "800px",
+              defaultID: "baybayaniadmin", // Default UID or GUID to show
+              defaultType: "user",          // "user" for one-on-one chat, "group" for group chat
+            });
+          }).catch((error) => {
+            console.error("User login failed:", error);
+          });
+        }).catch((error) => {
+          console.error("Initialization failed:", error);
+        });
+      };
+
+      document.body.appendChild(script);
+    });
   },
 };
 </script>
@@ -109,11 +79,20 @@ export default {
   flex: 1;
 }
 
-.main-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
+#cometchat {
+  position: fixed;
+  bottom: 0; /* Ensures the widget is pinned to the bottom of the viewport */
+  left: 300px; /* Aligns the widget to the left edge */
+  right: 0; /* Stretches the widget to the right edge */
+  border: none; /* Optional: Remove border for a cleaner look */
+  border-radius: 0; /* No rounded corners for a flat bottom look */
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1); /* Shadow above the widget */
+  width: 100%; /* Full-width widget */
+  height: 500px; /* Adjust height to your preference */
+  z-index: 1000; /* Ensure it stays above other elements */
+  background-color: #fff; /* Ensure it blends with the design */
+  overflow: hidden; /* Prevents any overflow */
 }
+
+
 </style>
