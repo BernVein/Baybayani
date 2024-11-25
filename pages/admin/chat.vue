@@ -81,18 +81,19 @@ export default {
 
 #cometchat {
   position: fixed;
-  bottom: 0; /* Ensures the widget is pinned to the bottom of the viewport */
-  left: 300px; /* Aligns the widget to the left edge */
-  right: 0; /* Stretches the widget to the right edge */
-  border: none; /* Optional: Remove border for a cleaner look */
-  border-radius: 0; /* No rounded corners for a flat bottom look */
+  bottom: 0; /* Pins the widget to the bottom of the viewport */
+  left: 300px; /* Starts the widget next to the sidebar (adjust width of sidebar if needed) */
+  border: 1px solid #ccc;
+  border-radius: 8px 8px 0 0; /* Rounded top corners only */
   box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1); /* Shadow above the widget */
-  width: 100%; /* Full-width widget */
-  height: 500px; /* Adjust height to your preference */
-  z-index: 1000; /* Ensure it stays above other elements */
-  background-color: #fff; /* Ensure it blends with the design */
-  overflow: hidden; /* Prevents any overflow */
+  width: calc(100% - 300px); /* Full width minus the sidebar */
+  height: calc(100vh - 100px); /* Height respects the navbar (70px is navbar height) */
+  background-color: #fff; /* Clean white background */
+  z-index: 1000; /* Keep it above other elements */
+  overflow: hidden; /* Prevent overflow issues */
 }
+
+
 
 
 </style>
