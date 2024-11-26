@@ -17,5 +17,13 @@ export default defineNuxtPlugin((nuxtApp) => {
     },
   });
   
+  supabase.auth.getSession().then(({ data, error }) => {
+    if (error) {
+      console.error('Error fetching session:', error);
+    } else {
+      console.log('Session data:', data.session);
+    }
+  });
+  
   nuxtApp.provide('supabase', supabase);
 });
