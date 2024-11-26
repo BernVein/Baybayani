@@ -295,6 +295,8 @@ export default {
           price: parseInt(product.value.price, 10),
           hidden: false,
         });
+        closeModal();
+        await fetchProducts();
 
         if (
           response.status === 201 &&
@@ -302,7 +304,6 @@ export default {
         ) {
           showNotification("Product successfully added!", "success");
           products.value.push(response.data.body.product);
-          closeModal();
         } else {
           console.error(
             `Error adding product: ${response.data.body.message || "Unexpected error"
