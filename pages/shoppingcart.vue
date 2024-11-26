@@ -78,7 +78,6 @@
 import AdminLayout from "~/layouts/AdminLayout.vue";
 import { useUserStore } from "~/stores/user";
 import { ref, computed, watchEffect } from "vue";
-import { useSupabaseUser } from "@nuxtjs/supabase"; // Ensure correct import
 
 const userStore = useUserStore();
 const user = useSupabaseUser();
