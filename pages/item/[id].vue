@@ -1,27 +1,20 @@
 <template>
   <AdminLayout>
-    <Loading v-if="userStore.isLoading" />
+    <!--   <Loading v-if="userStore.isLoading" />    -->
+
     <div id="ItemPage" class="mt-4 max-w-[1200px] mx-auto px-2">
       <div class="flex gap-10 justify-between mx-auto w-full">
         <!-- Left Section: Images -->
         <div class="w-[40%]">
           <div class="flex flex-col">
-            <img
-              v-if="currentImage"
+            <img v-if="currentImage"
               class="rounded-lg object-cover w-full h-[400px] transition-transform duration-500 ease-in-out hover:scale-105 hover:shadow-2xl"
-              :src="currentImage"
-              alt="Product Image"
-            />
+              :src="currentImage" alt="Product Image" />
             <div class="flex mt-4 gap-4">
               <!-- Placeholder for additional images -->
-              <img
-                v-for="(image, index) in images"
-                :key="index"
-                :src="image"
+              <img v-for="(image, index) in images" :key="index" :src="image"
                 class="h-20 w-20 object-cover rounded-lg border cursor-pointer transition-transform duration-300 ease-in-out hover:scale-110 hover:border-green-500"
-                @click="currentImage = image"
-                alt="Thumbnail"
-              />
+                @click="currentImage = image" alt="Thumbnail" />
             </div>
           </div>
         </div>
@@ -30,12 +23,14 @@
         <div class="w-[50%] bg-white p-6 rounded-lg shadow-md transition-all duration-500 ease-in-out hover:shadow-lg">
           <div v-if="product && product.data">
             <!-- Product Title -->
-            <h1 class="text-4xl font-semibold text-gray-800 transition-colors duration-300 ease-in-out hover:text-green-600">
+            <h1
+              class="text-4xl font-semibold text-gray-800 transition-colors duration-300 ease-in-out hover:text-green-600">
               {{ product.data.title }}
             </h1>
 
             <!-- Product Price -->
-            <div class="text-3xl font-bold p-2 text-red-500 transition-colors duration-300 ease-in-out hover:text-red-600">
+            <div
+              class="text-3xl font-bold p-2 text-red-500 transition-colors duration-300 ease-in-out hover:text-red-600">
               ₱{{ product.data.price }} / kg
             </div>
 
@@ -47,17 +42,13 @@
 
             <!-- Buttons -->
             <div class="flex gap-4 mt-8">
-              <button
-                @click="addToCart"
-                :disabled="isInCart"
-                class="px-6 py-3 rounded-lg text-white text-lg font-semibold bg-green-600 hover:bg-green-700 transition-transform duration-300 ease-in-out hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
+              <button @click="addToCart" :disabled="isInCart"
+                class="px-6 py-3 rounded-lg text-white text-lg font-semibold bg-green-600 hover:bg-green-700 transition-transform duration-300 ease-in-out hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed">
                 <span v-if="isInCart">Added to Cart</span>
                 <span v-else>Add to Cart</span>
               </button>
               <button
-                class="px-6 py-3 rounded-lg text-green-600 border border-green-600 text-lg font-semibold hover:bg-green-50 transition-transform duration-300 ease-in-out hover:scale-105"
-              >
+                class="px-6 py-3 rounded-lg text-green-600 border border-green-600 text-lg font-semibold hover:bg-green-50 transition-transform duration-300 ease-in-out hover:scale-105">
                 Chat Seller
               </button>
             </div>
@@ -75,6 +66,8 @@ import { ref, computed, onBeforeMount, watchEffect } from "vue";
 
 const userStore = useUserStore();
 const route = useRoute();
+
+
 
 let product = ref(null);
 let currentImage = ref(null);

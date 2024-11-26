@@ -11,27 +11,19 @@
 
         <!-- Order Summary Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div
-            class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-red-600"
-          >
+          <div class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-red-600">
             <p class="text-lg font-medium">Total Orders</p>
             <p class="text-4xl font-bold">{{ totalOrders }}</p>
           </div>
-          <div
-            class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-green-600"
-          >
+          <div class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-green-600">
             <p class="text-lg font-medium">Pending Orders</p>
             <p class="text-4xl font-bold">{{ pendingOrders }}</p>
           </div>
-          <div
-            class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-blue-600"
-          >
+          <div class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-blue-600">
             <p class="text-lg font-medium">Cancelled Orders</p>
             <p class="text-4xl font-bold">{{ cancelledOrders }}</p>
           </div>
-          <div
-            class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-yellow-600"
-          >
+          <div class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-yellow-600">
             <p class="text-lg font-medium">Order Success Rate</p>
             <p class="text-4xl font-bold">{{ orderSuccessRate }}%</p>
           </div>
@@ -43,41 +35,24 @@
           <div class="flex justify-between items-center mb-4 relative">
             <!-- Search Input with Icon -->
             <div class="relative w-[350px]">
-              <input
-                v-model="searchQuery"
-                @keydown.enter="searchOrders"
-                type="text"
-                placeholder="Search for an order"
-                class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
-              />
-              <Icon
-                name="ph:magnifying-glass"
-                size="20"
-                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-              />
+              <input v-model="searchQuery" @keydown.enter="searchOrders" type="text" placeholder="Search for an order"
+                class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600" />
+              <Icon name="ph:magnifying-glass" size="20"
+                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             </div>
 
             <!-- Filter Button with Dropdown -->
             <div class="relative">
-              <button
-                @click="toggleFilter"
-                class="px-4 py-2 border border-gray-400 text-gray-600 rounded-md hover:bg-gray-100 flex items-center space-x-2"
-              >
+              <button @click="toggleFilter"
+                class="px-4 py-2 border border-gray-400 text-gray-600 rounded-md hover:bg-gray-100 flex items-center space-x-2">
                 <Icon name="ph:sliders" size="20" />
                 <span>Filter</span>
               </button>
               <!-- Filter Dropdown -->
-              <div
-                v-if="isFilterVisible"
-                class="absolute top-full mt-2 right-0 bg-white border border-gray-300 rounded-md shadow-md p-4 w-48"
-              >
-                <label class="block mb-2 font-medium text-gray-700"
-                  >Filter by Status:</label
-                >
-                <select
-                  v-model="filterStatus"
-                  class="w-full p-2 border border-gray-300 rounded-md"
-                >
+              <div v-if="isFilterVisible"
+                class="absolute top-full mt-2 right-0 bg-white border border-gray-300 rounded-md shadow-md p-4 w-48">
+                <label class="block mb-2 font-medium text-gray-700">Filter by Status:</label>
+                <select v-model="filterStatus" class="w-full p-2 border border-gray-300 rounded-md">
                   <option value="">All</option>
                   <option value="In Progress">In Progress</option>
                   <option value="Completed">Completed</option>
@@ -88,9 +63,7 @@
           </div>
 
           <!-- Orders Table -->
-          <div
-            class="overflow-x-auto bg-white border border-gray-300 rounded-md shadow-sm"
-          >
+          <div class="overflow-x-auto bg-white border border-gray-300 rounded-md shadow-sm">
             <table class="w-full table-auto">
               <thead class="bg-gray-100">
                 <tr>
@@ -124,21 +97,13 @@
                 </tr>
               </thead>
               <tbody>
-                <tr
-                  v-for="order in filteredOrders"
-                  :key="order.id"
-                  class="hover:bg-gray-50"
-                >
+                <tr v-for="order in filteredOrders" :key="order.id" class="hover:bg-gray-50">
                   <td class="py-4 px-4 border-b">{{ order.id }}</td>
                   <td class="py-4 px-4 border-b">{{ order.date }}</td>
                   <td class="py-4 px-4 border-b">{{ order.customerName }}</td>
                   <td class="py-4 px-4 border-b">{{ order.phone }}</td>
                   <td class="py-4 px-4 border-b">
-                    <img
-                      :src="order.productImage"
-                      alt="Product Image"
-                      class="w-10 h-10 rounded-full object-cover"
-                    />
+                    <img :src="order.productImage" alt="Product Image" class="w-10 h-10 rounded-full object-cover" />
                   </td>
                   <td class="py-4 px-4 border-b">{{ order.quantity }}kg</td>
                   <td class="py-4 px-4 border-b">
@@ -148,15 +113,11 @@
                     &#8369;{{ order.total.toFixed(2) }}
                   </td>
                   <td class="py-4 px-4 border-b text-center">
-                    <select
-                      v-model="order.status"
-                      class="px-3 py-1 rounded-full text-white"
-                      :class="{
-                        'bg-blue-500': order.status === 'In Progress',
-                        'bg-green-500': order.status === 'Completed',
-                        'bg-red-500': order.status === 'Cancelled',
-                      }"
-                    >
+                    <select v-model="order.status" class="px-3 py-1 rounded-full text-white" :class="{
+                      'bg-blue-500': order.status === 'In Progress',
+                      'bg-green-500': order.status === 'Completed',
+                      'bg-red-500': order.status === 'Cancelled',
+                    }">
                       <option value="In Progress">In Progress</option>
                       <option value="Completed">Completed</option>
                       <option value="Cancelled">Cancelled</option>
@@ -184,14 +145,14 @@ const route = useRoute();
 
 await userStore.isAdmin();
 
-watchEffect(() => {
-  if (
-    route.fullPath == "/admin/orders" &&
-    (!user.value || !userStore.isAdmin)
-  ) {
-    navigateTo("/login");
-  }
-});
+// watchEffect(() => {
+//   if (
+//     route.fullPath == "/admin/orders" &&
+//     (!user.value || !userStore.isAdmin)
+//   ) {
+//     navigateTo("/login");
+//   }
+// });
 
 // Dummy order data
 const orders = ref([
@@ -289,6 +250,7 @@ const toggleFilter = () => {
 .main-content {
   padding-top: 100px;
 }
+
 .button:hover .group-hover\:text-white {
   color: white;
 }

@@ -13,27 +13,19 @@
 
         <!-- Product Stats Boxes -->
         <div class="grid grid-cols-4 gap-6 mb-8">
-          <div
-            class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-red-600"
-          >
+          <div class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-red-600">
             <p class="text-lg font-medium">Total Products</p>
             <p class="text-4xl font-bold">{{ totalProducts }}</p>
           </div>
-          <div
-            class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-green-600"
-          >
+          <div class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-green-600">
             <p class="text-lg font-medium">Displayed</p>
             <p class="text-4xl font-bold">{{ displayedProducts }}</p>
           </div>
-          <div
-            class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-blue-600"
-          >
+          <div class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-blue-600">
             <p class="text-lg font-medium">Hidden</p>
             <p class="text-4xl font-bold">{{ hiddenProducts }}</p>
           </div>
-          <div
-            class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-yellow-600"
-          >
+          <div class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-yellow-600">
             <p class="text-lg font-medium">Available Products</p>
             <p class="text-4xl font-bold">{{ availableProducts }}</p>
           </div>
@@ -43,37 +35,22 @@
         <div class="flex justify-between items-center mb-4">
           <!-- Search Bar -->
           <div class="relative w-[400px]">
-            <input
-              v-model="searchQuery"
-              type="text"
-              placeholder="Search product here..."
-              class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
-            />
-            <Icon
-              name="ph:magnifying-glass"
-              size="24"
-              class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-            />
+            <input v-model="searchQuery" type="text" placeholder="Search product here..."
+              class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600" />
+            <Icon name="ph:magnifying-glass" size="24"
+              class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           </div>
 
           <!-- Add Product Button -->
-          <button
-            @click="openModal"
-            class="px-6 py-3 bg-white border border-green-600 text-green-600 rounded-md hover:bg-green-600 hover:text-white flex items-center space-x-2"
-          >
-            <Icon
-              name="ph:plus-bold"
-              size="20"
-              class="text-green-600 group-hover:text-white"
-            />
+          <button @click="openModal"
+            class="px-6 py-3 bg-white border border-green-600 text-green-600 rounded-md hover:bg-green-600 hover:text-white flex items-center space-x-2">
+            <Icon name="ph:plus-bold" size="20" class="text-green-600 group-hover:text-white" />
             <span class="group-hover:text-white">Add new</span>
           </button>
         </div>
 
         <!-- Products Table -->
-        <div
-          class="overflow-x-auto bg-white border border-gray-300 rounded-md shadow-sm"
-        >
+        <div class="overflow-x-auto bg-white border border-gray-300 rounded-md shadow-sm">
           <table class="w-full table-auto">
             <thead class="bg-gray-100">
               <tr>
@@ -92,56 +69,30 @@
               </tr>
             </thead>
             <tbody>
-              <tr
-                v-for="product in filteredProducts"
-                :key="product.id"
-                class="hover:bg-gray-50"
-              >
+              <tr v-for="product in filteredProducts" :key="product.id" class="hover:bg-gray-50">
                 <td class="py-4 px-4 border-b">{{ product.id }}</td>
                 <td class="py-4 px-4 border-b flex items-center space-x-3">
-                  <img
-                    :src="product.url"
-                    alt="product image"
-                    class="w-10 h-10 rounded-full object-cover"
-                  />
+                  <img :src="product.url" alt="product image" class="w-10 h-10 rounded-full object-cover" />
                   <span>{{ product.title }}</span>
                 </td>
                 <td class="py-4 px-4 border-b">
                   ₱{{ parseFloat(product.price).toFixed(2) }}
                 </td>
-                <td
-                  class="py-4 px-4 border-b text-center flex items-center justify-center space-x-4"
-                >
-                  <button
-                    @click="toggleProductVisibility(product)"
-                    :disabled="isProductInOrderItem(product.id)"
-                    class="text-gray-600 hover:text-blue-600 disabled:opacity-50"
-                  >
-                    <Icon
-                      :name="
-                        product.hidden ? 'ph:eye-slash-bold' : 'ph:eye-bold'
-                      "
-                      size="20"
-                    />
+                <td class="py-4 px-4 border-b text-center flex items-center justify-center space-x-4">
+                  <button @click="toggleProductVisibility(product)" :disabled="isProductInOrderItem(product.id)"
+                    class="text-gray-600 hover:text-blue-600 disabled:opacity-50">
+                    <Icon :name="product.hidden ? 'ph:eye-slash-bold' : 'ph:eye-bold'
+                      " size="20" />
                   </button>
-                  <button
-                    @click="openEditModal(product)"
-                    class="text-gray-600 hover:text-gray-800"
-                  >
+                  <button @click="openEditModal(product)" class="text-gray-600 hover:text-gray-800">
                     <Icon name="ph:pencil-simple-bold" size="20" />
                   </button>
-                  <button
-                    @click="markProductAsDeleted(product.id)"
-                    :disabled="isProductInOrderItem(product.id)"
-                    class="text-gray-600 hover:text-red-800 disabled:opacity-50"
-                  >
+                  <button @click="markProductAsDeleted(product.id)" :disabled="isProductInOrderItem(product.id)"
+                    class="text-gray-600 hover:text-red-800 disabled:opacity-50">
                     <Icon name="ph:trash-bold" size="20" />
                   </button>
-                  <span
-                    v-if="isProductInOrderItem(product.id)"
-                    class="text-red-600 text-sm"
-                    >Cannot delete, product exists in cart items.</span
-                  >
+                  <span v-if="isProductInOrderItem(product.id)" class="text-red-600 text-sm">Cannot delete, product
+                    exists in cart items.</span>
                 </td>
               </tr>
             </tbody>
@@ -151,10 +102,7 @@
     </AdminLayout>
 
     <!-- Add/Edit Product Modal -->
-    <div
-      v-if="isModalVisible"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-    >
+    <div v-if="isModalVisible" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white w-full max-w-[600px] p-6 rounded-md shadow-lg">
         <!-- Modal Header -->
         <div class="flex justify-between items-center mb-6">
@@ -170,70 +118,33 @@
         <form @submit.prevent="editMode ? updateProduct() : addProduct()">
           <div class="space-y-4">
             <div>
-              <label for="title" class="block text-sm font-medium text-gray-700"
-                >Title</label
-              >
-              <input
-                id="title"
-                type="text"
-                v-model="product.title"
-                class="w-full mt-1 p-2 border border-gray-300 rounded-md"
-                placeholder="Enter product title"
-                required
-              />
+              <label for="title" class="block text-sm font-medium text-gray-700">Title</label>
+              <input id="title" type="text" v-model="product.title"
+                class="w-full mt-1 p-2 border border-gray-300 rounded-md" placeholder="Enter product title" required />
             </div>
             <div>
-              <label
-                for="description"
-                class="block text-sm font-medium text-gray-700"
-                >Description</label
-              >
-              <textarea
-                id="description"
-                v-model="product.description"
-                class="w-full mt-1 p-2 border border-gray-300 rounded-md"
-                placeholder="Enter product description"
-                required
-              ></textarea>
+              <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+              <textarea id="description" v-model="product.description"
+                class="w-full mt-1 p-2 border border-gray-300 rounded-md" placeholder="Enter product description"
+                required></textarea>
             </div>
             <div>
-              <label for="price" class="block text-sm font-medium text-gray-700"
-                >Price (PHP)</label
-              >
-              <input
-                id="price"
-                type="number"
-                v-model="product.price"
-                class="w-full mt-1 p-2 border border-gray-300 rounded-md"
-                placeholder="Enter product price (e.g., 100)"
-                required
-              />
+              <label for="price" class="block text-sm font-medium text-gray-700">Price (PHP)</label>
+              <input id="price" type="number" v-model="product.price"
+                class="w-full mt-1 p-2 border border-gray-300 rounded-md" placeholder="Enter product price (e.g., 100)"
+                required />
             </div>
             <div>
-              <label for="url" class="block text-sm font-medium text-gray-700"
-                >Image URL</label
-              >
-              <input
-                id="url"
-                type="text"
-                v-model="product.url"
-                class="w-full mt-1 p-2 border border-gray-300 rounded-md"
-                placeholder="Enter image URL"
-                required
-              />
+              <label for="url" class="block text-sm font-medium text-gray-700">Image URL</label>
+              <input id="url" type="text" v-model="product.url"
+                class="w-full mt-1 p-2 border border-gray-300 rounded-md" placeholder="Enter image URL" required />
             </div>
             <div class="flex justify-end space-x-4">
-              <button
-                type="button"
-                @click="closeModal"
-                class="px-4 py-2 border border-gray-300 rounded-md text-gray-500 hover:bg-gray-100"
-              >
+              <button type="button" @click="closeModal"
+                class="px-4 py-2 border border-gray-300 rounded-md text-gray-500 hover:bg-gray-100">
                 Cancel
               </button>
-              <button
-                type="submit"
-                class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
-              >
+              <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
                 {{ editMode ? "Update Product" : "Add Product" }}
               </button>
             </div>
@@ -244,15 +155,12 @@
 
     <!-- Success or Error Notification -->
     <transition name="fade">
-      <div
-        v-if="notification.show"
-        :class="[
-          'fixed top-4 left-1/2 transform -translate-x-1/2 p-4 rounded-md shadow-lg',
-          notification.type === 'success'
-            ? 'bg-green-500 text-white'
-            : 'bg-red-500 text-white',
-        ]"
-      >
+      <div v-if="notification.show" :class="[
+        'fixed top-4 left-1/2 transform -translate-x-1/2 p-4 rounded-md shadow-lg',
+        notification.type === 'success'
+          ? 'bg-green-500 text-white'
+          : 'bg-red-500 text-white',
+      ]">
         {{ notification.message }}
       </div>
     </transition>
@@ -280,14 +188,14 @@ export default {
     const user = useSupabaseUser();
     const route = useRoute();
 
-    watchEffect(() => {
-      if (
-        route.fullPath == "/admin/products" &&
-        (!user.value || userStore.isAdmin === false)
-      ) {
-        navigateTo("/login");
-      }
-    });
+    // watchEffect(() => {
+    //   if (
+    //     route.fullPath == "/admin/products" &&
+    //     (!user.value || userStore.isAdmin === false)
+    //   ) {
+    //     navigateTo("/login");
+    //   }
+    // });
 
     const config = useRuntimeConfig();
     const apiUrl =
@@ -397,13 +305,11 @@ export default {
           closeModal();
         } else {
           console.error(
-            `Error adding product: ${
-              response.data.body.message || "Unexpected error"
+            `Error adding product: ${response.data.body.message || "Unexpected error"
             }`
           );
           showNotification(
-            `Error adding product: ${
-              response.data.body.message || "Unexpected error"
+            `Error adding product: ${response.data.body.message || "Unexpected error"
             }`,
             "error"
           );
@@ -577,10 +483,12 @@ export default {
 .fade-leave-active {
   transition: opacity 0.5s;
 }
+
 .fade-enter,
 .fade-leave-to {
   opacity: 0;
 }
+
 .main-content {
   padding-top: 100px;
 }

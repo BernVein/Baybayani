@@ -1,19 +1,12 @@
 <template>
   <AdminLayout>
     <div id="IndexPage" class="max-w-[1200px] mx-auto px-2">
-      <div
-        class="grid xl:grid-cols-6 lg:grid-cols-5 md:grid-cols-4 sm:grid-cols-3 grid-cols-2 gap-4"
-      >
-        <div
-          v-if="filteredProducts"
-          v-for="product in filteredProducts"
-          :key="product.id"
+      <div class="grid xl:grid-cols-6 lg:grid-cols-5 md:grid-cols-4 sm:grid-cols-3 grid-cols-2 gap-4">
+        <div v-if="filteredProducts" v-for="product in filteredProducts" :key="product.id"
           class="transition-all duration-500 ease-in-out transform hover:scale-105 group rounded-md overflow-hidden"
-          @click="handleProductClick(product)"
-        >
+          @click="handleProductClick(product)">
           <div
-            class="transition-all duration-500 ease-in-out group-hover:saturate-150 group-hover:shadow-lg group-hover:bg-white group-hover:-translate-y-1 rounded-md"
-          >
+            class="transition-all duration-500 ease-in-out group-hover:saturate-150 group-hover:shadow-lg group-hover:bg-white group-hover:-translate-y-1 rounded-md">
             <ProductComponent :product="product" />
           </div>
         </div>
@@ -34,6 +27,9 @@ const userStore = useUserStore();
 const user = useSupabaseUser();
 const route = useRoute();
 const router = useRouter();
+
+
+
 
 console.log("UserStore as JSON:", JSON.stringify(userStore.$state, null, 2));
 console.log(userStore.profile?.name);
@@ -65,11 +61,13 @@ const filteredProducts = computed(() => {
 
 // CometChat Docked Widget Integration
 onMounted(() => {
+  //userStore.fetchCartItems();
+
   // Extract and format the user's name to remove spaces
   const defaultUID = userStore.profile?.name
-  ? userStore.profile.name.replace(/\s+/g, "").toLowerCase() // Remove spaces and convert to lowercase
-  : "defaultuid"; // Fallback if the name is unavailable
-  
+    ? userStore.profile.name.replace(/\s+/g, "").toLowerCase() // Remove spaces and convert to lowercase
+    : "defaultuid"; // Fallback if the name is unavailable
+
 
   console.log("Default UID:", defaultUID);
 
