@@ -9,7 +9,7 @@
     <AdminLayout class="admin-layout">
       <div class="main-content flex-1 overflow-y-auto p-6">
         <!-- Title -->
-        <h1 class="text-3xl font-semibold mb-8">Farmer Dashboard</h1>
+        <h1 class="text-3xl font-semibold mb-8">Dashboard</h1>
 
         <!-- Dashboard Summary Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
