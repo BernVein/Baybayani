@@ -82,6 +82,10 @@ import { ref, computed } from "vue";
 const userStore = useUserStore();
 const user = useSupabaseUser();
 
+if (!user.value) {
+  navigateTo("/auth");
+}
+
 let selectedArray = ref([]);
 
 // Filter out products that are hidden or deleted
