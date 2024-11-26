@@ -12,33 +12,25 @@
         <!-- User Stats Boxes -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <!-- Total Users -->
-          <div
-            class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-red-600"
-          >
+          <div class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-red-600">
             <p class="text-lg font-medium">Total Users</p>
             <p class="text-4xl font-bold">{{ totalUsers }}</p>
           </div>
 
           <!-- Farmers -->
-          <div
-            class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-green-600"
-          >
+          <div class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-green-600">
             <p class="text-lg font-medium">Farmers</p>
-            <p class="text-4xl font-bold">{{ activeUsers }}</p>
+            <p class="text-4xl font-bold">{{ farmers }}</p>
           </div>
 
           <!-- Buyers -->
-          <div
-            class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-blue-600"
-          >
+          <div class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-blue-600">
             <p class="text-lg font-medium">Buyers</p>
             <p class="text-4xl font-bold">{{ buyers }}</p>
           </div>
 
           <!-- Suspended Users -->
-          <div
-            class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-yellow-600"
-          >
+          <div class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-yellow-600">
             <p class="text-lg font-medium">Suspended Users</p>
             <p class="text-4xl font-bold">{{ suspendedUsers }}</p>
           </div>
@@ -67,68 +59,41 @@
             @click="openRegisterModal"
             class="px-12 py-3 font-semibold border border-green-600 text-green-600 rounded-md hover:bg-green-600 hover:text-white flex items-center space-x-3 group"
           >
-            <!-- Icon -->
             <Icon
               name="ph:plus-bold"
               size="18"
               class="text-green-600 group-hover:text-white"
             />
-            <!-- Text -->
             <span class="group-hover:text-white">Add User</span>
           </button>
         </div>
 
         <!-- User Table -->
-        <div
-          class="overflow-x-auto bg-white border border-gray-300 rounded-md shadow-sm"
-        >
+        <div class="overflow-x-auto bg-white border border-gray-300 rounded-md shadow-sm">
           <table class="w-full table-auto">
             <thead class="bg-gray-100">
               <tr>
-                <th class="py-3 px-4 text-left font-semibold text-gray-700">
-                  Name
-                </th>
-                <th class="py-3 px-4 text-left font-semibold text-gray-700">
-                  Contact Number
-                </th>
-                <th class="py-3 px-4 text-left font-semibold text-gray-700">
-                  Email
-                </th>
-                <th class="py-3 px-4 text-left font-semibold text-gray-700">
-                  Role
-                </th>
-                <th class="py-3 px-4 text-left font-semibold text-gray-700">
-                  Status
-                </th>
-                <th class="py-3 px-4 text-center font-semibold text-gray-700">
-                  Actions
-                </th>
+                <th class="py-3 px-4 text-left font-semibold text-gray-700">Name</th>
+                <th class="py-3 px-4 text-left font-semibold text-gray-700">Contact Number</th>
+                <th class="py-3 px-4 text-left font-semibold text-gray-700">Email</th>
+                <th class="py-3 px-4 text-left font-semibold text-gray-700">Role</th>
+                <th class="py-3 px-4 text-center font-semibold text-gray-700">Actions</th>
               </tr>
             </thead>
             <tbody>
-              <tr
-                v-for="user in filteredUsers"
-                :key="user.id"
-                class="hover:bg-gray-50"
-              >
-                <td class="py-4 px-4 border-b text-left truncate">
-                  {{ user.name }}
-                </td>
-                <td class="py-4 px-4 border-b text-left truncate">
-                  {{ user.contactNumber }}
-                </td>
-                <td class="py-4 px-4 border-b text-left truncate">
-                  {{ user.email }}
-                </td>
+              <!-- Loading Spinner -->
+              <tr v-if="loading" class="text-center">
+                <td colspan="5" class="py-4">Loading users...</td>
+              </tr>
+
+              <!-- Users -->
+              <tr v-for="user in filteredUsers" :key="user.id" class="hover:bg-gray-50">
+                <td class="py-4 px-4 border-b text-left truncate">{{ user.name }}</td>
+                <td class="py-4 px-4 border-b text-left truncate">{{ user.contactNumber }}</td>
+                <td class="py-4 px-4 border-b text-left truncate">{{ user.email }}</td>
                 <td class="py-4 px-4 border-b text-left">{{ user.role }}</td>
-                <td class="py-4 px-4 border-b text-left">{{ user.status }}</td>
                 <td class="py-4 px-4 border-b text-center">
-                  <button
-                    @click="viewUser(user.id)"
-                    class="text-green-600 hover:underline"
-                  >
-                    View
-                  </button>
+                  <button @click="deleteUser(user.id)" class="text-red-600 hover:underline">Delete</button>
                 </td>
               </tr>
             </tbody>
@@ -142,27 +107,28 @@
       v-if="isRegisterModalVisible"
       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
     >
-      <div
-        class="bg-white w-full max-w-[600px] p-6 rounded-md shadow-lg relative"
-      >
+      <div class="bg-white w-full max-w-[600px] p-6 rounded-md shadow-lg relative">
         <!-- Close Button -->
-        <button
-          @click="closeRegisterModal"
-          class="absolute top-3 right-3 text-gray-500 hover:text-gray-800"
-        >
-          ✕
-        </button>
+        <button @click="closeRegisterModal" class="absolute top-3 right-3 text-gray-500 hover:text-gray-800">✕</button>
 
         <!-- Registration Form -->
         <div>
           <div class="text-center my-6 text-2xl font-bold">Register</div>
 
+          <!-- Error Message -->
+          <div v-if="errorMsg" class="text-red-500 text-center mb-4">
+            {{ errorMsg }}
+          </div>
+
+          <!-- Success Message -->
+          <div v-if="successMsg" class="text-green-500 text-center mb-4">
+            {{ successMsg }}
+          </div>
+
           <form @submit.prevent="register" class="space-y-4">
             <!-- Email -->
             <div>
-              <label for="email" class="block text-sm font-medium text-gray-700"
-                >Email</label
-              >
+              <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
               <input
                 type="email"
                 id="email"
@@ -175,11 +141,7 @@
 
             <!-- Password -->
             <div>
-              <label
-                for="password"
-                class="block text-sm font-medium text-gray-700"
-                >Password</label
-              >
+              <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
               <input
                 type="password"
                 id="password"
@@ -192,9 +154,7 @@
 
             <!-- Name -->
             <div>
-              <label for="name" class="block text-sm font-medium text-gray-700"
-                >Name</label
-              >
+              <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
               <input
                 type="text"
                 id="name"
@@ -207,11 +167,7 @@
 
             <!-- Contact Number -->
             <div>
-              <label
-                for="contact"
-                class="block text-sm font-medium text-gray-700"
-                >Contact Number</label
-              >
+              <label for="contact" class="block text-sm font-medium text-gray-700">Contact Number</label>
               <input
                 type="text"
                 id="contact"
@@ -224,9 +180,7 @@
 
             <!-- Role -->
             <div>
-              <label for="role" class="block text-sm font-medium text-gray-700"
-                >Role</label
-              >
+              <label for="role" class="block text-sm font-medium text-gray-700">Role</label>
               <select
                 id="role"
                 v-model="role"
@@ -257,83 +211,167 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
+import { useNuxtApp } from "#app";
 import AdminLayout from "~/layouts/AdminLayout.vue";
 import SideBarLayout from "~/layouts/SideBarLayout.vue";
-import { useUserStore } from "~/stores/user";
-const userStore = useUserStore();
-const user = useSupabaseUser();
-const route = useRoute();
-await userStore.isAdmin();
-
-watchEffect(() => {
-  if (
-    route.fullPath == "/admin/users" &&
-    (!user.value || userStore.isAdmin === false)
-  ) {
-    navigateTo("/login");
-  }
-});
 
 // Modal Visibility
 const isRegisterModalVisible = ref(false);
+const loading = ref(true); // Loading state
 
-// State
+// State for form inputs
 const email = ref("");
 const password = ref("");
 const name = ref("");
 const contact = ref("");
 const role = ref("");
+const errorMsg = ref(null);
+const successMsg = ref(null);
 
-// Dummy User Data
-const users = ref([
-  {
-    id: 1,
-    name: "John Doe",
-    contactNumber: "123-456-7890",
-    email: "john@example.com",
-    role: "Admin",
-  },
-]);
+// State for users
+const users = ref([]);
 
+// User statistics
+const farmers = ref(0);
+const buyers = ref(0);
+const suspendedUsers = ref(0);
+
+// Fetch users from Prisma API
+const fetchUsers = async () => {
+  console.log("Fetching users...");
+  loading.value = true;
+  
+  try {
+    const response = await fetch("/api/prisma/users");
+    const result = await response.json();
+    
+    if (response.ok && result.success) {
+      console.log("Users fetched successfully:", result.data);
+      users.value = [...result.data]; // Use spread operator to force reactivity update
+      updateStats(); // Update the stats after fetching users
+    } else {
+      console.error("Failed to fetch users:", result.message);
+      errorMsg.value = result.message || "Failed to fetch users.";
+    }
+  } catch (err) {
+    console.error("Unexpected error occurred while fetching users:", err);
+    errorMsg.value = err.message;
+  } finally {
+    loading.value = false;
+  }
+};
+
+// Function to delete a user
+const deleteUser = async (userId) => {
+  if (confirm("Are you sure you want to delete this user?")) {
+    console.log("Deleting user with ID:", userId);
+    
+    try {
+      const response = await fetch(`/api/prisma/users/${userId}`, {
+        method: "DELETE",
+      });
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        console.log("User deleted successfully");
+        fetchUsers(); // Refresh the users list after deleting
+      } else {
+        console.error("Failed to delete user:", result.message);
+        alert("Failed to delete user: " + (result.message || "Unexpected error occurred."));
+      }
+    } catch (err) {
+      console.error("Unexpected error occurred while deleting user:", err);
+      alert("Unexpected error occurred: " + err.message);
+    }
+  }
+};
+
+// Function to update statistics for user roles
+const updateStats = () => {
+  farmers.value = users.value.filter((user) => user.role === "Farmer").length;
+  buyers.value = users.value.filter((user) => user.role === "Buyer").length;
+  suspendedUsers.value = users.value.filter((user) => user.status === "Suspended").length;
+};
+
+// Lifecycle hook to load users when the component is mounted
+onMounted(() => {
+  fetchUsers();
+});
+
+// Computed property to calculate total users
 const totalUsers = computed(() => users.value.length);
-const activeUsers = computed(
-  () => users.value.filter((user) => user.role === "Farmer").length
-);
-const buyers = computed(
-  () => users.value.filter((user) => user.role === "Buyer").length
-);
-const suspendedUsers = computed(
-  () => users.value.filter((user) => user.status === "Suspended").length
-);
 
-// Methods
+// Methods to handle modal visibility
 const openRegisterModal = () => {
   isRegisterModalVisible.value = true;
 };
 
 const closeRegisterModal = () => {
   isRegisterModalVisible.value = false;
+  clearForm();
 };
 
-const register = () => {
-  if (
-    !email.value ||
-    !password.value ||
-    !name.value ||
-    !contact.value ||
-    !role.value
-  ) {
+// Clear form fields
+const clearForm = () => {
+  email.value = "";
+  password.value = "";
+  name.value = "";
+  contact.value = "";
+  role.value = "";
+  errorMsg.value = null;
+  successMsg.value = null;
+};
+
+// Register method using Supabase from plugin
+const register = async () => {
+  if (!email.value || !password.value || !name.value || !contact.value || !role.value) {
     alert("All fields are required.");
     return;
   }
-  console.log("User registered:", {
-    email: email.value,
-    name: name.value,
-    role: role.value,
-  });
-  closeRegisterModal();
+
+  const { $supabase } = useNuxtApp();
+
+  try {
+    const { data, error } = await $supabase.auth.signUp({
+      email: email.value,
+      password: password.value,
+      options: {
+        data: {
+          name: name.value,
+          contactNumber: contact.value,
+          role: role.value,
+        },
+      },
+    });
+
+    if (error) {
+      console.error(`Registration failed: ${error.message}`);
+      errorMsg.value = error.message;
+      return;
+    }
+
+    console.log("Successfully registered!", data);
+    successMsg.value = "Successfully registered!";
+    fetchUsers(); // Fetch updated users after registration
+    closeRegisterModal();
+  } catch (err) {
+    console.error(`An unexpected error occurred: ${err.message}`);
+    errorMsg.value = err.message;
+  }
 };
+
+// Computed property for filtered users
+const filteredUsers = computed(() => {
+  if (!searchQuery.value.trim()) {
+    return users.value;
+  }
+  return users.value.filter(user =>
+    user.name.toLowerCase().includes(searchQuery.value.trim().toLowerCase())
+  );
+});
+
+const searchQuery = ref("");
 </script>
 
 <style scoped>

@@ -16,7 +16,10 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       stripePk: process.env.STRIPE_PK_KEY,
-      apiUrl: process.env.API_URL || 'http://localhost:3000'
+      apiUrl: process.env.API_URL || 'http://localhost:3000',
+      // Add Supabase Variables Here
+      SUPABASE_URL: process.env.SUPABASE_URL,
+      SUPABASE_ANON_KEY: process.env.SUPABASE_KEY,
     },
   },
 
