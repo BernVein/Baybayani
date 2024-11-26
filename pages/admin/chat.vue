@@ -82,12 +82,12 @@ export default {
 #cometchat {
   position: fixed;
   bottom: 0; /* Pins the widget to the bottom of the viewport */
-  left: 300px; /* Starts the widget next to the sidebar (adjust width of sidebar if needed) */
+  left: 260px; /* Starts the widget next to the sidebar (adjust width of sidebar if needed) */
   border: 1px solid #ccc;
-  border-radius: 8px 8px 0 0; /* Rounded top corners only */
+  border-radius: 20px; /* Rounded top corners only */
   box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1); /* Shadow above the widget */
-  width: calc(100% - 300px); /* Full width minus the sidebar */
-  height: calc(100vh - 100px); /* Height respects the navbar (70px is navbar height) */
+  width: calc(100% - 250px); /* Full width minus the sidebar */
+  height: calc(100vh - 95px); /* Height respects the navbar (70px is navbar height) */
   background-color: #fff; /* Clean white background */
   z-index: 1000; /* Keep it above other elements */
   overflow: hidden; /* Prevent overflow issues */
