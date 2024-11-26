@@ -11,7 +11,6 @@
   </div>
 </template>
 
-
 <script>
 import { onMounted } from "vue";
 import SideBarLayout from "~/layouts/SideBarLayout.vue";
