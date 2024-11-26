@@ -85,7 +85,7 @@ const user = useSupabaseUser();
 // Redirect to the login page if the user is not logged in
 watchEffect(() => {
   if (!user.value) {
-    navigateTo("/auth"); // Ensure `navigateTo` is correctly imported or available globally
+    navigateTo("/login"); // Ensure `navigateTo` is correctly imported or available globally
   }
 });
 
