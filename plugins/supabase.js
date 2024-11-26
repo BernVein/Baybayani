@@ -9,7 +9,13 @@ export default defineNuxtPlugin((nuxtApp) => {
     console.error("Supabase URL or Key is missing. Please make sure environment variables are properly set.");
     return;
   }
-
-  const supabase = createClient(supabaseUrl, supabaseAnonKey);
+  
+  const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      persistSession: true, // Save session to localStorage
+      detectSessionInUrl: true, // Handles OAuth redirects
+    },
+  });
+  
   nuxtApp.provide('supabase', supabase);
 });

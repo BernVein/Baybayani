@@ -77,43 +77,52 @@
 <script setup>
 import AdminLayout from "~/layouts/AdminLayout.vue";
 import { useUserStore } from "~/stores/user";
-import { ref, computed } from "vue";
+import { ref, computed, watchEffect } from "vue";
+import { useSupabaseUser } from "@nuxtjs/supabase"; // Ensure correct import
 
 const userStore = useUserStore();
 const user = useSupabaseUser();
 
-if (!user.value) {
-  navigateTo("/auth");
-}
+// Redirect to the login page if the user is not logged in
+watchEffect(() => {
+  if (!user.value) {
+    navigateTo("/auth"); // Ensure `navigateTo` is correctly imported or available globally
+  }
+});
 
 let selectedArray = ref([]);
 
 // Filter out products that are hidden or deleted
 const filteredCartItems = computed(() => {
-  return userStore.cartItems.filter(
-    (item) => !item.product.hidden && !item.product.isDeleted
-  );
+  return userStore.cartItems?.filter(
+    (item) => item.product && !item.product.hidden && !item.product.isDeleted
+  ) || [];
 });
 
+// Compute total items count
 const totalItemsCount = computed(() => {
   return selectedArray.value.reduce((sum, item) => sum + (item.val ? 1 : 0), 0);
 });
 
+// Compute total weight of selected items
 const totalSelectedWeight = computed(() => {
-  return selectedArray.value.reduce((sum, item) => sum + (item.val ? parseFloat(item.quantity) : 0), 0);
-});
-
-const totalPriceComputed = computed(() => {
   return selectedArray.value.reduce(
-    (sum, item) => sum + item.price * item.quantity,
+    (sum, item) => sum + (item.val ? parseFloat(item.quantity) : 0),
     0
   );
 });
 
-const selectedRadioFunc = (e) => {
-  const existingIndex = selectedArray.value.findIndex(
-    (item) => item.id === e.id
+// Compute total price of selected items
+const totalPriceComputed = computed(() => {
+  return selectedArray.value.reduce(
+    (sum, item) => sum + (item.val ? item.price * item.quantity : 0),
+    0
   );
+});
+
+// Handle radio selection for cart items
+const selectedRadioFunc = (e) => {
+  const existingIndex = selectedArray.value.findIndex((item) => item.id === e.id);
 
   if (e.val) {
     if (existingIndex === -1) {
@@ -128,12 +137,14 @@ const selectedRadioFunc = (e) => {
   }
 };
 
+// Handle checkout process
 const goToCheckout = () => {
-  const ids = selectedArray.value.map((item) => item.id);
-
-  if (ids.length === 0 || !filteredCartItems.value.length) {
+  if (selectedArray.value.length === 0 || !filteredCartItems.value.length) {
+    console.warn("No items selected or cart is empty");
     return;
   }
+
+  const ids = selectedArray.value.map((item) => item.id);
 
   userStore.checkout = [];
   const filteredItems = filteredCartItems.value.filter((item) =>
@@ -141,6 +152,8 @@ const goToCheckout = () => {
   );
 
   userStore.checkout.push(...filteredItems);
-  return navigateTo("/checkout");
+
+  navigateTo("/checkout"); // Ensure navigation works correctly
 };
 </script>
+
