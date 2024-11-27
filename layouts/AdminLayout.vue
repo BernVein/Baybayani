@@ -22,7 +22,7 @@
           </div>
         </div>
 
-        <!-- Cart Button with Hover and Color Animation -->
+        <!-- 
         <button @click="handleCartClick" class="flex items-center pt-2">
           <div class="relative md:block hidden transform transition-transform duration-300 ease-in-out hover:scale-105"
             @mouseenter="isCartHover = true" @mouseleave="isCartHover = false">
@@ -36,6 +36,20 @@
             </div>
           </div>
         </button>
+
+        -->
+
+        <NuxtLink to="/shoppingcart" class="flex items-center pt-2">
+          <button class="relative md:block hidden" @mouseenter="isCartHover = true" @mouseleave="isCartHover = false">
+            <span
+              class="absolute flex items-center justify-center -right-[3px] top-0 bg-[#FF4646] h-[17px] min-w-[17px] text-xs text-white px-0.5 rounded-full">
+              {{ userStore.cartItems.length }}
+            </span>
+            <div class="min-w-[40px]">
+              <Icon name="ph:shopping-cart-simple-light" size="33" :color="isCartHover ? '#FF4646' : '0C6539'" />
+            </div>
+          </button>
+        </NuxtLink>
 
         <!-- Profile Menu with Username Below on Hover -->
         <div id="ProfileMenu" class="md:block hidden pt-3 relative group">
@@ -108,11 +122,11 @@ const signOut = async () => {
 };
 
 // Handle cart click
-const handleCartClick = () => {
-  if (!userStore.user) {
-    window.location.href = "/login";
-  } else {
-    window.location.href = "/shoppingcart";
-  }
-};
+// const handleCartClick = () => {
+//   if (!userStore.user) {
+//     window.location.href = "/login";
+//   } else {
+//     window.location.href = "/shoppingcart";
+//   }
+// };
 </script>
