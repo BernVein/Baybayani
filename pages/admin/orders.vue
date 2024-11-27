@@ -97,7 +97,12 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="order in filteredOrders" :key="order.id" class="hover:bg-gray-50">
+                <tr
+                  v-for="order in filteredOrders"
+                  :key="order.id"
+                  class="hover:bg-gray-200 hover:scale-[1.02] transition duration-150 ease-in-out"
+                >
+
                   <td class="py-4 px-4 border-b">{{ order.id }}</td>
                   <td class="py-4 px-4 border-b">{{ order.date }}</td>
                   <td class="py-4 px-4 border-b">{{ order.customerName }}</td>

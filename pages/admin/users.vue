@@ -87,7 +87,12 @@
               </tr>
 
               <!-- Users -->
-              <tr v-for="user in filteredUsers" :key="user.id" class="hover:bg-gray-50">
+              <tr
+                v-for="user in filteredUsers"
+                :key="user.id"
+                class="hover:bg-gray-200 hover:scale-[1.02] transition duration-150 ease-in-out"
+              >
+
                 <td class="py-4 px-4 border-b text-left truncate">{{ user.name }}</td>
                 <td class="py-4 px-4 border-b text-left truncate">{{ user.contactNumber }}</td>
                 <td class="py-4 px-4 border-b text-left truncate">{{ user.email }}</td>

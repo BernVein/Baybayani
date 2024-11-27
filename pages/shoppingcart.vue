@@ -3,9 +3,9 @@
     <div id="ShoppingCartPage" class="mt-4 max-w-[1200px] mx-auto px-2">
       <div v-if="!filteredCartItems.length" class="h-[500px] flex items-center justify-center">
         <div class="pt-20">
-          <img class="mx-auto" width="250" src="/cart-empty.png" />
+          <img class="mx-auto" width="250" src="/baybayani-logo.png" />
 
-          <div class="text-xl text-center mt-4">No items yet?</div>
+          <div class="text-xl text-center mt-4">There is no product in your cart yet.</div>
 
           <!-- If not logged, goto login page -->
           <div v-if="!user" class="flex text-center">

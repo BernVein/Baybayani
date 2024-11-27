@@ -69,7 +69,12 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="product in filteredProducts" :key="product.id" class="hover:bg-gray-50">
+              <tr
+                v-for="product in filteredProducts"
+                :key="product.id"
+                class="hover:bg-gray-200 hover:scale-[1.02] transition duration-150 ease-in-out"
+              >
+
                 <td class="py-4 px-4 border-b">{{ product.id }}</td>
                 <td class="py-4 px-4 border-b flex items-center space-x-3">
                   <img :src="product.url" alt="product image" class="w-10 h-10 rounded-full object-cover" />
