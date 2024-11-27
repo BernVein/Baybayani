@@ -109,7 +109,7 @@ const placeOrder = async () => {
     setTimeout(() => {
       console.log("Redirecting to the success page...");
       navigateTo("/success"); // Redirect to the success page
-    }, 500);
+    }, 100);
     await createOrder();
 
     // Call createOrder to send the order to the backend

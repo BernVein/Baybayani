@@ -2,16 +2,14 @@
   <div id="AuthPage" class="w-full h-[100vh] bg-white">
     <!-- Header with logo -->
     <div
-      class="w-full flex items-center justify-center p-5 border-b border-b-gray-300 shadow-[0px_1px_6px_4px_rgba(0,_0,_0,_0.25)]"
-    >
+      class="w-full flex items-center justify-center p-5 border-b border-b-gray-300 shadow-[0px_1px_6px_4px_rgba(0,_0,_0,_0.25)]">
       <NuxtLink to="/" class="min-w-[170px]" @click.prevent="navigateAndReload">
         <img width="170" src="/baybayani-logo.png" alt="Logo" />
       </NuxtLink>
     </div>
 
     <div
-      class="max-w-[400px] mx-auto px-2 border border-gray-300 rounded-lg pb-32 mt-10 shadow-[15px_15px_0px_1px_rgba(12,_101,_57,_1)]"
-    >
+      class="max-w-[400px] mx-auto px-2 border border-gray-300 rounded-lg pb-32 mt-10 shadow-[15px_15px_0px_1px_rgba(12,_101,_57,_1)]">
       <!-- Page Title -->
       <div class="text-center my-6 text-2xl font-bold">Login</div>
 
@@ -26,52 +24,26 @@
       </div>
 
       <!-- Login form-->
-      <form
-        @submit.prevent="login"
-        class="space-y-5 w-[350px] flex flex-col items-center ml-3"
-      >
+      <form @submit.prevent="login" class="space-y-5 w-[350px] flex flex-col items-center ml-3">
         <div>
-          <label
-            for="email"
-            class="block text-lg pb-2 mt-3 font-medium text-gray-700"
-            >Email</label
-          >
+          <label for="email" class="block text-lg pb-2 mt-3 font-medium text-gray-700">Email</label>
           <!-- Adjusted width of the input -->
-          <input
-            type="email"
-            id="email"
-            v-model="email"
-            @input="resetMessages"
-            class="mt-1 w-[300px] mx-auto p-3 border border-gray-400 rounded-md"
-            placeholder="Enter your email"
-            required
-          />
+          <input type="email" id="email" v-model="email" @input="resetMessages"
+            class="mt-1 w-[300px] mx-auto p-3 border border-gray-400 rounded-md" placeholder="Enter your email"
+            required />
         </div>
 
         <div>
-          <label
-            for="password"
-            class="block text-lg pb-2 font-medium text-gray-700"
-            >Password</label
-          >
+          <label for="password" class="block text-lg pb-2 font-medium text-gray-700">Password</label>
           <!-- Adjusted width of the input -->
-          <input
-            type="password"
-            id="password"
-            v-model="password"
-            @input="resetMessages"
-            class="mt-1 w-[300px] mx-auto p-3 border border-gray-400 rounded-md"
-            placeholder="Enter your password"
-            required
-          />
+          <input type="password" id="password" v-model="password" @input="resetMessages"
+            class="mt-1 w-[300px] mx-auto p-3 border border-gray-400 rounded-md" placeholder="Enter your password"
+            required />
         </div>
 
         <div>
-          <button
-            type="submit"
-            :disabled="loading"
-            class="w-[300px] mt-10 mx-auto py-3 border-2 border-[#0C6539] text-[#0C6539] font-semibold rounded-md hover:bg-[#0C6539] hover:text-[#fafafa] focus:outline-none focus:ring-2 focus:ring-blue-400"
-          >
+          <button type="submit" :disabled="loading"
+            class="w-[300px] mt-10 mx-auto py-3 border-2 border-[#0C6539] text-[#0C6539] font-semibold rounded-md hover:bg-[#0C6539] hover:text-[#fafafa] focus:outline-none focus:ring-2 focus:ring-blue-400">
             <span v-if="loading">Logging in...</span>
             <span v-else>Login</span>
           </button>

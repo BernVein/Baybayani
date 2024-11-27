@@ -1,3 +1,4 @@
+import { navigateTo } from "nuxt/app";
 import { defineStore } from "pinia";
 import { fetchUserProfile } from "~/services/api.js"; // Import the function
 
@@ -72,7 +73,8 @@ export const useUserStore = defineStore("user", {
       this.isMenuOverlay = false;
       client.auth.signOut();
       console.log("LOGOUT SUCESS");
-      window.location.reload();
+      navigateTo("/login");
+      //window.location.reload();
     },
 
     // New action to fetch the cart items
