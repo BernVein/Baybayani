@@ -96,7 +96,7 @@
                 <td class="py-4 px-4 border-b text-left truncate">{{ user.name }}</td>
                 <td class="py-4 px-4 border-b text-left truncate">{{ user.contactNumber }}</td>
                 <td class="py-4 px-4 border-b text-left truncate">{{ user.email }}</td>
-                <td class="py-4 px-4 border-b text-left">{{ user.role }}</td>
+                <td class="py-4 px-4 border-b text-left">{{ (user.role.charAt(0).toUpperCase() + user.role.slice(1).toLowerCase()) }}</td>
                 <td class="py-4 px-4 border-b text-center">
                   <button @click="deleteUser(user.id)" class="text-red-600 hover:underline">Delete</button>
                 </td>
