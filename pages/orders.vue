@@ -121,10 +121,8 @@ const statusClass = (status) => {
       return "bg-yellow-400";
     case "PROCESSING":
       return "bg-blue-400";
-    case "SHIPPED":
+    case "FULFILLED":
       return "bg-green-400";
-    case "DELIVERED":
-      return "bg-gray-400";
     case "CANCELED":
       return "bg-red-400";
     default:

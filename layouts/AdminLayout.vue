@@ -51,6 +51,20 @@
           </button>
         </NuxtLink>
 
+        <NuxtLink to="/orders" class="flex items-center pt-2">
+          <button class="relative md:block hidden" @mouseenter="isOrderHover = true" @mouseleave="isOrderHover = false">
+            <span
+              class="absolute flex items-center justify-center -right-[3px] top-0 bg-[#FF4646] h-[17px] min-w-[17px] text-xs text-white px-0.5 rounded-full">
+              {{ userStore.order.filter(order => order.orderStatus === "PENDING" || order.orderStatus ===
+                "PROCESSING").length }}
+            </span>
+            <div class="min-w-[40px]">
+              <Icon name="material-symbols-light:shopping-bag-outline" size="36 "
+                :color="isOrderHover ? '#FF4646' : '0C6539'" />
+            </div>
+          </button>
+        </NuxtLink>
+
         <!-- Profile Menu with Username Below on Hover -->
         <div id="ProfileMenu" class="md:block hidden pt-3 relative group">
           <ul class="flex items-center justify-end text-sm text-[#333333] font-bold">
@@ -99,8 +113,10 @@ const userStore = useUserStore();
 
 await userStore.fetchUser();
 await userStore.fetchCartItems();
+await userStore.fetchOrders();
 
 const isCartHover = ref(false);
+const isOrderHover = ref(false);
 const isSearching = ref(false);
 const searchItem = ref("");
 const items = ref(null);

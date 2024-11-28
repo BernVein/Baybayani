@@ -10,19 +10,16 @@
               <ul class="text-sm">
                 <li class="flex items-center gap-2">
                   <div>Address:</div>
-                  <div class="font-bold">Baybay City Public Market</div>
+                  <div class="font-semibold">Baybay City Public Market</div>
                 </li>
                 <li class="flex items-center gap-2">
                   <div>Landmark:</div>
-                  <div class="font-bold">Beside Bagsakan</div>
+                  <div class="font-semibold">Beside Bagsakan</div>
                 </li>
-                <li class="flex items-center gap-2">
-                  <div>Map location:</div>
-                  <div class="font-bold">Google Maps Link</div>
-                </li>
+
                 <li class="flex items-center gap-2">
                   <div>Contact:</div>
-                  <div class="font-bold">09123456789</div>
+                  <div class="font-semibold">09123456789</div>
                 </li>
               </ul>
             </div>

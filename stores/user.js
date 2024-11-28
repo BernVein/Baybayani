@@ -12,6 +12,7 @@ export const useUserStore = defineStore("user", {
     deleteProduct: null,
     refreshFlag: 1,
     checkout: [],
+    order: [],
     user: null, // auth info
     profile: null, // profile info
     isAdmin: false,
@@ -70,6 +71,7 @@ export const useUserStore = defineStore("user", {
       this.cartItems = []; // Clear cart items on logout
       this.cart = [];
       this.isAdmin = false;
+      order = [];
       this.isMenuOverlay = false;
       client.auth.signOut();
       console.log("LOGOUT SUCESS");
@@ -79,10 +81,10 @@ export const useUserStore = defineStore("user", {
 
     // New action to fetch the cart items
     async fetchCartItems() {
-      console.log("TRY HERE");
-      console.log(this.refreshFlag);
-      console.log(this.cartItems.length);
-      console.log("TRY HERE2");
+      //console.log("TRY HERE");
+      //console.log(this.refreshFlag);
+      //console.log(this.cartItems.length);
+      //console.log("TRY HERE2");
       if (this.isAdmin === true) return;
 
       //if (this.cartItems.length > 0 && this.refreshFlag === 0) return;
@@ -123,6 +125,47 @@ export const useUserStore = defineStore("user", {
             this.isLoading = false;
             console.warn("No cart items found for this user.");
           }
+        } catch (error) {
+          console.error("Failed to fetch cart:", error);
+          this.isLoading = false;
+        } finally {
+          this.isLoading = false; // Set loading to false after the fetch is done
+        }
+      } else {
+        console.warn("No user ID found, cannot fetch cart items.");
+      }
+      this.isLoading = false;
+    },
+
+    async fetchOrders() {
+      if (this.isAdmin === true) return;
+      console.log("FETCH ORDER RUNNING");
+      this.isLoading = true;
+      let orderResponse = ref(null);
+      const userId = this.user?.id;
+
+      if (!userId) {
+        console.warn("No user ID found, cannot fetch ORDER items.");
+        this.isLoading = false; // Set loading to false if no user ID
+        return;
+      }
+      console.log("Fetching ORDERSSsS for user ID:", userId);
+      //this.refreshFlag = 0;
+
+      if (userId) {
+        try {
+          console.log("THIS IS A ORDER TEST");
+
+          orderResponse.value = await useFetch(
+            `/api/prisma/get-all-orders-by-user/${userId}`
+          );
+          console.log("Done Order");
+
+          if (orderResponse.value.data) {
+            this.order = orderResponse.value.data;
+          }
+          console.log(orderResponse.value.data);
+          console.log("SUCCESS");
         } catch (error) {
           console.error("Failed to fetch cart:", error);
           this.isLoading = false;
