@@ -71,7 +71,7 @@ export const useUserStore = defineStore("user", {
       this.cartItems = []; // Clear cart items on logout
       this.cart = [];
       this.isAdmin = false;
-      order = [];
+      this.order = [];
       this.isMenuOverlay = false;
       client.auth.signOut();
       console.log("LOGOUT SUCESS");
