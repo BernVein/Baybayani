@@ -1,7 +1,5 @@
-import { PrismaClient } from '@prisma/client';
-import { defineEventHandler, readBody } from 'h3';
-
-const prisma = new PrismaClient();
+import prisma from '../../utils/prisma'
+import { defineEventHandler, readBody } from 'h3'
 
 export default defineEventHandler(async (event) => {
   try {
@@ -30,7 +28,6 @@ export default defineEventHandler(async (event) => {
       },
     });
 
-    // Return the same structure as update endpoint
     return {
       success: true,
       body: {

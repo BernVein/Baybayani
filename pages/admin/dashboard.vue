@@ -45,7 +45,7 @@
           </div>
           <div class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-blue-600">
             <p class="text-lg font-medium">Total Revenue</p>
-            <p 
+            <div 
               class="text-4xl font-bold overflow-hidden relative group cursor-help"
               :title="`₱${formatNumber(dashboardSummary.rawTotalRevenue)}`"
             >
@@ -56,11 +56,11 @@
               <div class="tooltip">
                 ₱{{ formatNumber(dashboardSummary.rawTotalRevenue) }}
               </div>
-            </p>
+            </div>
           </div>
           <div class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-yellow-600">
             <p class="text-lg font-medium">Revenue Today</p>
-            <p 
+            <div 
               class="text-4xl font-bold overflow-hidden relative group cursor-help"
               :title="`₱${formatNumber(dashboardSummary.rawTodayRevenue)}`"
             >
@@ -71,7 +71,7 @@
               <div class="tooltip">
                 ₱{{ formatNumber(dashboardSummary.rawTodayRevenue) }}
               </div>
-            </p>
+            </div>
           </div>
         </div>
 

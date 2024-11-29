@@ -1,6 +1,4 @@
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import prisma from '../../../utils/prisma'
 
 export default defineEventHandler(async (event) => {
   try {
@@ -31,17 +29,6 @@ export default defineEventHandler(async (event) => {
           product: updatedProduct,
         }
       };
-    } else {
-      // Fetching all products when no productId is specified
-      const products = await prisma.products.findMany({
-        where: {
-          isDeleted: false,
-        },
-      });
-      return {
-        success: true,
-        body: products,
-      };
     }
   } catch (error) {
     console.error("Error:", error);
@@ -52,7 +39,5 @@ export default defineEventHandler(async (event) => {
         error: error.message,
       }
     };
-  } finally {
-    await prisma.$disconnect();
   }
 });
