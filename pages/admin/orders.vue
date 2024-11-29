@@ -103,11 +103,17 @@
                   class="hover:bg-gray-200 cursor-pointer transition transform duration-200 ease-in-out hover:scale-[1.02]"
                   @click="showOrderProducts(order)"
                 >
-                  <td class="py-4 px-4 border-b">{{ order.id }}</td>
-                  <td class="py-4 px-4 border-b">{{ order.date }}</td>
-                  <td class="py-4 px-4 border-b">{{ order.userName }}</td>
-                  <td class="py-4 px-4 border-b">&#8369;{{ formatCurrency(order.totalPrice) }}</td>
-                  <td class="py-4 px-4 border-b text-center">
+                  <td class="py-4 px-4">
+                    <span v-html="highlightMatch(order.id)"></span>
+                  </td>
+                  <td class="py-4 px-4">
+                    <span v-html="highlightMatch(order.date)"></span>
+                  </td>
+                  <td class="py-4 px-4">
+                    <span v-html="highlightMatch(order.userName)"></span>
+                  </td>
+                  <td class="py-4 px-4">&#8369;{{ formatCurrency(order.totalPrice) }}</td>
+                  <td class="py-4 px-4 text-center">
                     <select
                       v-model="order.orderStatus"
                       @click.stop
@@ -195,8 +201,13 @@
     <div
       v-if="isModalVisible"
       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      @click="closeModal"
     >
-      <div class="bg-white w-1/3 rounded-lg shadow-lg p-6">
+      <div 
+        class="bg-white w-1/2 rounded-lg shadow-lg p-6 transform transition-all duration-300"
+        :class="isModalVisible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'"
+        @click.stop
+      >
         <h2 class="text-2xl font-bold mb-4">
           Orders of {{ selectedOrder.userName }} on {{ selectedOrder.date }}
         </h2>
@@ -207,33 +218,32 @@
               <li
                 v-for="product in selectedOrder.orderItem"
                 :key="product.id"
-                class="flex justify-between items-center py-2 border-b"
+                class="flex justify-between items-center py-2 border-b cursor-pointer hover:bg-gray-50"
+                @click="showProductDetails(product.product)"
               >
                 <div class="flex items-center space-x-4">
-                  <!-- Product Image -->
                   <img
                     :src="product.product.url"
                     alt="Product Image"
                     class="w-10 h-10 rounded-full object-cover"
                   />
-                  <!-- Product Name and Price -->
                   <div>
                     <p class="text-lg font-medium">{{ product.product.title }}</p>
                     <p class="text-sm text-gray-500">Price: &#8369;{{ product.product.price }}</p>
                   </div>
                 </div>
                 <button
-                  @click="deleteProduct(product.id)"
-                  class="text-red-500 hover:text-red-700"
+                  @click.stop="confirmUnavailableProduct(product.id)"
+                  class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
                 >
-                  Unavailable
+                  Mark as Unavailable
                 </button>
               </li>
             </ul>
           </template>
           <template v-else>
             <div class="text-center py-4">
-              <p class="text-lg font-medium text-gray-700">No products available in this order because all the products listed here was unavailable.</p>
+              <p class="text-lg font-medium text-gray-700">An admin has set all the products in this order as unavailable.</p>
             </div>
           </template>
         </div>
@@ -246,11 +256,96 @@
         </button>
       </div>
     </div>
+
+    <!-- Add new Product Details Modal -->
+    <div 
+      v-if="isProductModalVisible" 
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]"
+      @click="closeProductModal"
+    >
+      <div 
+        class="bg-white w-1/3 rounded-lg shadow-lg p-6 transform transition-all duration-300"
+        :class="isProductModalVisible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'"
+        @click.stop
+      >
+        <div class="flex justify-between items-start mb-4">
+          <h2 class="text-2xl font-bold">Product Details</h2>
+          <button 
+            @click="closeProductModal" 
+            class="text-gray-500 hover:text-gray-700"
+          >
+            <Icon name="ph:x-bold" size="24" />
+          </button>
+        </div>
+
+        <div v-if="selectedProduct" class="space-y-4">
+          <img 
+            :src="selectedProduct.url" 
+            :alt="selectedProduct.title"
+            class="w-full h-48 object-cover rounded-lg"
+          />
+          
+          <div class="space-y-2">
+            <h3 class="text-xl font-semibold">{{ selectedProduct.title }}</h3>
+            <p class="text-gray-600">{{ selectedProduct.description }}</p>
+            <p class="text-lg font-medium">Price: &#8369;{{ formatCurrency(selectedProduct.price) }}</p>
+            <div class="flex items-center space-x-2">
+              <span class="text-gray-600">Status:</span>
+              <span 
+                :class="{
+                  'text-green-500': !selectedProduct.hidden,
+                  'text-red-500': selectedProduct.hidden
+                }"
+              >
+                {{ selectedProduct.hidden ? 'Unavailable' : 'Available' }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <button
+          @click="closeProductModal"
+          class="mt-6 bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 w-full"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+
+    <!-- Add new Confirmation Modal -->
+    <div 
+      v-if="isConfirmModalVisible" 
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]"
+      @click="closeConfirmModal"
+    >
+      <div 
+        class="bg-white w-1/3 rounded-lg shadow-lg p-6 transform transition-all duration-300"
+        :class="isConfirmModalVisible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'"
+        @click.stop
+      >
+        <h2 class="text-2xl font-bold mb-4">Confirm Action</h2>
+        <p>Are you sure you want to mark this product as unavailable? This will remove the item from the buyer's order.</p>
+        <div class="flex justify-end space-x-4 mt-6">
+          <button 
+            @click="closeConfirmModal" 
+            class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700"
+          >
+            Cancel
+          </button>
+          <button 
+            @click="deleteProduct(selectedProductId)" 
+            class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
+          >
+            Confirm
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, onMounted, watch, nextTick } from "vue";
 import AdminLayout from "~/layouts/AdminLayout.vue";
 import SideBarLayout from "~/layouts/SideBarLayout.vue";
 import Loading from '~/components/Loading.vue';
@@ -268,6 +363,14 @@ const selectedOrder = ref(null);
 // Add these refs for pagination
 const currentPage = ref(1);
 const itemsPerPage = ref(10);
+
+// Add these refs
+const isProductModalVisible = ref(false);
+const selectedProduct = ref(null);
+
+// Add these refs
+const isConfirmModalVisible = ref(false);
+const selectedProductId = ref(null);
 
 // Fetch orders from the API
 const fetchOrders = async () => {
@@ -480,12 +583,36 @@ const displayedPages = computed(() => {
   return rangeWithDots;
 });
 
-// Watch for filter changes to reset pagination
-watch([searchQuery, filterStatus], () => {
-  currentPage.value = 1;
-});
-
 onMounted(fetchOrders);
+
+const highlightMatch = (text) => {
+  if (!searchQuery.value) return text;
+  
+  const regex = new RegExp(`(${searchQuery.value})`, 'gi');
+  return text.toString().replace(regex, '<span class="bg-yellow-200">$1</span>');
+};
+
+// Add these functions
+const showProductDetails = (product) => {
+  selectedProduct.value = product;
+  isProductModalVisible.value = true;
+};
+
+const closeProductModal = () => {
+  isProductModalVisible.value = false;
+  selectedProduct.value = null;
+};
+
+// Add these functions
+const confirmUnavailableProduct = (productId) => {
+  selectedProductId.value = productId;
+  isConfirmModalVisible.value = true;
+};
+
+const closeConfirmModal = () => {
+  isConfirmModalVisible.value = false;
+  selectedProductId.value = null;
+};
 </script>
 
 <style scoped>
@@ -512,5 +639,61 @@ onMounted(fetchOrders);
 
 .pagination-button.active {
   @apply bg-blue-500 text-white;
+}
+
+/* Add smooth transitions */
+tr {
+  transition: all 0.3s ease-in-out;
+}
+
+/* Override table styles to remove borders */
+td {
+  border-bottom: none !important;
+}
+
+/* Style for highlighted text */
+:deep(.bg-yellow-200) {
+  @apply rounded px-0.5;
+}
+
+/* Add modal animation styles */
+.modal-enter-active,
+.modal-leave-active {
+  transition: all 0.3s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+/* Add backdrop animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.fixed {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.fixed > div {
+  animation: slideIn 0.3s ease-out;
 }
 </style>

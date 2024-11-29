@@ -73,22 +73,19 @@
                 v-for="product in paginatedProducts"
                 :key="product.id"
                 class="hover:bg-gray-200 transition duration-150 ease-in-out"
-                :class="{
-                  'animate-highlight': searchQuery && 
-                    (product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                     product.id.toString().includes(searchQuery))
-                }"
               >
                 <td 
                   class="py-4 px-4 cursor-pointer"
                   @click="showProductDetails(product)"
-                >{{ product.id }}</td>
+                >
+                  <span v-html="highlightMatch(product.id.toString())"></span>
+                </td>
                 <td 
                   class="py-4 px-4 flex items-center space-x-3 cursor-pointer"
                   @click="showProductDetails(product)"
                 >
                   <img :src="product.url" alt="product image" class="w-10 h-10 rounded-full object-cover" />
-                  <span>{{ product.title }}</span>
+                  <span v-html="highlightMatch(product.title)"></span>
                 </td>
                 <td 
                   class="py-4 px-4 cursor-pointer"
@@ -654,19 +651,18 @@ const displayedPages = computed(() => {
   return rangeWithDots;
 });
 
-// Watch for search query changes to reset pagination
+// Add highlight function (after searchQuery ref)
+const highlightMatch = (text) => {
+  if (!searchQuery.value) return text;
+  return text.toString().replace(
+    new RegExp(`(${searchQuery.value})`, 'gi'),
+    '<span class="bg-yellow-200">$1</span>'
+  );
+};
+
+// Remove the animation watch section (around line 659-671)
 watch(searchQuery, () => {
   currentPage.value = 1;
-  
-  // Reset animation by removing and re-adding class
-  nextTick(() => {
-    const rows = document.querySelectorAll('tr');
-    rows.forEach(row => {
-      row.style.animation = 'none';
-      row.offsetHeight; // Trigger reflow
-      row.style.animation = null;
-    });
-  });
 });
 
 onMounted(async () => {
@@ -833,23 +829,20 @@ button:hover .group-hover\:text-white {
   animation: fade-in 0.2s ease-out;
 }
 
-@keyframes highlight {
-  0% {
-    background-color: transparent;
-    transform: scale(1);
+/* Add animation for modal */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
   }
-  50% {
-    background-color: rgba(34, 197, 94, 0.1); /* green-500 with low opacity */
-    transform: scale(1.02);
-  }
-  100% {
-    background-color: transparent;
-    transform: scale(1);
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-.animate-highlight {
-  animation: highlight 1s ease-in-out;
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out;
 }
 
 /* Optional: Add transition for smoother animations */
