@@ -49,7 +49,7 @@
               <input
                 v-model="searchQuery"
                 type="text"
-                placeholder="Search for an order"
+                placeholder="Search: Order ID / Date / Customer Name"
                 class="w-full p-3 border border-gray-300 rounded-md"
               />
               <Icon
