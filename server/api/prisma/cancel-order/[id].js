@@ -1,43 +1,28 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, OrderStatus } from "@prisma/client"; // Import enum from Prisma
 const prisma = new PrismaClient();
 
 export default defineEventHandler(async (event) => {
-  const userId = event.context.params.id;
-  console.log("Printing user ID");
-  console.log(userId);
+  const orderID = event.context.params.id; // Extract the orderID from the event params
+  console.log("Printing order ID");
+  console.log(orderID);
 
-  let orders = await prisma.orders.findMany({
-    where: {
-      userId: userId,
-      orderStatus: "PENDING",
-    },
-    orderBy: { id: "desc" },
-    include: {
-      orderItem: {
-        include: {
-          product: true,
-        },
-      },
-    },
-  });
-
-  if (orders.length > 0) {
-    // Cancel all the "PENDING" orders (you can also target specific orders by ID)
-    await prisma.orders.updateMany({
+  try {
+    // Update the order status to CANCELED
+    const updatedOrder = await prisma.orders.updateMany({
       where: {
-        id: {
-          in: orders.map((order) => order.id), // Target all pending orders
-        },
+        id: orderID, // Update the order by orderID
       },
       data: {
-        orderStatus: "CANCELLED", // Update the status to "CANCELLED"
+        orderStatus: OrderStatus.CANCELED, // Set the order status to CANCELED using the enum value
       },
     });
-    console.log("Cancelled all pending orders for user", userId);
-  } else {
-    console.log("No pending orders found for user", userId);
-  }
 
-  // Return the updated orders (with CANCELLED status)
-  return orders;
+    console.log("UPDATED SUCCESSFULLY");
+
+    // Return a success message
+    return { message: "Order status updated to CANCELED successfully." };
+  } catch (error) {
+    console.error("Error updating order status:", error);
+    return { message: "Failed to update order status." };
+  }
 });
