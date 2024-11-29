@@ -37,9 +37,12 @@
     </div>
 
     <!-- Toast Notification -->
-    <div v-if="toastMessage" :class="toastClass" class="fixed top-5 right-5 p-4 rounded shadow-lg">
+    <div v-if="toastMessage" :class="['fixed top-5 right-5 p-4 rounded shadow-lg', toastClass, 'animate-toast']">
       {{ toastMessage }}
     </div>
+
+    <!-- Loading Component -->
+    <Loading v-if="loading" />
   </div>
 </template>
 
@@ -47,6 +50,7 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router"; // To redirect after login
 import { useUserStore } from "~/stores/user";
+import Loading from "~/components/Loading.vue"; // Import the Loading component
 const userStore = useUserStore();
 const user = useSupabaseUser();
 
@@ -150,5 +154,32 @@ const login = async () => {
 
 .animate-slide-in {
   animation: slideIn 0.5s ease-out;
+}
+
+/* Toast animations */
+@keyframes toastIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes toastOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+.animate-toast {
+  animation: toastIn 0.5s ease-out, toastOut 0.5s ease-in 2.5s forwards;
 }
 </style>
