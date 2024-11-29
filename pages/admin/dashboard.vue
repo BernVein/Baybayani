@@ -8,26 +8,56 @@
     <!-- Admin Layout -->
     <AdminLayout class="admin-layout">
       <div class="main-content flex-1 overflow-y-auto p-6">
-        <!-- Title -->
-        <h1 class="text-3xl font-semibold mb-8">Dashboard</h1>
+        <!-- Title and Refresh Section -->
+        <div class="flex justify-between items-center mb-8">
+          <h1 class="text-3xl font-semibold">Dashboard</h1>
+          <div class="flex items-center gap-4">
+            <span class="text-sm text-gray-600" v-if="lastUpdated">
+              Last updated: {{ formatLastUpdated }}
+            </span>
+            <button 
+              @click="fetchDashboardData" 
+              class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
+            >
+              <Icon name="mdi:refresh" />
+              Refresh Data
+            </button>
+          </div>
+        </div>
 
         <!-- Dashboard Summary Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-red-600">
             <p class="text-lg font-medium">Total Products</p>
-            <p class="text-4xl font-bold">10</p>
+            <p class="text-4xl font-bold overflow-hidden">
+              <span :key="`products-${animationKey}`" class="inline-block animate-number">
+                {{ formatNumber(dashboardSummary.totalProducts) }}
+              </span>
+            </p>
           </div>
           <div class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-green-600">
             <p class="text-lg font-medium">Products Sold</p>
-            <p class="text-4xl font-bold">100</p>
+            <p class="text-4xl font-bold overflow-hidden">
+              <span :key="`sold-${animationKey}`" class="inline-block animate-number">
+                {{ formatNumber(dashboardSummary.totalSold) }}
+              </span>
+            </p>
           </div>
           <div class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-blue-600">
             <p class="text-lg font-medium">Total Revenue</p>
-            <p class="text-4xl font-bold">₱50,000</p>
+            <p class="text-4xl font-bold overflow-hidden">
+              <span :key="`revenue-${animationKey}`" class="inline-block animate-number">
+                ₱{{ formatNumber(dashboardSummary.totalRevenue) }}
+              </span>
+            </p>
           </div>
           <div class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-yellow-600">
             <p class="text-lg font-medium">Revenue Today</p>
-            <p class="text-4xl font-bold">₱5,000</p>
+            <p class="text-4xl font-bold overflow-hidden">
+              <span :key="`today-${animationKey}`" class="inline-block animate-number">
+                ₱{{ formatNumber(dashboardSummary.todayRevenue) }}
+              </span>
+            </p>
           </div>
         </div>
 
@@ -60,14 +90,31 @@
               </select>
             </div>
             <ul class="space-y-3">
-              <li class="flex items-center justify-between" v-for="product in filteredTopProducts" :key="product.name">
+              <li v-if="filteredTopProducts.length === 0" class="text-center text-gray-500">
+                No sales data available
+              </li>
+              <li 
+                v-for="product in filteredTopProducts" 
+                :key="`${product.name}-${animationKey}`"
+                class="flex items-center justify-between p-2 hover:bg-gray-50 rounded-lg"
+              >
                 <div class="flex items-center space-x-3">
-                  <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-                    Placeholder
+                  <div class="w-10 h-10 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center">
+                    <img 
+                      v-if="product.url" 
+                      :src="product.url" 
+                      :alt="product.name"
+                      class="w-full h-full object-cover"
+                    >
+                    <span v-else>{{ product.name.charAt(0) }}</span>
                   </div>
-                  <span>{{ product.name }}</span>
+                  <span class="font-medium">{{ product.name }}</span>
                 </div>
-                <span>{{ product.sold }}kg Sold</span>
+                <span class="text-gray-600 overflow-hidden">
+                  <span class="inline-block animate-number">
+                    {{ formatNumber(product.sold) }}kg Sold
+                  </span>
+                </span>
               </li>
             </ul>
           </div>
@@ -110,7 +157,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed, onUnmounted } from "vue";
 import AdminLayout from "~/layouts/AdminLayout.vue";
 import SideBarLayout from "~/layouts/SideBarLayout.vue";
 import Chart from "chart.js/auto";
@@ -143,187 +190,339 @@ const topProductsFilter = ref("weekly");
 const productSalesFilter = ref("weekly");
 const productSalesTrendFilter = ref("weekly");
 
-const topProductsData = {
-  weekly: [
-    { name: "Tomato", sold: 100 },
-    { name: "Onion", sold: 90 },
-    { name: "Carrot", sold: 50 },
-    { name: "Eggplant", sold: 40 },
-  ],
-  monthly: [
-    { name: "Tomato", sold: 400 },
-    { name: "Onion", sold: 350 },
-    { name: "Carrot", sold: 250 },
-    { name: "Eggplant", sold: 200 },
-  ],
+const orders = ref([]);
+const products = ref([]);
+const currentDate = new Date();
+
+// Add ref for last updated timestamp
+const lastUpdated = ref(null);
+
+// Add computed property to format the timestamp
+const formatLastUpdated = computed(() => {
+  if (!lastUpdated.value) return '';
+  return new Date(lastUpdated.value).toLocaleString();
+});
+
+// Add a number formatting helper function
+const formatNumber = (number) => {
+  return new Intl.NumberFormat('en-PH').format(number);
 };
 
-const filteredTopProducts = ref(topProductsData[topProductsFilter.value]);
+// Add ref for animation trigger
+const animationKey = ref(0);
 
-const updateTopProducts = () => {
-  filteredTopProducts.value = topProductsData[topProductsFilter.value];
+// Update fetchDashboardData to trigger animation
+const fetchDashboardData = async () => {
+  try {
+    // Increment key to trigger animation
+    animationKey.value++;
+    
+    const [ordersResponse, productsResponse] = await Promise.all([
+      $fetch('/api/prisma/get-all-orders'),
+      $fetch('/api/prisma/get-all-products')
+    ]);
+    
+    orders.value = ordersResponse.filter(order => 
+      order.orderStatus === 'FULFILLED' && 
+      order.orderItem && 
+      order.orderItem.length > 0
+    );
+    products.value = productsResponse;
+    
+    // Update charts and timestamp
+    updateTotalRevenueChart();
+    updateTopProducts();
+    updateProductSalesChart();
+    updateProductSalesTrendChart();
+    lastUpdated.value = new Date();
+  } catch (error) {
+    console.error('Error fetching dashboard data:', error);
+  }
 };
 
-const updateTotalRevenueChart = () => {
-  const labels =
-    totalRevenueFilter.value === "weekly"
-      ? [
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Yesterday",
-        "Today",
-      ]
-      : [
-        "January",
-        "February",
-        "March",
-        "April",
-        "May",
-        "June",
-        "July",
-        "August",
-        "September",
-        "October",
-        "November",
-        "December",
-      ];
-  const data =
-    totalRevenueFilter.value === "weekly"
-      ? [10000, 5000, 8000, 11000, 13000, 4000, 9000]
-      : [
-        50000, 70000, 60000, 80000, 90000, 85000, 75000, 95000, 87000, 93000,
-        91000, 88000,
-      ];
-  totalRevenueChart.data.labels = labels;
-  totalRevenueChart.data.datasets[0].data = data;
-  totalRevenueChart.update();
-};
-
-const updateProductSalesChart = () => {
-  const labels =
-    productSalesFilter.value === "weekly"
-      ? [
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Yesterday",
-        "Today",
-      ]
-      : [
-        "January",
-        "February",
-        "March",
-        "April",
-        "May",
-        "June",
-        "July",
-        "August",
-        "September",
-        "October",
-        "November",
-        "December",
-      ];
-  const data =
-    productSalesFilter.value === "weekly"
-      ? [30, 45, 25, 50, 40, 60, 35]
-      : [150, 180, 160, 200, 220, 210, 190, 230, 240, 210, 200, 250];
-  productSalesChart.data.labels = labels;
-  productSalesChart.data.datasets[0].data = data;
-  productSalesChart.update();
-};
-
-const updateProductSalesTrendChart = () => {
-  const labels =
-    productSalesTrendFilter.value === "weekly"
-      ? ["Tomato", "Onion", "Carrot", "Eggplant"]
-      : ["Tomato", "Onion", "Carrot", "Eggplant"];
-  const data =
-    productSalesTrendFilter.value === "weekly"
-      ? [50, 30, 25, 10]
-      : [200, 150, 180, 120];
-  productSalesTrendChart.data.labels = labels;
-  productSalesTrendChart.data.datasets[0].data = data;
-  productSalesTrendChart.update();
-};
-
-let totalRevenueChart, productSalesChart, productSalesTrendChart;
-
-onMounted(() => {
-  // Total Revenue Chart
-  const totalRevenueCtx = document
-    .getElementById("totalRevenueChart")
-    .getContext("2d");
-  totalRevenueChart = new Chart(totalRevenueCtx, {
-    type: "bar",
-    data: {
-      labels: [
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Yesterday",
-        "Today",
-      ],
-      datasets: [
-        {
-          label: "Revenue in Peso",
-          data: [10000, 5000, 8000, 11000, 13000, 4000, 9000],
-          backgroundColor: "#4CAF50",
-        },
-      ],
-    },
+// Helper to filter data by date range
+const filterDataByDate = (data, filter) => {
+  const today = new Date();
+  const pastDate = new Date();
+  
+  if (filter === 'weekly') {
+    pastDate.setDate(today.getDate() - 7);
+  } else {
+    pastDate.setMonth(today.getMonth() - 1);
+  }
+  
+  return data.filter(item => {
+    const itemDate = new Date(item.created_at);
+    return itemDate >= pastDate && itemDate <= today;
   });
+};
+
+// Declare chart variables outside of onMounted
+let charts = {
+  totalRevenue: null,
+  productSales: null,
+  productSalesTrend: null
+};
+
+// Initialize charts
+const initializeCharts = () => {
+  // Total Revenue Chart
+  const totalRevenueCtx = document.getElementById("totalRevenueChart")?.getContext("2d");
+  if (totalRevenueCtx) {
+    charts.totalRevenue = new Chart(totalRevenueCtx, {
+      type: "bar",
+      data: {
+        labels: [],
+        datasets: [{
+          label: "Revenue in Peso",
+          data: [],
+          backgroundColor: "#4CAF50",
+        }],
+      },
+      options: {
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: (context) => `₱${formatNumber(context.raw)}`
+            }
+          }
+        },
+        scales: {
+          y: {
+            ticks: {
+              callback: (value) => `₱${formatNumber(value)}`
+            }
+          }
+        }
+      }
+    });
+  }
 
   // Product Sales Chart
-  const productSalesCtx = document
-    .getElementById("productSalesChart")
-    .getContext("2d");
-  productSalesChart = new Chart(productSalesCtx, {
-    type: "line",
-    data: {
-      labels: [
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Yesterday",
-        "Today",
-      ],
-      datasets: [
-        {
+  const productSalesCtx = document.getElementById("productSalesChart")?.getContext("2d");
+  if (productSalesCtx) {
+    charts.productSales = new Chart(productSalesCtx, {
+      type: "line",
+      data: {
+        labels: [],
+        datasets: [{
           label: "All products sold per kg",
-          data: [30, 45, 25, 50, 40, 60, 35],
+          data: [],
           backgroundColor: "rgba(54, 162, 235, 0.2)",
           borderColor: "#36A2EB",
           borderWidth: 2,
+        }],
+      },
+      options: {
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: (context) => `${formatNumber(context.raw)}kg`
+            }
+          }
         },
-      ],
-    },
-  });
+        scales: {
+          y: {
+            ticks: {
+              callback: (value) => `${formatNumber(value)}kg`
+            }
+          }
+        }
+      }
+    });
+  }
 
   // Product Sales Trend Chart
-  const productSalesTrendCtx = document
-    .getElementById("productSalesTrendChart")
-    .getContext("2d");
-  productSalesTrendChart = new Chart(productSalesTrendCtx, {
-    type: "pie",
-    data: {
-      labels: ["Tomato", "Onion", "Carrot", "Eggplant"],
-      datasets: [
-        {
+  const productSalesTrendCtx = document.getElementById("productSalesTrendChart")?.getContext("2d");
+  if (productSalesTrendCtx) {
+    charts.productSalesTrend = new Chart(productSalesTrendCtx, {
+      type: "pie",
+      data: {
+        labels: [],
+        datasets: [{
           label: "Product Sales Trend",
-          data: [50, 30, 25, 10],
+          data: [],
           backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0"],
-        },
-      ],
-    },
+        }],
+      },
+      options: {
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: (context) => `${context.label}: ${formatNumber(context.raw)}kg`
+            }
+          }
+        }
+      }
+    });
+  }
+};
+
+// Update the chart update functions to use the new charts object
+const updateTotalRevenueChart = () => {
+  if (!charts.totalRevenue) return;
+  
+  const filteredOrders = filterDataByDate(orders.value, totalRevenueFilter.value);
+  
+  let labels, data;
+  if (totalRevenueFilter.value === 'weekly') {
+    labels = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    data = new Array(7).fill(0);
+    
+    filteredOrders.forEach(order => {
+      const dayIndex = new Date(order.created_at).getDay();
+      data[dayIndex] += order.totalPrice || 0;
+    });
+  } else {
+    labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    data = new Array(12).fill(0);
+    
+    filteredOrders.forEach(order => {
+      const monthIndex = new Date(order.created_at).getMonth();
+      data[monthIndex] += order.totalPrice || 0;
+    });
+  }
+  
+  charts.totalRevenue.data.labels = labels;
+  charts.totalRevenue.data.datasets[0].data = data;
+  charts.totalRevenue.update();
+};
+
+// First, add a ref for filteredTopProducts
+const filteredTopProducts = ref([]);
+
+// Update the Product Sales Chart function
+const updateProductSalesChart = () => {
+  if (!charts.productSales) return;
+  
+  const filteredOrders = filterDataByDate(orders.value, productSalesFilter.value);
+  
+  let labels, data;
+  if (productSalesFilter.value === 'weekly') {
+    labels = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    data = new Array(7).fill(0);
+    
+    filteredOrders.forEach(order => {
+      const dayIndex = new Date(order.created_at).getDay();
+      // Sum all product quantities for this day
+      order.orderItem.forEach(item => {
+        data[dayIndex] += item.quantity;
+      });
+    });
+  } else {
+    labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    data = new Array(12).fill(0);
+    
+    filteredOrders.forEach(order => {
+      const monthIndex = new Date(order.created_at).getMonth();
+      // Sum all product quantities for this month
+      order.orderItem.forEach(item => {
+        data[monthIndex] += item.quantity;
+      });
+    });
+  }
+  
+  charts.productSales.data.labels = labels;
+  charts.productSales.data.datasets[0].data = data;
+  charts.productSales.update();
+};
+
+// Update the Product Sales Trend Chart function
+const updateProductSalesTrendChart = () => {
+  if (!charts.productSalesTrend) return;
+  
+  const filteredOrders = filterDataByDate(orders.value, productSalesTrendFilter.value);
+  
+  // Calculate sales per product
+  const productSales = {};
+  filteredOrders.forEach(order => {
+    order.orderItem.forEach(item => {
+      const productName = item.product.title;
+      if (!productSales[productName]) {
+        productSales[productName] = 0;
+      }
+      productSales[productName] += item.quantity;
+    });
+  });
+  
+  // Get top 4 products for the pie chart
+  const topProducts = Object.entries(productSales)
+    .sort(([,a], [,b]) => b - a)
+    .slice(0, 4);
+  
+  const labels = topProducts.map(([name]) => name);
+  const data = topProducts.map(([,value]) => value);
+  
+  charts.productSalesTrend.data.labels = labels;
+  charts.productSalesTrend.data.datasets[0].data = data;
+  charts.productSalesTrend.update();
+};
+
+// Update the Top Products function
+const updateTopProducts = () => {
+  const filteredOrders = filterDataByDate(orders.value, topProductsFilter.value);
+  
+  // Calculate total sales per product
+  const productSales = {};
+  filteredOrders.forEach(order => {
+    order.orderItem.forEach(item => {
+      const productId = item.productId;
+      const productName = item.product.title;
+      if (!productSales[productId]) {
+        productSales[productId] = {
+          name: productName,
+          url: item.product.url,
+          sold: 0
+        };
+      }
+      productSales[productId].sold += item.quantity;
+    });
+  });
+  
+  // Sort by sales and get top 4
+  filteredTopProducts.value = Object.values(productSales)
+    .sort((a, b) => b.sold - a.sold)
+    .slice(0, 4);
+};
+
+// Update dashboardSummary computed to handle potential empty orders
+const dashboardSummary = computed(() => {
+  const totalProducts = products.value.length;
+  
+  // Calculate totals only from orders with products
+  const totalSold = orders.value.reduce((sum, order) => 
+    sum + (order.orderItem?.reduce((itemSum, item) => itemSum + (item.quantity || 0), 0) || 0), 0);
+    
+  const totalRevenue = orders.value.reduce((sum, order) => 
+    sum + (order.totalPrice || 0), 0);
+  
+  // Calculate today's revenue
+  const today = new Date().setHours(0, 0, 0, 0);
+  const todayRevenue = orders.value
+    .filter(order => new Date(order.created_at).setHours(0, 0, 0, 0) === today)
+    .reduce((sum, order) => sum + (order.totalPrice || 0), 0);
+    
+  return {
+    totalProducts,
+    totalSold,
+    totalRevenue,
+    todayRevenue
+  };
+});
+
+// Update onMounted to just fetch once
+onMounted(() => {
+  initializeCharts();
+  fetchDashboardData();
+});
+
+// Add onUnmounted to clean up charts
+onUnmounted(() => {
+  // Destroy all charts to prevent memory leaks
+  Object.values(charts).forEach(chart => {
+    if (chart) {
+      chart.destroy();
+    }
   });
 });
 </script>
@@ -349,5 +548,20 @@ onMounted(() => {
   .sidebar.open {
     transform: translateX(0);
   }
+}
+
+@keyframes number-animation {
+  0% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-number {
+  animation: number-animation 0.5s ease-out forwards;
 }
 </style>
