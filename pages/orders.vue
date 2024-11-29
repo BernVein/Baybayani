@@ -36,7 +36,7 @@
               </button>
 
               <!-- Conditionally show Cancel button if status is 'PENDING' -->
-              <button v-if="order.orderStatus === 'PENDING'" @click="deleteOrder(order.id)"
+              <button v-if="order.orderStatus === 'PENDING'" @click="cancelOrder(order.id)"
                 class="w-full text-left p-2 hover:bg-gray-100 text-red-500 transition-colors">
                 Cancel Order
               </button>
@@ -106,9 +106,9 @@ const viewOrderDetails = (orderId) => {
   navigateTo(`/order/${orderId}`);
 };
 
-const deleteOrder = async (orderId) => {
+const cancelOrder = async (orderId) => {
   try {
-    await useFetch(`/api/prisma/delete-order/${orderId}`, { method: "DELETE" });
+    await useFetch(`/api/prisma/cancel-order/${orderId}`, { method: "DELETE" });
     orders.value = orders.value.filter((order) => order.id !== orderId);
   } catch (error) {
     console.error("Error deleting order:", error);
