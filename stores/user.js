@@ -43,10 +43,10 @@ export const useUserStore = defineStore("user", {
             await this.fetchCartItems();
           }
 
-          // Clear storage and cookies on successful login
-          localStorage.clear();
-          sessionStorage.clear();
-          this.clearCookies();
+          // // Clear storage and cookies on successful login
+          // localStorage.clear();
+          // sessionStorage.clear();
+          // this.clearCookies();
         }
       } catch (err) {
         console.error("Unexpected error fetching user:", err);
@@ -71,11 +71,9 @@ export const useUserStore = defineStore("user", {
     async logout() {
       console.log("Logout function called");
       const client = useSupabaseClient();
-      
+
       try {
         // Sign out from Supabase
-        await client.auth.signOut();
-        console.log("User signed out from Supabase");
 
         // Clear user-related state
         this.user = null;
@@ -89,8 +87,10 @@ export const useUserStore = defineStore("user", {
         localStorage.clear();
         sessionStorage.clear();
         this.clearCookies();
-        
+
         console.log("Storage and cookies cleared");
+        await client.auth.signOut();
+        console.log("User signed out from Supabase");
         console.log("LOGOUT SUCCESS");
         window.location.reload();
       } catch (error) {
@@ -186,14 +186,15 @@ export const useUserStore = defineStore("user", {
       this.isLoading = false;
     },
 
-    // Function to clear cookies
+    //Function to clear cookies
     clearCookies() {
       const cookies = document.cookie.split(";");
       for (let i = 0; i < cookies.length; i++) {
         const cookie = cookies[i];
         const eqPos = cookie.indexOf("=");
         const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
-        document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+        document.cookie =
+          name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
       }
     },
   },

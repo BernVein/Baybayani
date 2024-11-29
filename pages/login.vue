@@ -16,13 +16,15 @@
           <div>
             <label for="email" class="block text-lg pb-2 font-medium text-gray-700">Email</label>
             <input type="email" id="email" v-model="email" @input="resetMessages"
-              class="w-full p-3 border border-gray-400 rounded-md focus:ring-2 focus:ring-[#0C6539]" placeholder="Enter your email" required />
+              class="w-full p-3 border border-gray-400 rounded-md focus:ring-2 focus:ring-[#0C6539]"
+              placeholder="Enter your email" required />
           </div>
 
           <div>
             <label for="password" class="block text-lg pb-2 font-medium text-gray-700">Password</label>
             <input type="password" id="password" v-model="password" @input="resetMessages"
-              class="w-full p-3 border border-gray-400 rounded-md focus:ring-2 focus:ring-[#0C6539]" placeholder="Enter your password" required />
+              class="w-full p-3 border border-gray-400 rounded-md focus:ring-2 focus:ring-[#0C6539]"
+              placeholder="Enter your password" required />
           </div>
 
           <div>
@@ -102,8 +104,15 @@ const login = async () => {
     } else if (response.data.user) {
       const userData = response.data.user.user_metadata?.role || "User";
       await userStore.fetchUser();
+      console.log("USEEEEEEEEEEEEEEEEEEERRR");
+      userStore.isLoading = 1;
+      await userStore.fetchCartItems();
+      console.log("CARTTTTTTTTTTTTTTTTT");
+      await userStore.fetchOrders();
+      console.log("ORDERRRRRRRRRRRRR");
       toastMessage.value = "Successfully logged in as " + userData.toLowerCase() + "!";
       toastClass.value = "bg-green-500 text-white";
+      console.log("status", userStore.user);
 
       if (userStore.isAdmin) {
         router.push("/admin/dashboard").then(() => {
@@ -132,6 +141,7 @@ const login = async () => {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -142,6 +152,7 @@ const login = async () => {
     transform: translateY(20px);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -162,6 +173,7 @@ const login = async () => {
     transform: translateX(100%);
     opacity: 0;
   }
+
   to {
     transform: translateX(0);
     opacity: 1;
@@ -173,6 +185,7 @@ const login = async () => {
     transform: translateX(0);
     opacity: 1;
   }
+
   to {
     transform: translateX(100%);
     opacity: 0;
