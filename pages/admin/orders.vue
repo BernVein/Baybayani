@@ -70,8 +70,9 @@
               </button>
               <div
                 v-if="isFilterVisible"
-                class="absolute top-full mt-2 right-0 bg-white border border-gray-300 rounded-md shadow-md p-4 w-48"
+                class="absolute bottom-full mb-2 right-0 bg-white border border-gray-300 rounded-md shadow-md p-4 w-48"
               >
+
                 <label class="block mb-2 font-medium text-gray-700">Filter by Status:</label>
                 <select v-model="filterStatus" class="w-full p-2 border border-gray-300 rounded-md">
                   <option value="">All</option>
@@ -107,7 +108,7 @@
                   <td class="py-4 px-4 border-b">{{ order.id }}</td>
                   <td class="py-4 px-4 border-b">{{ order.date }}</td>
                   <td class="py-4 px-4 border-b">{{ order.userName }}</td>
-                  <td class="py-4 px-4 border-b">&#8369;{{ order.totalPrice.toFixed(2) }}</td>
+                  <td class="py-4 px-4 border-b">&#8369;{{ formatCurrency(order.totalPrice) }}</td>
                   <td class="py-4 px-4 border-b text-center">
                     <select
                       v-model="order.orderStatus"
@@ -248,6 +249,14 @@ const fetchUserName = async (userId) => {
   }
 };
 
+const formatCurrency = (value) => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'decimal',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
+};
+
 // Show modal
 const showOrderProducts = (order) => {
   selectedOrder.value = order;
@@ -331,16 +340,28 @@ const isFilterVisible = ref(false);
 
 const filteredOrders = computed(() => {
   let filtered = orders.value;
-  if (searchQuery.value)
-    filtered = filtered.filter(
-      (order) =>
-        order.id.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-        order.userName.toLowerCase().includes(searchQuery.value.toLowerCase())
-    );
-  if (filterStatus.value)
+
+  // Filter by search query
+  if (searchQuery.value) {
+    filtered = filtered.filter((order) => {
+      // Check if the search query matches userName, order ID, total price, or date
+      return (
+        order.userName.toLowerCase().includes(searchQuery.value.toLowerCase()) || // Search by user name
+        order.id.toLowerCase().includes(searchQuery.value.toLowerCase()) || // Search by order ID
+        order.totalPrice.toString().includes(searchQuery.value) || // Search by total price
+        order.date.includes(searchQuery.value) // Search by date (e.g., "11/29/2024")
+      );
+    });
+  }
+
+  // Filter by order status
+  if (filterStatus.value) {
     filtered = filtered.filter((order) => order.orderStatus === filterStatus.value);
+  }
+
   return filtered;
 });
+
 
 const toggleFilter = () => {
   isFilterVisible.value = !isFilterVisible.value;
