@@ -70,38 +70,124 @@
             </thead>
             <tbody>
               <tr
-                v-for="product in filteredProducts"
+                v-for="product in paginatedProducts"
                 :key="product.id"
-                class="hover:bg-gray-200 hover:scale-[1.02] transition duration-150 ease-in-out"
+                class="hover:bg-gray-200 transition duration-150 ease-in-out"
+                :class="{
+                  'animate-highlight': searchQuery && 
+                    (product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                     product.id.toString().includes(searchQuery))
+                }"
               >
-
-                <td class="py-4 px-4 border-b">{{ product.id }}</td>
-                <td class="py-4 px-4 border-b flex items-center space-x-3">
+                <td 
+                  class="py-4 px-4 cursor-pointer"
+                  @click="showProductDetails(product)"
+                >{{ product.id }}</td>
+                <td 
+                  class="py-4 px-4 flex items-center space-x-3 cursor-pointer"
+                  @click="showProductDetails(product)"
+                >
                   <img :src="product.url" alt="product image" class="w-10 h-10 rounded-full object-cover" />
                   <span>{{ product.title }}</span>
                 </td>
-                <td class="py-4 px-4 border-b">
+                <td 
+                  class="py-4 px-4 cursor-pointer"
+                  @click="showProductDetails(product)"
+                >
                   ₱{{ parseFloat(product.price).toFixed(2) }}
                 </td>
-                <td class="py-4 px-4 border-b text-center flex items-center justify-center space-x-4">
-                  <button @click="toggleProductVisibility(product)" :disabled="isProductInOrderItem(product.id)"
-                    class="text-gray-600 hover:text-blue-600 disabled:opacity-50">
-                    <Icon :name="product.hidden ? 'ph:eye-slash-bold' : 'ph:eye-bold'
-                      " size="20" />
+                <td class="py-4 px-4 text-center flex items-center justify-center space-x-4">
+                  <button 
+                    @click.stop="toggleProductVisibility(product)" 
+                    :disabled="isProductInOrderItem(product.id)"
+                    class="text-gray-600 hover:text-blue-600 disabled:opacity-50"
+                  >
+                    <Icon 
+                      :name="product.hidden ? 'ph:eye-slash-bold' : 'ph:eye-bold'" 
+                      size="20" 
+                    />
                   </button>
-                  <button @click="openEditModal(product)" class="text-gray-600 hover:text-gray-800">
+                  <button 
+                    @click.stop="openEditModal(product)" 
+                    class="text-gray-600 hover:text-gray-800"
+                  >
                     <Icon name="ph:pencil-simple-bold" size="20" />
                   </button>
-                  <button @click="markProductAsDeleted(product.id)" :disabled="isProductInOrderItem(product.id)"
-                    class="text-gray-600 hover:text-red-800 disabled:opacity-50">
+                  <button 
+                    @click.stop="markProductAsDeleted(product.id)" 
+                    :disabled="isProductInOrderItem(product.id)"
+                    class="text-gray-600 hover:text-red-800 disabled:opacity-50"
+                  >
                     <Icon name="ph:trash-bold" size="20" />
                   </button>
-                  <span v-if="isProductInOrderItem(product.id)" class="text-red-600 text-sm">Cannot delete, product
-                    exists in cart items.</span>
+                  <span 
+                    v-if="isProductInOrderItem(product.id)" 
+                    class="text-red-600 text-sm"
+                  >
+                    Cannot delete, product exists in cart items.
+                  </span>
                 </td>
               </tr>
             </tbody>
           </table>
+
+          <!-- Pagination Controls -->
+          <div class="flex items-center justify-between px-4 py-3 bg-gray-50 border-t">
+            <!-- Items per page selector -->
+            <div class="flex items-center gap-2">
+              <span class="text-sm text-gray-700">Show</span>
+              <select 
+                v-model="itemsPerPage" 
+                class="border rounded px-2 py-1 text-sm"
+                @change="currentPage = 1"
+              >
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+              </select>
+              <span class="text-sm text-gray-700">entries</span>
+            </div>
+
+            <!-- Page information -->
+            <div class="text-sm text-gray-700">
+              Showing {{ startIndex + 1 }} to {{ endIndex }} of {{ totalItems }} entries
+            </div>
+
+            <!-- Pagination buttons -->
+            <div class="flex gap-2">
+              <button
+                @click="currentPage--"
+                :disabled="currentPage === 1"
+                class="pagination-button"
+                :class="currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'"
+              >
+                Previous
+              </button>
+              
+              <button
+                v-for="page in displayedPages"
+                :key="page"
+                @click="typeof page === 'number' ? currentPage = page : null"
+                class="pagination-button"
+                :class="[
+                  typeof page === 'number' ? (currentPage === page ? 'bg-blue-500 text-white' : 'hover:bg-gray-100') : '',
+                  typeof page === 'string' ? 'cursor-default' : ''
+                ]"
+              >
+                {{ page }}
+              </button>
+
+              <button
+                @click="currentPage++"
+                :disabled="currentPage === totalPages"
+                class="pagination-button"
+                :class="currentPage === totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'"
+              >
+                Next
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </AdminLayout>
@@ -169,318 +255,476 @@
         {{ notification.message }}
       </div>
     </transition>
+
+    <!-- View Product Details Modal -->
+    <div v-if="isViewModalVisible" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 relative">
+        <!-- Close button -->
+        <button 
+          @click="closeViewModal" 
+          class="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+        >
+          <Icon name="ph:x-bold" size="24" />
+        </button>
+
+        <!-- Modal content -->
+        <div class="space-y-6">
+          <h2 class="text-2xl font-bold text-center">Product Details</h2>
+          
+          <!-- Product image -->
+          <div class="flex justify-center">
+            <img 
+              :src="selectedProduct?.url" 
+              :alt="selectedProduct?.title"
+              class="w-48 h-48 object-cover rounded-lg shadow-lg"
+            />
+          </div>
+
+          <!-- Product details -->
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <p class="text-gray-600">Product ID</p>
+              <p class="font-semibold">{{ selectedProduct?.id }}</p>
+            </div>
+            <div>
+              <p class="text-gray-600">Product Name</p>
+              <p class="font-semibold">{{ selectedProduct?.title }}</p>
+            </div>
+            <div>
+              <p class="text-gray-600">Price per kg</p>
+              <p class="font-semibold">₱{{ parseFloat(selectedProduct?.price).toFixed(2) }}</p>
+            </div>
+            <div>
+              <p class="text-gray-600">Status</p>
+              <p class="font-semibold">
+                <span 
+                  class="px-2 py-1 rounded-full text-sm"
+                  :class="selectedProduct?.hidden ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'"
+                >
+                  {{ selectedProduct?.hidden ? 'Unavailable' : 'Available' }}
+                </span>
+              </p>
+            </div>
+            <div class="col-span-2">
+              <p class="text-gray-600">Description</p>
+              <p class="font-semibold">{{ selectedProduct?.description }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading Component -->
+    <Loading v-if="isLoading" />
+
+    <!-- Add Toast Container -->
+    <div class="fixed top-4 right-4 z-50">
+      <div v-for="toast in toasts" :key="toast.id" 
+        class="mb-2 p-4 rounded-lg shadow-lg transform transition-all duration-300 animate-slide-in"
+        :class="{
+          'bg-green-500 text-white': toast.type === 'success',
+          'bg-red-500 text-white': toast.type === 'error'
+        }"
+      >
+        {{ toast.message }}
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div v-if="isDeleteModalVisible" 
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4 relative animate-fade-in">
+        <div class="text-center space-y-4">
+          <Icon name="ph:warning-circle-bold" class="text-red-500 mx-auto" size="64" />
+          
+          <h2 class="text-2xl font-bold text-gray-900">Delete Product</h2>
+          
+          <p class="text-gray-600">
+            Are you sure you want to delete this product? This action cannot be undone.
+          </p>
+
+          <div class="flex justify-center gap-4 mt-6">
+            <button
+              @click="closeDeleteModal"
+              class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              @click="confirmDelete"
+              class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors flex items-center gap-2"
+            >
+              <Icon name="ph:trash-bold" size="20" />
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
-<script>
+<script setup>
 import axios from "axios";
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import AdminLayout from "~/layouts/AdminLayout.vue";
 import SideBarLayout from "~/layouts/SideBarLayout.vue";
 import { useRuntimeConfig } from "#imports";
+import Loading from '~/components/Loading.vue';
 
-export default {
-  name: "ProductManagement",
-  components: {
-    AdminLayout,
-    SideBarLayout,
-  },
-  setup() {
-    const userStore = useUserStore();
+const userStore = useUserStore();
 
-    userStore.isAdmin();
+userStore.isAdmin();
 
-    const user = useSupabaseUser();
-    const route = useRoute();
+const user = useSupabaseUser();
+const route = useRoute();
 
-    // watchEffect(() => {
-    //   if (
-    //     route.fullPath == "/admin/products" &&
-    //     (!user.value || userStore.isAdmin === false)
-    //   ) {
-    //     navigateTo("/login");
-    //   }
-    // });
+// watchEffect(() => {
+//   if (
+//     route.fullPath == "/admin/products" &&
+//     (!user.value || userStore.isAdmin === false)
+//   ) {
+//     navigateTo("/login");
+//   }
+// });
 
-    const config = useRuntimeConfig();
-    const apiUrl =
-      process.env.NODE_ENV === "development"
-        ? "http://localhost:3000"
-        : config.public.apiUrl;
+const config = useRuntimeConfig();
+const apiUrl =
+  process.env.NODE_ENV === "development"
+    ? "http://localhost:3000"
+    : config.public.apiUrl;
 
-    const isModalVisible = ref(false);
-    const editMode = ref(false);
-    const products = ref([]);
-    const notification = ref({ show: false, message: "", type: "success" });
-    const product = ref({
-      id: null,
-      title: "",
-      description: "",
-      price: null,
-      url: "",
-      hidden: false,
-    });
-    const orderItems = ref([]);
+const isModalVisible = ref(false);
+const editMode = ref(false);
+const products = ref([]);
+const notification = ref({ show: false, message: "", type: "success" });
+const product = ref({
+  id: null,
+  title: "",
+  description: "",
+  price: null,
+  url: "",
+  hidden: false,
+});
+const orderItems = ref([]);
 
-    const openModal = () => {
-      editMode.value = false;
-      isModalVisible.value = true;
-    };
+const openModal = () => {
+  editMode.value = false;
+  isModalVisible.value = true;
+};
 
-    const openEditModal = (productToEdit) => {
-      editMode.value = true;
-      product.value = { ...productToEdit };
-      isModalVisible.value = true;
-    };
+const openEditModal = (productToEdit) => {
+  editMode.value = true;
+  product.value = { ...productToEdit };
+  isModalVisible.value = true;
+};
 
-    const closeModal = () => {
-      isModalVisible.value = false;
-      product.value = {
-        id: null,
-        title: "",
-        description: "",
-        price: null,
-        url: "",
-        hidden: false,
-      };
-    };
+const closeModal = () => {
+  isModalVisible.value = false;
+  product.value = {
+    id: null,
+    title: "",
+    description: "",
+    price: null,
+    url: "",
+    hidden: false,
+  };
+};
 
-    const showNotification = (message, type = "success") => {
-      notification.value = { show: true, message, type };
-      setTimeout(() => {
-        notification.value.show = false;
-      }, 3000);
-    };
+const showNotification = (message, type = "success") => {
+  notification.value = { show: true, message, type };
+  setTimeout(() => {
+    notification.value.show = false;
+  }, 3000);
+};
 
-    const fetchProducts = async () => {
-      try {
-        const response = await axios.get(
-          `${apiUrl}/api/prisma/get-all-products`
-        );
-        if (response.status === 200) {
-          products.value = response.data.filter(
-            (product) => !product.isDeleted
-          );
-        } else {
-          throw new Error("Failed to fetch products");
-        }
-      } catch (err) {
-        console.error("Error fetching products:", err);
-      }
-    };
-
-    const fetchOrderItems = async () => {
-      try {
-        const response = await axios.get(
-          `${apiUrl}/api/prisma/get-order-items`
-        );
-        if (response.status === 200) {
-          orderItems.value = response.data;
-          console.log("Order Items:", orderItems.value); // Print the order items in the console
-        } else {
-          throw new Error("Failed to fetch order items");
-        }
-      } catch (err) {
-        console.error("Error fetching order items:", err);
-      }
-    };
-
-    const isProductInOrderItem = (productId) => {
-      return orderItems.value.some(
-        (orderItem) => orderItem.productId === productId
+const fetchProducts = async () => {
+  isLoading.value = true;
+  try {
+    const response = await axios.get(
+      `${apiUrl}/api/prisma/get-all-products`
+    );
+    if (response.status === 200) {
+      products.value = response.data.filter(
+        (product) => !product.isDeleted
       );
-    };
+    } else {
+      throw new Error("Failed to fetch products");
+    }
+  } catch (err) {
+    console.error("Error fetching products:", err);
+    showToast("Failed to fetch products. Please try again.", "error");
+  } finally {
+    isLoading.value = false;
+  }
+};
 
-    const addProduct = async () => {
-      try {
-        const response = await axios.post(`${apiUrl}/api/prisma/add-product`, {
-          title: product.value.title,
-          description: product.value.description,
-          url: product.value.url,
-          price: parseInt(product.value.price, 10),
-          hidden: false,
-        });
-        closeModal();
-        await fetchProducts();
-
-        if (
-          response.status === 201 &&
-          response.data.body.message === "Product added successfully!"
-        ) {
-          showNotification("Product successfully added!", "success");
-          products.value.push(response.data.body.product);
-        } else {
-          console.error(
-            `Error adding product: ${response.data.body.message || "Unexpected error"
-            }`
-          );
-          showNotification(
-            `Error adding product: ${response.data.body.message || "Unexpected error"
-            }`,
-            "error"
-          );
-        }
-      } catch (err) {
-        console.error("Unexpected error:", err);
-        showNotification("Unexpected error: " + err.message, "error");
-      }
-    };
-
-    const updateProduct = async () => {
-      try {
-        const response = await axios.put(
-          `${apiUrl}/api/prisma/update-product/${product.value.id}`,
-          {
-            title: product.value.title,
-            description: product.value.description,
-            url: product.value.url,
-            price: parseInt(product.value.price, 10),
-            hidden: product.value.hidden,
-          }
-        );
-
-        if (response.status === 200) {
-          showNotification("Product successfully updated!", "success");
-          const index = products.value.findIndex(
-            (p) => p.id === product.value.id
-          );
-          if (index !== -1) {
-            products.value[index] = { ...product.value };
-          }
-          closeModal();
-        } else {
-          throw new Error("Failed to update product");
-        }
-      } catch (err) {
-        console.error("Error updating product:", err);
-        showNotification("Error updating product: " + err.message, "error");
-      }
-    };
-
-    const toggleProductVisibility = async (product) => {
-      if (isProductInOrderItem(product.id)) {
-        showNotification(
-          "Cannot change visibility of a product that is part of an order.",
-          "error"
-        );
-        return;
-      }
-
-      try {
-        const updatedProduct = { ...product, hidden: !product.hidden };
-        const response = await axios.put(
-          `${apiUrl}/api/prisma/update-product/${product.id}`,
-          {
-            hidden: updatedProduct.hidden,
-          }
-        );
-
-        if (response.status === 200) {
-          product.hidden = updatedProduct.hidden;
-          showNotification("Product visibility updated!", "success");
-        } else {
-          throw new Error("Failed to update product visibility");
-        }
-      } catch (err) {
-        if (err.response && err.response.status === 400) {
-          showNotification(
-            "Cannot update product. It is part of an order.",
-            "error"
-          );
-        } else {
-          console.error("Error updating product visibility:", err);
-          showNotification(
-            "Error updating product visibility: " + err.message,
-            "error"
-          );
-        }
-      }
-    };
-
-    const markProductAsDeleted = async (productId) => {
-      if (isProductInOrderItem(productId)) {
-        showNotification(
-          "Cannot delete a product that is part of an order.",
-          "error"
-        );
-        return;
-      }
-
-      try {
-        const response = await axios.put(
-          `${apiUrl}/api/prisma/update-product/${productId}`,
-          {
-            isDeleted: true,
-          }
-        );
-
-        if (response.status === 200) {
-          showNotification(
-            "Product successfully marked as deleted!",
-            "success"
-          );
-          products.value = products.value.filter((p) => p.id !== productId);
-        } else {
-          throw new Error("Failed to delete product");
-        }
-      } catch (err) {
-        if (err.response && err.response.status === 400) {
-          showNotification(
-            "Cannot delete product. It is part of a cart.",
-            "error"
-          );
-        } else {
-          console.error("Error deleting product:", err);
-          showNotification("Error deleting product: " + err.message, "error");
-        }
-      }
-    };
-
-    const searchQuery = ref("");
-    const filteredProducts = computed(() =>
-      products.value.filter((product) =>
-        product.title.toLowerCase().includes(searchQuery.value.toLowerCase())
-      )
+const fetchOrderItems = async () => {
+  try {
+    const response = await axios.get(
+      `${apiUrl}/api/prisma/get-order-items`
     );
+    if (response.status === 200) {
+      orderItems.value = response.data;
+      console.log("Order Items:", orderItems.value); // Print the order items in the console
+    } else {
+      throw new Error("Failed to fetch order items");
+    }
+  } catch (err) {
+    console.error("Error fetching order items:", err);
+  }
+};
 
-    const totalProducts = computed(() => products.value.length);
-    const displayedProducts = computed(
-      () => products.value.filter((p) => !p.hidden).length
-    );
-    const hiddenProducts = computed(
-      () => products.value.filter((p) => p.hidden).length
-    );
-    const availableProducts = computed(
-      () => products.value.filter((p) => !p.hidden).length
-    );
+const isProductInOrderItem = (productId) => {
+  return orderItems.value.some(
+    (orderItem) => orderItem.productId === productId
+  );
+};
 
-    onMounted(() => {
-      fetchProducts();
-      fetchOrderItems();
+const addProduct = async () => {
+  isLoading.value = true;
+  try {
+    const formData = new FormData();
+    formData.append("title", product.value.title);
+    formData.append("description", product.value.description);
+    formData.append("price", product.value.price);
+    formData.append("image", product.value.image);
+
+    const response = await $fetch("/api/prisma/add-product", {
+      method: "POST",
+      body: formData,
     });
 
-    return {
-      isModalVisible,
-      editMode,
-      products,
-      product,
-      notification,
-      openModal,
-      openEditModal,
-      closeModal,
-      addProduct,
-      updateProduct,
-      toggleProductVisibility,
-      markProductAsDeleted,
-      searchQuery,
-      filteredProducts,
-      totalProducts,
-      displayedProducts,
-      hiddenProducts,
-      availableProducts,
-      isProductInOrderItem,
-    };
-  },
+    if (response) {
+      await fetchProducts();
+      closeModal();
+      showToast("Product added successfully! 🎉", "success");
+    }
+  } catch (error) {
+    console.error("Error adding product:", error);
+    showToast("Failed to add product. Please try again.", "error");
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const updateProduct = async () => {
+  isLoading.value = true;
+  try {
+    const formData = new FormData();
+    formData.append("title", product.value.title);
+    formData.append("description", product.value.description);
+    formData.append("price", product.value.price);
+    if (product.value.image) {
+      formData.append("image", product.value.image);
+    }
+
+    const response = await $fetch(`/api/prisma/update-product/${product.value.id}`, {
+      method: "PUT",
+      body: formData,
+    });
+
+    if (response) {
+      await fetchProducts();
+      closeModal();
+      showToast("Product updated successfully! ✨", "success");
+    }
+  } catch (error) {
+    console.error("Error updating product:", error);
+    showToast("Failed to update product. Please try again.", "error");
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const toggleProductVisibility = async (product) => {
+  if (isProductInOrderItem(product.id)) {
+    showToast("Cannot modify product that exists in cart items.", "error");
+    return;
+  }
+
+  isLoading.value = true;
+  try {
+    const response = await $fetch(`/api/prisma/update-product/${product.id}`, {
+      method: "PUT",
+      body: { hidden: !product.hidden },
+    });
+
+    if (response) {
+      await fetchProducts();
+      showToast(
+        `Product is now ${!product.hidden ? 'hidden' : 'visible'} 👁️`, 
+        "success"
+      );
+    }
+  } catch (error) {
+    console.error("Error toggling product visibility:", error);
+    showToast("Failed to update product visibility. Please try again.", "error");
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const markProductAsDeleted = (productId) => {
+  if (isProductInOrderItem(productId)) {
+    showToast("Cannot delete product that exists in cart items.", "error");
+    return;
+  }
+  
+  productToDelete.value = productId;
+  isDeleteModalVisible.value = true;
+};
+
+const searchQuery = ref("");
+const filteredProducts = computed(() =>
+  products.value.filter((product) =>
+    product.title.toLowerCase().includes(searchQuery.value.toLowerCase())
+  )
+);
+
+const totalProducts = computed(() => products.value.length);
+const displayedProducts = computed(
+  () => products.value.filter((p) => !p.hidden).length
+);
+const hiddenProducts = computed(
+  () => products.value.filter((p) => p.hidden).length
+);
+const availableProducts = computed(
+  () => products.value.filter((p) => !p.hidden).length
+);
+
+// Add these refs for pagination
+const currentPage = ref(1);
+const itemsPerPage = ref(10);
+
+// Add these computed properties for pagination
+const totalItems = computed(() => filteredProducts.value.length);
+
+const totalPages = computed(() => Math.ceil(totalItems.value / itemsPerPage.value));
+
+const startIndex = computed(() => (currentPage.value - 1) * itemsPerPage.value);
+
+const endIndex = computed(() => Math.min(startIndex.value + itemsPerPage.value, totalItems.value));
+
+const paginatedProducts = computed(() => {
+  return filteredProducts.value.slice(startIndex.value, endIndex.value);
+});
+
+// Add this for page number display
+const displayedPages = computed(() => {
+  const delta = 2;
+  const range = [];
+  const rangeWithDots = [];
+  let l;
+
+  for (let i = 1; i <= totalPages.value; i++) {
+    if (
+      i === 1 ||
+      i === totalPages.value ||
+      (i >= currentPage.value - delta && i <= currentPage.value + delta)
+    ) {
+      range.push(i);
+    }
+  }
+
+  for (let i of range) {
+    if (l) {
+      if (i - l === 2) {
+        rangeWithDots.push(l + 1);
+      } else if (i - l !== 1) {
+        rangeWithDots.push('...');
+      }
+    }
+    rangeWithDots.push(i);
+    l = i;
+  }
+
+  return rangeWithDots;
+});
+
+// Watch for search query changes to reset pagination
+watch(searchQuery, () => {
+  currentPage.value = 1;
+  
+  // Reset animation by removing and re-adding class
+  nextTick(() => {
+    const rows = document.querySelectorAll('tr');
+    rows.forEach(row => {
+      row.style.animation = 'none';
+      row.offsetHeight; // Trigger reflow
+      row.style.animation = null;
+    });
+  });
+});
+
+onMounted(async () => {
+  isLoading.value = true;
+  try {
+    await Promise.all([fetchProducts(), fetchOrderItems()]);
+  } catch (error) {
+    console.error("Error during initial data fetch:", error);
+    showToast("Failed to load initial data. Please refresh the page.", "error");
+  } finally {
+    isLoading.value = false;
+  }
+});
+
+// Add these refs
+const isViewModalVisible = ref(false);
+const selectedProduct = ref(null);
+
+// Add these methods
+const showProductDetails = (product) => {
+  selectedProduct.value = product;
+  isViewModalVisible.value = true;
+};
+
+const closeViewModal = () => {
+  isViewModalVisible.value = false;
+  selectedProduct.value = null;
+};
+
+// Add these refs
+const isLoading = ref(false);
+const toasts = ref([]);
+
+// Add toast function
+const showToast = (message, type = 'success') => {
+  const id = Date.now();
+  toasts.value.push({ id, message, type });
+  setTimeout(() => {
+    toasts.value = toasts.value.filter(t => t.id !== id);
+  }, 3000);
+};
+
+// Add these refs for delete modal
+const isDeleteModalVisible = ref(false);
+const productToDelete = ref(null);
+
+// Add methods to handle delete modal
+const closeDeleteModal = () => {
+  isDeleteModalVisible.value = false;
+  productToDelete.value = null;
+};
+
+const confirmDelete = async () => {
+  isLoading.value = true;
+  try {
+    const response = await $fetch(`/api/prisma/delete-product/${productToDelete.value}`, {
+      method: "DELETE",
+    });
+
+    if (response) {
+      await fetchProducts();
+      showToast("Product deleted successfully! 🗑️", "success");
+      closeDeleteModal();
+    }
+  } catch (error) {
+    console.error("Error deleting product:", error);
+    showToast("Failed to delete product. Please try again.", "error");
+  } finally {
+    isLoading.value = false;
+  }
 };
 </script>
 
@@ -509,5 +753,90 @@ button:hover .group-hover\:text-white {
   left: 50%;
   transform: translateX(-50%);
   z-index: 50;
+}
+
+.pagination-button {
+  @apply px-3 py-1 rounded border;
+}
+
+.pagination-button:disabled {
+  @apply bg-gray-100 text-gray-400 cursor-not-allowed;
+}
+
+.pagination-button:not(:disabled):hover {
+  @apply bg-gray-100;
+}
+
+.pagination-button.active {
+  @apply bg-blue-500 text-white;
+}
+
+/* Optional: Add animation for modal */
+.fixed {
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+/* Add animation for modal */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out;
+}
+
+@keyframes highlight {
+  0% {
+    background-color: transparent;
+    transform: scale(1);
+  }
+  50% {
+    background-color: rgba(34, 197, 94, 0.1); /* green-500 with low opacity */
+    transform: scale(1.02);
+  }
+  100% {
+    background-color: transparent;
+    transform: scale(1);
+  }
+}
+
+.animate-highlight {
+  animation: highlight 1s ease-in-out;
+}
+
+/* Optional: Add transition for smoother animations */
+tr {
+  transition: all 0.3s ease-in-out;
 }
 </style>

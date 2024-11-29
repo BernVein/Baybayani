@@ -9,10 +9,9 @@
         <!-- Title -->
         <h1 class="text-3xl font-semibold mb-8">Order Summary</h1>
 
-        <!-- Loading and Error States -->
-        <div v-if="isLoading" class="text-center py-6">
-          <p>Loading orders...</p>
-        </div>
+        <!-- Remove the old loading text and add Loading component -->
+        <Loading v-if="isLoading" />
+
         <div v-if="errorMessage" class="text-center text-red-500 py-4">
           {{ errorMessage }}
         </div>
@@ -99,11 +98,10 @@
               </thead>
               <tbody>
                 <tr
-                  v-for="order in filteredOrders"
+                  v-for="order in paginatedOrders"
                   :key="order.id"
                   class="hover:bg-gray-200 cursor-pointer transition transform duration-200 ease-in-out hover:scale-[1.02]"
                   @click="showOrderProducts(order)"
-                  
                 >
                   <td class="py-4 px-4 border-b">{{ order.id }}</td>
                   <td class="py-4 px-4 border-b">{{ order.date }}</td>
@@ -131,6 +129,63 @@
                 </tr>
               </tbody>
             </table>
+
+            <!-- Pagination Controls -->
+            <div class="flex items-center justify-between px-4 py-3 bg-gray-50 border-t">
+              <!-- Items per page selector -->
+              <div class="flex items-center gap-2">
+                <span class="text-sm text-gray-700">Show</span>
+                <select 
+                  v-model="itemsPerPage" 
+                  class="border rounded px-2 py-1 text-sm"
+                  @change="currentPage = 1"
+                >
+                  <option value="5">5</option>
+                  <option value="10">10</option>
+                  <option value="25">25</option>
+                  <option value="50">50</option>
+                </select>
+                <span class="text-sm text-gray-700">entries</span>
+              </div>
+
+              <!-- Page information -->
+              <div class="text-sm text-gray-700">
+                Showing {{ startIndex + 1 }} to {{ endIndex }} of {{ totalItems }} entries
+              </div>
+
+              <!-- Pagination buttons -->
+              <div class="flex gap-2">
+                <button
+                  @click="currentPage--"
+                  :disabled="currentPage === 1"
+                  class="px-3 py-1 rounded border"
+                  :class="currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'"
+                >
+                  Previous
+                </button>
+                
+                <div class="flex gap-1">
+                  <button
+                    v-for="page in displayedPages"
+                    :key="page"
+                    @click="currentPage = page"
+                    class="px-3 py-1 rounded border"
+                    :class="currentPage === page ? 'bg-blue-500 text-white' : 'hover:bg-gray-100'"
+                  >
+                    {{ page }}
+                  </button>
+                </div>
+
+                <button
+                  @click="currentPage++"
+                  :disabled="currentPage === totalPages"
+                  class="px-3 py-1 rounded border"
+                  :class="currentPage === totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -195,9 +250,10 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import AdminLayout from "~/layouts/AdminLayout.vue";
 import SideBarLayout from "~/layouts/SideBarLayout.vue";
+import Loading from '~/components/Loading.vue';
 import { useUserStore } from "~/stores/user";
 
 const userStore = useUserStore();
@@ -208,6 +264,10 @@ const isLoading = ref(false);
 const errorMessage = ref("");
 const isModalVisible = ref(false);
 const selectedOrder = ref(null);
+
+// Add these refs for pagination
+const currentPage = ref(1);
+const itemsPerPage = ref(10);
 
 // Fetch orders from the API
 const fetchOrders = async () => {
@@ -226,9 +286,6 @@ const fetchOrders = async () => {
         };
       })
     );
-
-    // Log the orders with their associated details in the console
-    console.log("Fetched Orders with Details:", JSON.stringify(orders.value, null, 2));
   } catch (error) {
     errorMessage.value = "Failed to fetch orders. Please try again later.";
     console.error("Error fetching orders:", error);
@@ -283,18 +340,15 @@ const closeModal = () => {
 // Delete product with confirmation
 const deleteProduct = async (productId) => {
   const confirmation = confirm("Are you sure you want to remove this item? This action cannot be undone.");
-  if (!confirmation) {
-    return;
-  }
+  if (!confirmation) return;
 
+  isLoading.value = true;
   try {
     const response = await $fetch(`/api/prisma/delete-order-item-by-id/${productId}`, {
       method: "DELETE",
     });
 
     if (response.success) {
-      console.log(`Product ${productId} removed successfully`);
-      // Update the local state to remove the deleted product
       selectedOrder.value.orderItem = selectedOrder.value.orderItem.filter(
         (item) => item.id !== productId
       );
@@ -303,11 +357,14 @@ const deleteProduct = async (productId) => {
     }
   } catch (error) {
     console.error("Error removing product:", error);
+  } finally {
+    isLoading.value = false;
   }
 };
 
 
 const updateOrderStatusByUser = async (orderId, newStatus) => {
+  isLoading.value = true;
   try {
     const response = await $fetch(`/api/prisma/update-orderstatus-by-user/${orderId}`, {
       method: "POST",
@@ -316,7 +373,6 @@ const updateOrderStatusByUser = async (orderId, newStatus) => {
 
     if (response.success) {
       console.log(`Order ${orderId} status updated to ${newStatus}`);
-      // Optionally, update the local `orders` state
       const updatedOrder = orders.value.find((order) => order.id === orderId);
       if (updatedOrder) {
         updatedOrder.orderStatus = newStatus;
@@ -326,6 +382,8 @@ const updateOrderStatusByUser = async (orderId, newStatus) => {
     }
   } catch (error) {
     console.error("Error updating order status:", error);
+  } finally {
+    isLoading.value = false;
   }
 };
 
@@ -377,6 +435,56 @@ const toggleFilter = () => {
   isFilterVisible.value = !isFilterVisible.value;
 };
 
+// Add these computed properties for pagination
+const totalItems = computed(() => filteredOrders.value.length);
+
+const totalPages = computed(() => Math.ceil(totalItems.value / itemsPerPage.value));
+
+const startIndex = computed(() => (currentPage.value - 1) * itemsPerPage.value);
+
+const endIndex = computed(() => Math.min(startIndex.value + itemsPerPage.value, totalItems.value));
+
+const paginatedOrders = computed(() => {
+  return filteredOrders.value.slice(startIndex.value, endIndex.value);
+});
+
+// Add this computed property to handle page number display
+const displayedPages = computed(() => {
+  const delta = 2;
+  const range = [];
+  const rangeWithDots = [];
+  let l;
+
+  for (let i = 1; i <= totalPages.value; i++) {
+    if (
+      i === 1 ||
+      i === totalPages.value ||
+      (i >= currentPage.value - delta && i <= currentPage.value + delta)
+    ) {
+      range.push(i);
+    }
+  }
+
+  for (let i of range) {
+    if (l) {
+      if (i - l === 2) {
+        rangeWithDots.push(l + 1);
+      } else if (i - l !== 1) {
+        rangeWithDots.push('...');
+      }
+    }
+    rangeWithDots.push(i);
+    l = i;
+  }
+
+  return rangeWithDots;
+});
+
+// Watch for filter changes to reset pagination
+watch([searchQuery, filterStatus], () => {
+  currentPage.value = 1;
+});
+
 onMounted(fetchOrders);
 </script>
 
@@ -387,5 +495,22 @@ onMounted(fetchOrders);
 
 .button:hover .group-hover\:text-white {
   color: white;
+}
+
+/* Add these styles for pagination */
+.pagination-button {
+  @apply px-3 py-1 rounded border;
+}
+
+.pagination-button:disabled {
+  @apply bg-gray-100 text-gray-400 cursor-not-allowed;
+}
+
+.pagination-button:not(:disabled):hover {
+  @apply bg-gray-100;
+}
+
+.pagination-button.active {
+  @apply bg-blue-500 text-white;
 }
 </style>

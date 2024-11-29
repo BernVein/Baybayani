@@ -45,18 +45,32 @@
           </div>
           <div class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-blue-600">
             <p class="text-lg font-medium">Total Revenue</p>
-            <p class="text-4xl font-bold overflow-hidden">
+            <p 
+              class="text-4xl font-bold overflow-hidden relative group cursor-help"
+              :title="`₱${formatNumber(dashboardSummary.rawTotalRevenue)}`"
+            >
               <span :key="`revenue-${animationKey}`" class="inline-block animate-number">
-                ₱{{ formatNumber(dashboardSummary.totalRevenue) }}
+                ₱{{ dashboardSummary.totalRevenue }}
               </span>
+              <!-- Tooltip -->
+              <div class="tooltip">
+                ₱{{ formatNumber(dashboardSummary.rawTotalRevenue) }}
+              </div>
             </p>
           </div>
           <div class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-yellow-600">
             <p class="text-lg font-medium">Revenue Today</p>
-            <p class="text-4xl font-bold overflow-hidden">
+            <p 
+              class="text-4xl font-bold overflow-hidden relative group cursor-help"
+              :title="`₱${formatNumber(dashboardSummary.rawTodayRevenue)}`"
+            >
               <span :key="`today-${animationKey}`" class="inline-block animate-number">
-                ₱{{ formatNumber(dashboardSummary.todayRevenue) }}
+                ₱{{ dashboardSummary.todayRevenue }}
               </span>
+              <!-- Tooltip -->
+              <div class="tooltip">
+                ₱{{ formatNumber(dashboardSummary.rawTodayRevenue) }}
+              </div>
             </p>
           </div>
         </div>
@@ -485,28 +499,36 @@ const updateTopProducts = () => {
     .slice(0, 4);
 };
 
-// Update dashboardSummary computed to handle potential empty orders
+// Helper function to format large numbers
+const formatLargeNumber = (number) => {
+  if (number >= 1_000_000) {
+    return `${(number / 1_000_000).toFixed(1)}M`;
+  }
+  return formatNumber(number);
+};
+
+// Update dashboardSummary computed to use the new formatting function
 const dashboardSummary = computed(() => {
   const totalProducts = products.value.length;
   
-  // Calculate totals only from orders with products
   const totalSold = orders.value.reduce((sum, order) => 
     sum + (order.orderItem?.reduce((itemSum, item) => itemSum + (item.quantity || 0), 0) || 0), 0);
     
-  const totalRevenue = orders.value.reduce((sum, order) => 
+  const rawTotalRevenue = orders.value.reduce((sum, order) => 
     sum + (order.totalPrice || 0), 0);
   
-  // Calculate today's revenue
   const today = new Date().setHours(0, 0, 0, 0);
-  const todayRevenue = orders.value
+  const rawTodayRevenue = orders.value
     .filter(order => new Date(order.created_at).setHours(0, 0, 0, 0) === today)
     .reduce((sum, order) => sum + (order.totalPrice || 0), 0);
     
   return {
     totalProducts,
     totalSold,
-    totalRevenue,
-    todayRevenue
+    rawTotalRevenue,
+    rawTodayRevenue,
+    totalRevenue: formatLargeNumber(rawTotalRevenue),
+    todayRevenue: formatLargeNumber(rawTodayRevenue)
   };
 });
 
@@ -563,5 +585,33 @@ onUnmounted(() => {
 
 .animate-number {
   animation: number-animation 0.5s ease-out forwards;
+}
+
+/* Tooltip styles */
+.tooltip {
+  @apply invisible opacity-0 absolute -bottom-12 left-1/2 transform -translate-x-1/2
+         bg-gray-900 text-white px-4 py-2 rounded text-base whitespace-nowrap
+         transition-all duration-200 z-50;
+}
+
+/* Show tooltip on hover */
+.group:hover .tooltip {
+  @apply visible opacity-100;
+}
+
+/* Optional: Add a small arrow to the tooltip */
+.tooltip::before {
+  content: '';
+  @apply absolute -top-2 left-1/2 transform -translate-x-1/2
+         border-solid border-8 border-transparent border-b-gray-900;
+}
+
+/* Add smooth transition for hover effect */
+.group {
+  @apply transition-all duration-200;
+}
+
+.group:hover {
+  @apply transform scale-105;
 }
 </style>
