@@ -77,6 +77,7 @@ const userStore = useUserStore();
 const user = useSupabaseUser();
 let orders = ref(null);
 let selectedOrderId = ref(null);
+let orderHover = ref(null);  // Track the hovered order ID
 
 watchEffect(async () => {
   if (!user.value) {
@@ -108,10 +109,28 @@ const viewOrderDetails = (orderId) => {
 
 const cancelOrder = async (orderId) => {
   try {
+    // Send DELETE request to cancel the order
     await useFetch(`/api/prisma/cancel-order/${orderId}`, { method: "DELETE" });
-    orders.value = orders.value.filter((order) => order.id !== orderId);
+
+    // Find the order in the orders list and update its status to "CANCELED"
+    const orderToCancel = orders.value.data.find(order => order.id === orderId);
+
+    if (orderToCancel) {
+      // Update the order status to 'CANCELED'
+      orderToCancel.orderStatus = 'CANCELED';
+
+      // If you're using userStore, find the order in userStore and update the status
+      const orderIndexInStore = userStore.orders.findIndex(order => order.id === orderId);
+      if (orderIndexInStore !== -1) {
+        // Update the order in the store
+        userStore.order[orderIndexInStore].orderStatus = 'CANCELED';
+      }
+    } else {
+      console.error("Order not found in orders list.");
+    }
+
   } catch (error) {
-    console.error("Error deleting order:", error);
+    console.error("Error canceling order:", error);
   }
 };
 
