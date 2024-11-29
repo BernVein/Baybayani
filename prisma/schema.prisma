@@ -6,9 +6,8 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
-  // Connection pooling settings
-  connection_limit = 5
-  pool_timeout    = 20
+  // Connection pooling is handled automatically by Prisma
+  // when using url and directUrl
 }
 
 model User {
