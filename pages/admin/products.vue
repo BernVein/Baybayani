@@ -441,13 +441,10 @@ const showNotification = (message, type = "success") => {
 const fetchProducts = async () => {
   isLoading.value = true;
   try {
-    const response = await axios.get(
-      `${apiUrl}/api/prisma/get-all-products`
-    );
+    const response = await axios.get(`${apiUrl}/api/prisma/get-all-products`);
     if (response.status === 200) {
-      products.value = response.data.filter(
-        (product) => !product.isDeleted
-      );
+      // Filter out deleted products
+      products.value = response.data.filter(product => !product.isDeleted);
     } else {
       throw new Error("Failed to fetch products");
     }
@@ -484,21 +481,24 @@ const isProductInOrderItem = (productId) => {
 const addProduct = async () => {
   isLoading.value = true;
   try {
-    const formData = new FormData();
-    formData.append("title", product.value.title);
-    formData.append("description", product.value.description);
-    formData.append("price", product.value.price);
-    formData.append("image", product.value.image);
-
+    // Send as JSON object instead of FormData
     const response = await $fetch("/api/prisma/add-product", {
       method: "POST",
-      body: formData,
+      body: {
+        title: product.value.title,
+        description: product.value.description,
+        price: parseInt(product.value.price),
+        url: product.value.url
+      },
     });
 
-    if (response) {
+    // Check for response structure
+    if (response.body?.product) {
       await fetchProducts();
       closeModal();
       showToast("Product added successfully! 🎉", "success");
+    } else {
+      throw new Error("Failed to add product");
     }
   } catch (error) {
     console.error("Error adding product:", error);
@@ -512,22 +512,34 @@ const updateProduct = async () => {
   isLoading.value = true;
   try {
     const formData = new FormData();
+    
+    // Add all product fields to formData
     formData.append("title", product.value.title);
     formData.append("description", product.value.description);
     formData.append("price", product.value.price);
+    
+    // Only append image if a new one is selected
     if (product.value.image) {
       formData.append("image", product.value.image);
     }
 
     const response = await $fetch(`/api/prisma/update-product/${product.value.id}`, {
       method: "PUT",
-      body: formData,
+      body: {
+        title: product.value.title,
+        description: product.value.description,
+        price: parseInt(product.value.price),
+        url: product.value.url, // Keep existing URL if no new image
+      }
     });
 
-    if (response) {
+    // Check for response.body since that's where the data is nested
+    if (response.body?.product) {
       await fetchProducts();
       closeModal();
       showToast("Product updated successfully! ✨", "success");
+    } else {
+      throw new Error("Failed to update product");
     }
   } catch (error) {
     console.error("Error updating product:", error);
@@ -710,8 +722,13 @@ const closeDeleteModal = () => {
 const confirmDelete = async () => {
   isLoading.value = true;
   try {
-    const response = await $fetch(`/api/prisma/delete-product/${productToDelete.value}`, {
-      method: "DELETE",
+    // Use update endpoint instead of delete
+    const response = await $fetch(`/api/prisma/update-product/${productToDelete.value}`, {
+      method: "PUT",
+      body: {
+        isDeleted: true,
+        hidden: true // Also hide the product when it's deleted
+      }
     });
 
     if (response) {

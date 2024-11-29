@@ -5,7 +5,6 @@ const prisma = new PrismaClient();
 
 export default defineEventHandler(async (event) => {
   try {
-    // Read the request body
     const body = await readBody(event);
 
     // Validate the required fields
@@ -26,12 +25,14 @@ export default defineEventHandler(async (event) => {
         description: body.description,
         url: body.url,
         price: price,
+        hidden: false,
+        isDeleted: false
       },
     });
 
-    // Return the newly created product along with a success message
+    // Return the same structure as update endpoint
     return {
-      status: 201,
+      success: true,
       body: {
         message: 'Product added successfully!',
         product: newProduct,
@@ -39,10 +40,8 @@ export default defineEventHandler(async (event) => {
     };
   } catch (error) {
     console.error('Error creating product:', error);
-
-    // Return an appropriate error message to the client
     return {
-      status: 500,
+      success: false,
       body: {
         message: error.message || 'An error occurred while adding the product.',
       },

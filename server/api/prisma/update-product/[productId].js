@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
         data: {
           title: requestBody.title || undefined,
           description: requestBody.description || undefined,
-          price: requestBody.price !== undefined ? parseFloat(requestBody.price) : undefined,
+          price: requestBody.price !== undefined ? parseInt(requestBody.price) : undefined,
           url: requestBody.url || undefined,
           hidden: requestBody.hidden !== undefined ? requestBody.hidden : undefined,
           isDeleted: requestBody.isDeleted !== undefined ? requestBody.isDeleted : undefined,
@@ -25,11 +25,11 @@ export default defineEventHandler(async (event) => {
       });
 
       return {
-        statusCode: 200,
+        success: true,
         body: {
           message: "Product updated successfully",
           product: updatedProduct,
-        },
+        }
       };
     } else {
       // Fetching all products when no productId is specified
@@ -39,20 +39,20 @@ export default defineEventHandler(async (event) => {
         },
       });
       return {
-        statusCode: 200,
+        success: true,
         body: products,
       };
     }
   } catch (error) {
     console.error("Error:", error);
     return {
-      statusCode: 500,
+      success: false,
       body: {
         message: "An error occurred",
         error: error.message,
-      },
+      }
     };
   } finally {
-    await prisma.$disconnect(); // Ensure the Prisma client disconnects after the query
+    await prisma.$disconnect();
   }
 });
