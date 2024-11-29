@@ -100,17 +100,19 @@
                 <tr
                   v-for="order in filteredOrders"
                   :key="order.id"
-                  class="hover:bg-gray-200 hover:scale-105 transition transform duration-200 ease-in-out"
+                  class="hover:bg-gray-200 cursor-pointer transition transform duration-200 ease-in-out hover:scale-[1.02]"
+                  @click="showOrderProducts(order)"
+                  
                 >
-
                   <td class="py-4 px-4 border-b">{{ order.id }}</td>
                   <td class="py-4 px-4 border-b">{{ order.date }}</td>
-                  <td class="py-4 px-4 border-b">{{ order.userName }}</td> <!-- Display userId -->
+                  <td class="py-4 px-4 border-b">{{ order.userName }}</td>
                   <td class="py-4 px-4 border-b">&#8369;{{ order.totalPrice.toFixed(2) }}</td>
                   <td class="py-4 px-4 border-b text-center">
                     <select
                       v-model="order.orderStatus"
-                      @change="updateOrderStatus(order.id, order.orderStatus)"
+                      @click.stop
+                      @change="updateOrderStatusByUser(order.id, order.orderStatus)"
                       class="px-3 py-1 rounded-full text-white"
                       :class="{
                         'bg-yellow-500': order.orderStatus === 'PENDING',
@@ -118,7 +120,6 @@
                         'bg-green-500': order.orderStatus === 'FULFILLED',
                         'bg-red-500': order.orderStatus === 'CANCELED',
                       }"
-                      
                     >
                       <option value="PENDING">Pending</option>
                       <option value="PROCESSING">Processing</option>
@@ -126,7 +127,6 @@
                       <option value="CANCELED">Canceled</option>
                     </select>
                   </td>
-
                 </tr>
               </tbody>
             </table>
@@ -134,116 +134,220 @@
         </div>
       </div>
     </AdminLayout>
+
+    <!-- Modal -->
+    <div
+      v-if="isModalVisible"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+    >
+      <div class="bg-white w-1/3 rounded-lg shadow-lg p-6">
+        <h2 class="text-2xl font-bold mb-4">
+          Orders of {{ selectedOrder.userName }} on {{ selectedOrder.date }}
+        </h2>
+
+        <div>
+          <template v-if="selectedOrder.orderItem.length > 0">
+            <ul>
+              <li
+                v-for="product in selectedOrder.orderItem"
+                :key="product.id"
+                class="flex justify-between items-center py-2 border-b"
+              >
+                <div class="flex items-center space-x-4">
+                  <!-- Product Image -->
+                  <img
+                    :src="product.product.url"
+                    alt="Product Image"
+                    class="w-10 h-10 rounded-full object-cover"
+                  />
+                  <!-- Product Name and Price -->
+                  <div>
+                    <p class="text-lg font-medium">{{ product.product.title }}</p>
+                    <p class="text-sm text-gray-500">Price: &#8369;{{ product.product.price }}</p>
+                  </div>
+                </div>
+                <button
+                  @click="deleteProduct(product.id)"
+                  class="text-red-500 hover:text-red-700"
+                >
+                  Unavailable
+                </button>
+              </li>
+            </ul>
+          </template>
+          <template v-else>
+            <div class="text-center py-4">
+              <p class="text-lg font-medium text-gray-700">No products available in this order because all the products listed here was unavailable.</p>
+            </div>
+          </template>
+        </div>
+
+        <button
+          @click="closeModal"
+          class="mt-6 bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700"
+        >
+          Close
+        </button>
+      </div>
+    </div>
   </div>
 </template>
-
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import AdminLayout from "~/layouts/AdminLayout.vue";
 import SideBarLayout from "~/layouts/SideBarLayout.vue";
-
 import { useUserStore } from "~/stores/user";
 
 const userStore = useUserStore();
-const user = useSupabaseUser();
-const route = useRoute();
-
 await userStore.isAdmin();
 
-const orders = ref([]); // Dynamic orders array
-const isLoading = ref(false); // Loading state
-const errorMessage = ref(""); // Error message
+const orders = ref([]);
+const isLoading = ref(false);
+const errorMessage = ref("");
+const isModalVisible = ref(false);
+const selectedOrder = ref(null);
 
 // Fetch orders from the API
 const fetchOrders = async () => {
-  isLoading.value = true; // Show loading indicator
-  errorMessage.value = ""; // Clear previous errors
+  isLoading.value = true;
+  errorMessage.value = "";
 
   try {
-    // Fetch orders from the API
     const response = await $fetch("/api/prisma/get-all-orders");
-    // Map the response to include a human-readable date
     orders.value = await Promise.all(
-    response.map(async (order) => {
-      const userName = await fetchUserName(order.userId); // Resolve user name
-      return {
-        ...order,
-        userName, // Add userName to the order object
-        date: new Date(order.created_at).toLocaleDateString(), // Format the date
-      };
-    })
-  );
+      response.map(async (order) => {
+        const userName = await fetchUserName(order.userId);
+        return {
+          ...order,
+          userName,
+          date: new Date(order.created_at).toLocaleDateString(),
+        };
+      })
+    );
 
+    // Log the orders with their associated details in the console
+    console.log("Fetched Orders with Details:", JSON.stringify(orders.value, null, 2));
   } catch (error) {
     errorMessage.value = "Failed to fetch orders. Please try again later.";
     console.error("Error fetching orders:", error);
   } finally {
-    isLoading.value = false; // Hide loading indicator
+    isLoading.value = false;
   }
 };
 
+
+// Fetch user name
 const fetchUserName = async (userId) => {
   try {
-    const user = await $fetch(`/api/prisma/get-user/${userId}`); // Fetch user details from API
-    return user?.name || "Unknown User"; // Return user's name or fallback
+    const user = await $fetch(`/api/prisma/get-user/${userId}`);
+    return user?.name || "Unknown User";
   } catch (error) {
-    console.error(`Error fetching user with ID ${userId}:`, error);
-    return "Unknown User"; // Fallback in case of error
+    console.error(`Error fetching user:`, error);
+    return "Unknown User";
+  }
+};
+
+// Show modal
+const showOrderProducts = (order) => {
+  selectedOrder.value = order;
+  isModalVisible.value = true;
+};
+
+// Close modal
+const closeModal = () => {
+  isModalVisible.value = false;
+  selectedOrder.value = null;
+};
+
+// Delete product
+// Delete product with confirmation
+const deleteProduct = async (productId) => {
+  const confirmation = confirm("Are you sure you want to remove this item? This action cannot be undone.");
+  if (!confirmation) {
+    return;
+  }
+
+  try {
+    const response = await $fetch(`/api/prisma/delete-order-item-by-id/${productId}`, {
+      method: "DELETE",
+    });
+
+    if (response.success) {
+      console.log(`Product ${productId} removed successfully`);
+      // Update the local state to remove the deleted product
+      selectedOrder.value.orderItem = selectedOrder.value.orderItem.filter(
+        (item) => item.id !== productId
+      );
+    } else {
+      throw new Error(response.message || "Failed to remove product.");
+    }
+  } catch (error) {
+    console.error("Error removing product:", error);
   }
 };
 
 
-// Computed properties for stats
+const updateOrderStatusByUser = async (orderId, newStatus) => {
+  try {
+    const response = await $fetch(`/api/prisma/update-orderstatus-by-user/${orderId}`, {
+      method: "POST",
+      body: { orderId, newStatus },
+    });
+
+    if (response.success) {
+      console.log(`Order ${orderId} status updated to ${newStatus}`);
+      // Optionally, update the local `orders` state
+      const updatedOrder = orders.value.find((order) => order.id === orderId);
+      if (updatedOrder) {
+        updatedOrder.orderStatus = newStatus;
+      }
+    } else {
+      console.error("Update failed:", response.message);
+    }
+  } catch (error) {
+    console.error("Error updating order status:", error);
+  }
+};
+
+
+// Computed properties
 const totalOrders = computed(() => orders.value.length);
-const pendingOrders = computed(
-  () => orders.value.filter((order) => order.orderStatus === "PENDING").length
-);
+const pendingOrders = computed(() => orders.value.filter((o) => o.orderStatus === "PENDING").length);
 const cancelledOrders = computed(
-  () => orders.value.filter((order) => order.orderStatus === "CANCELED").length
+  () => orders.value.filter((o) => o.orderStatus === "CANCELED").length
 );
 const fulfilledOrders = computed(
-  () => orders.value.filter((order) => order.orderStatus === "FULFILLED").length
+  () => orders.value.filter((o) => o.orderStatus === "FULFILLED").length
 );
 const orderSuccessRate = computed(() => {
-  const completed = orders.value.filter((order) => order.orderStatus === "FULFILLED").length;
-  return orders.value.length > 0 ? ((completed / orders.value.length) * 100).toFixed(2) : 0;
+  const fulfilled = fulfilledOrders.value;
+  return orders.value.length > 0 ? ((fulfilled / orders.value.length) * 100).toFixed(2) : 0;
 });
 
-// Search and Filter functionality
 const searchQuery = ref("");
 const filterStatus = ref("");
 const isFilterVisible = ref(false);
 
 const filteredOrders = computed(() => {
   let filtered = orders.value;
-
-  // Filter by search query
-  if (searchQuery.value !== "") {
+  if (searchQuery.value)
     filtered = filtered.filter(
       (order) =>
-        order.userId.toLowerCase().includes(searchQuery.value.toLowerCase()) || // Search by user ID
-        order.id.toLowerCase().includes(searchQuery.value.toLowerCase()) // Search by order ID
+        order.id.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+        order.userName.toLowerCase().includes(searchQuery.value.toLowerCase())
     );
-  }
-
-  // Filter by order status
-  if (filterStatus.value !== "") {
+  if (filterStatus.value)
     filtered = filtered.filter((order) => order.orderStatus === filterStatus.value);
-  }
-
   return filtered;
 });
 
-// Toggle filter visibility
 const toggleFilter = () => {
   isFilterVisible.value = !isFilterVisible.value;
 };
 
-// Fetch data when the component is mounted
 onMounted(fetchOrders);
 </script>
-
 
 <style scoped>
 .main-content {
