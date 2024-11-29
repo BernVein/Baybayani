@@ -36,7 +36,7 @@ const client = useSupabaseClient();
 const user = useSupabaseUser();
 
 watchEffect(() => {
-  if (user.value) {
+  if (user.value && user.value.isLoggedIn) {
     return navigateTo("/");
   }
 });

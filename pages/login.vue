@@ -1,54 +1,44 @@
 <template>
-  <div id="AuthPage" class="w-full h-[100vh] bg-white">
-    <!-- Header with logo -->
-    <div
-      class="w-full flex items-center justify-center p-5 border-b border-b-gray-300 shadow-[0px_1px_6px_4px_rgba(0,_0,_0,_0.25)]">
-      <NuxtLink to="/" class="min-w-[170px]" @click.prevent="navigateAndReload">
-        <img width="170" src="/baybayani-logo.png" alt="Logo" />
-      </NuxtLink>
+  <div id="AuthPage" class="flex items-center justify-center w-full h-[100vh] bg-white">
+    <!-- Logo Section -->
+    <div class="flex items-center justify-center w-1/2 h-full bg-gray-100 shadow-lg">
+      <img src="/logo.png" alt="Logo" class="h-full max-h-[90%] p-10 object-contain animate-fade-in" />
     </div>
 
-    <div
-      class="max-w-[400px] mx-auto px-2 border border-gray-300 rounded-lg pb-32 mt-10 shadow-[15px_15px_0px_1px_rgba(12,_101,_57,_1)]">
-      <!-- Page Title -->
-      <div class="text-center my-6 text-2xl font-bold">Login</div>
+    <!-- Login Form Section -->
+    <div class="w-1/2 max-w-[400px] mx-auto px-6">
+      <div class="border border-gray-300 rounded-lg shadow-2xl p-8 bg-white animate-slide-in">
+        <!-- Page Title -->
+        <div class="text-center mb-6 text-3xl font-bold text-[#0C6539]">Welcome Back!</div>
 
-      <!-- Error message -->
-      <div v-if="errorMsg" class="text-red-500 text-center mb-4">
-        {{ errorMsg }}
+        <!-- Login form-->
+        <form @submit.prevent="login" class="space-y-5">
+          <div>
+            <label for="email" class="block text-lg pb-2 font-medium text-gray-700">Email</label>
+            <input type="email" id="email" v-model="email" @input="resetMessages"
+              class="w-full p-3 border border-gray-400 rounded-md focus:ring-2 focus:ring-[#0C6539]" placeholder="Enter your email" required />
+          </div>
+
+          <div>
+            <label for="password" class="block text-lg pb-2 font-medium text-gray-700">Password</label>
+            <input type="password" id="password" v-model="password" @input="resetMessages"
+              class="w-full p-3 border border-gray-400 rounded-md focus:ring-2 focus:ring-[#0C6539]" placeholder="Enter your password" required />
+          </div>
+
+          <div>
+            <button type="submit" :disabled="loading"
+              class="w-full py-3 bg-[#0C6539] text-white font-semibold rounded-md hover:bg-[#0A5230] focus:outline-none focus:ring-2 focus:ring-blue-400">
+              <span v-if="loading">Logging in...</span>
+              <span v-else>Login</span>
+            </button>
+          </div>
+        </form>
       </div>
+    </div>
 
-      <!-- Success message -->
-      <div v-if="successMsg" class="text-green-500 text-center mb-4">
-        {{ successMsg }}
-      </div>
-
-      <!-- Login form-->
-      <form @submit.prevent="login" class="space-y-5 w-[350px] flex flex-col items-center ml-3">
-        <div>
-          <label for="email" class="block text-lg pb-2 mt-3 font-medium text-gray-700">Email</label>
-          <!-- Adjusted width of the input -->
-          <input type="email" id="email" v-model="email" @input="resetMessages"
-            class="mt-1 w-[300px] mx-auto p-3 border border-gray-400 rounded-md" placeholder="Enter your email"
-            required />
-        </div>
-
-        <div>
-          <label for="password" class="block text-lg pb-2 font-medium text-gray-700">Password</label>
-          <!-- Adjusted width of the input -->
-          <input type="password" id="password" v-model="password" @input="resetMessages"
-            class="mt-1 w-[300px] mx-auto p-3 border border-gray-400 rounded-md" placeholder="Enter your password"
-            required />
-        </div>
-
-        <div>
-          <button type="submit" :disabled="loading"
-            class="w-[300px] mt-10 mx-auto py-3 border-2 border-[#0C6539] text-[#0C6539] font-semibold rounded-md hover:bg-[#0C6539] hover:text-[#fafafa] focus:outline-none focus:ring-2 focus:ring-blue-400">
-            <span v-if="loading">Logging in...</span>
-            <span v-else>Login</span>
-          </button>
-        </div>
-      </form>
+    <!-- Toast Notification -->
+    <div v-if="toastMessage" :class="toastClass" class="fixed top-5 right-5 p-4 rounded shadow-lg">
+      {{ toastMessage }}
     </div>
   </div>
 </template>
@@ -67,6 +57,8 @@ const password = ref("");
 const errorMsg = ref(null);
 const successMsg = ref(null);
 const loading = ref(false);
+const toastMessage = ref(null);
+const toastClass = ref("");
 
 watchEffect(async () => {
   if (user.value) {
@@ -83,6 +75,7 @@ const navigateAndReload = async () => {
 const resetMessages = () => {
   errorMsg.value = null;
   successMsg.value = null;
+  toastMessage.value = null;
 };
 
 // Login function
@@ -97,18 +90,16 @@ const login = async () => {
       password: password.value,
     });
     console.log("info", response);
-    const userData = response.data.user.user_metadata.role;
-    console.log(userData);
-    const { error } = response;
-    // ...
-    if (error) {
-      errorMsg.value = error.message;
-      successMsg.value = null;
-    } else {
+
+    if (response.error) {
+      errorMsg.value = response.error.message;
+      toastMessage.value = "Login failed: " + response.error.message;
+      toastClass.value = "bg-red-500 text-white";
+    } else if (response.data.user) {
+      const userData = response.data.user.user_metadata?.role || "User";
       await userStore.fetchUser();
-      successMsg.value =
-        "Successfully logged in as " + userData.toLowerCase() + "!";
-      errorMsg.value = null;
+      toastMessage.value = "Successfully logged in as " + userData.toLowerCase() + "!";
+      toastClass.value = "bg-green-500 text-white";
 
       if (userStore.isAdmin) {
         router.push("/admin/dashboard").then(() => {
@@ -120,13 +111,44 @@ const login = async () => {
     }
   } catch (error) {
     errorMsg.value = error.message;
-    successMsg.value = null;
+    toastMessage.value = "Login failed: " + error.message;
+    toastClass.value = "bg-red-500 text-white";
   } finally {
     loading.value = false;
+    setTimeout(() => {
+      toastMessage.value = null;
+    }, 3000); // Hide toast after 3 seconds
   }
 };
 </script>
 
 <style scoped>
-/* You can add additional custom styling here if needed */
+/* Subtle animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 1s ease-out;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.5s ease-out;
+}
 </style>
