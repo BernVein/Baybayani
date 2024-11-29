@@ -27,7 +27,7 @@
   "dependencies": {
     "@pinia-plugin-persistedstate/nuxt": "^1.1.1",
     "@pinia/nuxt": "^0.5.5",
-    "@prisma/client": "^5.22.0",
+    "@prisma/client": "^6.0.0",
     "@stripe/stripe-js": "^1.52.0",
     "@supabase/supabase-js": "^2.46.1",
     "@tawk.to/tawk-messenger-vue-3": "^1.0.3",
