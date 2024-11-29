@@ -94,10 +94,14 @@ onBeforeMount(async () => {
     if (!orders.value.data) {
       throw new Error("Failed to load orders");
     }
+
+    // Optional: Manually sort by createdAt in descending order
+    orders.value.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   } catch (error) {
     console.error(error);
   }
 });
+
 
 const toggleOrderOptions = (orderId) => {
   selectedOrderId.value = selectedOrderId.value === orderId ? null : orderId;

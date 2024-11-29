@@ -119,6 +119,7 @@ const placeOrder = async () => {
     console.log("Checkout items cleared.");
     userStore.refreshFlag = 1;
     await userStore.fetchCartItems();
+    await userStore.fetchOrders();
 
     // Redirect to the success page after a short delay
   } catch (error) {

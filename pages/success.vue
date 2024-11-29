@@ -20,13 +20,13 @@ import { useUserStore } from "~/stores/user";
 const userStore = useUserStore();
 const user = useSupabaseUser();
 const route = useRoute();
-await userStore.isAdmin();
+//await userStore.isAdmin();
 
 watchEffect(async () => {
   if (!user.value) {
     await navigateTo("/login");
-  } else if (route.fullPath == "/success" && userStore.isAdmin === true) {
-    await navigateTo("/admin/dashboard");
+    // } else if (route.fullPath == "/success" && userStore.isAdmin === true) {
+    //   await navigateTo("/admin/dashboard");
   }
 });
 
