@@ -42,6 +42,11 @@ export const useUserStore = defineStore("user", {
           if (!this.isAdmin()) {
             await this.fetchCartItems();
           }
+
+          // Clear storage and cookies on successful login
+          localStorage.clear();
+          sessionStorage.clear();
+          this.clearCookies();
         }
       } catch (err) {
         console.error("Unexpected error fetching user:", err);
@@ -63,31 +68,40 @@ export const useUserStore = defineStore("user", {
     },
 
     // Logout action
-    logout() {
+    async logout() {
+      console.log("Logout function called");
       const client = useSupabaseClient();
-      const route = useRoute();
-      this.user = null;
-      this.profile = null;
-      this.cartItems = []; // Clear cart items on logout
-      this.cart = [];
-      this.isAdmin = false;
-      order = [];
-      this.isMenuOverlay = false;
-      client.auth.signOut();
-      console.log("LOGOUT SUCESS");
-      navigateTo("/login");
-      //window.location.reload();
+      
+      try {
+        // Sign out from Supabase
+        await client.auth.signOut();
+        console.log("User signed out from Supabase");
+
+        // Clear user-related state
+        this.user = null;
+        this.profile = null;
+        this.cartItems = [];
+        this.cart = [];
+        this.isAdmin = false;
+        this.isMenuOverlay = false;
+
+        // Clear storage and cookies
+        localStorage.clear();
+        sessionStorage.clear();
+        this.clearCookies();
+        
+        console.log("Storage and cookies cleared");
+        console.log("LOGOUT SUCCESS");
+        window.location.reload();
+      } catch (error) {
+        console.error("Error during logout:", error);
+      }
     },
 
     // New action to fetch the cart items
     async fetchCartItems() {
-      //console.log("TRY HERE");
-      //console.log(this.refreshFlag);
-      //console.log(this.cartItems.length);
-      //console.log("TRY HERE2");
       if (this.isAdmin === true) return;
 
-      //if (this.cartItems.length > 0 && this.refreshFlag === 0) return;
       console.log("FETCH CART RUNNING");
       this.isLoading = true;
       let cartResponse = ref(null);
@@ -96,7 +110,7 @@ export const useUserStore = defineStore("user", {
 
       if (!userId) {
         console.warn("No user ID found, cannot fetch cart items.");
-        this.isLoading = false; // Set loading to false if no user ID
+        this.isLoading = false;
         return;
       }
       console.log("Fetching cart items for user ID:", userId);
@@ -104,7 +118,6 @@ export const useUserStore = defineStore("user", {
 
       if (userId) {
         try {
-          // Replace with your actual API endpoint
           cartResponse.value = await useFetch(
             `/api/prisma/get-cart-by-user/${userId}`
           );
@@ -114,11 +127,7 @@ export const useUserStore = defineStore("user", {
           }
 
           if (cartResponse.value.data && cartResponse.value.data.cartItems) {
-            this.cartItems = cartResponse.value.data.cartItems; // Set the fetched cart items
-            //this.products = cartResponse.value.data.cartItems.product;
-            //console.log(this.cartItems[0].product);
-            //console.log(this.products);
-
+            this.cartItems = cartResponse.value.data.cartItems;
             console.log("Cart items fetched successfully");
             this.isLoading = false;
           } else {
@@ -129,7 +138,7 @@ export const useUserStore = defineStore("user", {
           console.error("Failed to fetch cart:", error);
           this.isLoading = false;
         } finally {
-          this.isLoading = false; // Set loading to false after the fetch is done
+          this.isLoading = false;
         }
       } else {
         console.warn("No user ID found, cannot fetch cart items.");
@@ -146,11 +155,10 @@ export const useUserStore = defineStore("user", {
 
       if (!userId) {
         console.warn("No user ID found, cannot fetch ORDER items.");
-        this.isLoading = false; // Set loading to false if no user ID
+        this.isLoading = false;
         return;
       }
       console.log("Fetching ORDERSSsS for user ID:", userId);
-      //this.refreshFlag = 0;
 
       if (userId) {
         try {
@@ -170,12 +178,23 @@ export const useUserStore = defineStore("user", {
           console.error("Failed to fetch cart:", error);
           this.isLoading = false;
         } finally {
-          this.isLoading = false; // Set loading to false after the fetch is done
+          this.isLoading = false;
         }
       } else {
         console.warn("No user ID found, cannot fetch cart items.");
       }
       this.isLoading = false;
+    },
+
+    // Function to clear cookies
+    clearCookies() {
+      const cookies = document.cookie.split(";");
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i];
+        const eqPos = cookie.indexOf("=");
+        const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+        document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+      }
     },
   },
 
