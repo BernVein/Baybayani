@@ -7,42 +7,77 @@
           <span class="pl-4">Orders</span>
         </div>
 
+        <!-- Dropdown Menu for Sorting -->
+        <div class="flex justify-end mb-4 relative" ref="dropdownWrapper">
+          <button @click="toggleDropdown" class="bg-gray-200 px-4 py-2 rounded-md flex items-center">
+            <span class="mr-2 font-semibold">Filter by Status</span>
+            <Icon name="line-md:filter" size="25" />
+          </button>
+
+          <!-- Dropdown content -->
+          <div v-if="dropdownOpen" class="absolute right-0 mt-2 w-48 bg-white border shadow-md rounded-lg z-10">
+            <ul>
+              <li>
+                <button @click="filterOrders('ALL')" class="w-full text-left px-4 py-2 hover:bg-gray-100">
+                  All Orders
+                </button>
+              </li>
+              <li>
+                <button @click="filterOrders('PENDING')" class="w-full text-left px-4 py-2 hover:bg-gray-100">
+                  Pending
+                </button>
+              </li>
+              <li>
+                <button @click="filterOrders('PROCESSING')" class="w-full text-left px-4 py-2 hover:bg-gray-100">
+                  Processing
+                </button>
+              </li>
+              <li>
+                <button @click="filterOrders('FULFILLED')" class="w-full text-left px-4 py-2 hover:bg-gray-100">
+                  Fulfilled
+                </button>
+              </li>
+              <li>
+                <button @click="filterOrders('CANCELED')" class="w-full text-left px-4 py-2 hover:bg-gray-100">
+                  Canceled
+                </button>
+              </li>
+            </ul>
+          </div>
+        </div>
+
         <!-- Loading state -->
         <div v-if="orders === null" class="flex items-center justify-center">
           Loading...
         </div>
 
         <!-- Check if there are orders -->
-        <div v-if="orders && orders.data && orders.data.length > 0">
-          <div v-for="(order, index) in orders.data" :key="order.id" class="border-b py-4 relative">
+        <div v-if="orders && filteredOrders.length > 0">
+          <div v-for="(order, index) in filteredOrders" :key="order.id" class="border-b py-4 relative">
             <div class="flex justify-between items-center">
               <div class="flex items-center gap-2">
                 <div class="font-semibold mb-2">Order #{{ order.id }}</div>
                 <div :class="statusClass(order.orderStatus)" class="w-3.5 h-3.5 rounded-full"></div>
-                <span class="ml-2 text-sm capitalize">{{
-                  order.orderStatus
-                }}</span>
+                <span class="ml-2 text-sm capitalize">{{ order.orderStatus }}</span>
               </div>
-              <div @click="toggleOrderOptions(order.id)" class="cursor-pointer">
+              <!-- Show 3 dots menu only for PENDING orders -->
+              <div v-if="order.orderStatus === 'PENDING'" @click.stop="toggleOrderOptions(order.id)"
+                class="cursor-pointer">
                 <Icon name="carbon:overflow-menu-horizontal" size="24" />
               </div>
             </div>
 
-            <div v-if="selectedOrderId === order.id"
-              class="absolute right-0 bg-white border shadow-md rounded-lg w-40 p-2">
-              <button @click="viewOrderDetails(order.id)"
-                class="w-full text-left p-2 hover:bg-gray-100 transition-colors">
-                View Details
-              </button>
-
-              <!-- Conditionally show Cancel button if status is 'PENDING' -->
-              <button v-if="order.orderStatus === 'PENDING'" @click="cancelOrder(order.id)"
+            <!-- Order Options (Cancel button for PENDING orders) -->
+            <div v-if="selectedOrderId === order.id && order.orderStatus === 'PENDING'"
+              :id="'cancelDropdown-' + order.id"
+              class="absolute right-0 bg-white border shadow-md rounded-lg w-40 p-2 z-20">
+              <button @click="cancelOrder(order.id)"
                 class="w-full text-left p-2 hover:bg-gray-100 text-red-500 transition-colors">
                 Cancel Order
               </button>
             </div>
 
-            <!-- Order Items -->
+            <!-- Order Items (Only show this section for all orders) -->
             <div v-if="order.orderItem && order.orderItem.length > 0">
               <div v-for="(item, itemIndex) in order.orderItem" :key="item.id"
                 class="flex items-center gap-3 p-1 hover:underline hover:text-blue-500">
@@ -72,43 +107,86 @@
 <script setup>
 import AdminLayout from "~/layouts/AdminLayout.vue";
 import { useUserStore } from "~/stores/user";
-import { ref, onBeforeMount, watchEffect } from "vue";
+import { ref, onBeforeMount, onBeforeUnmount, onMounted, watchEffect } from "vue";
 const userStore = useUserStore();
 const user = useSupabaseUser();
 let orders = ref(null);
-let selectedOrderId = ref(null);
-let orderHover = ref(null);  // Track the hovered order ID
+let filteredOrders = ref([]);
+let selectedOrderId = ref(null);  // Track the selected order for options
+let dropdownOpen = ref(false);  // Track dropdown visibility
 
+// Watch effect to check if the user is logged in
 watchEffect(async () => {
   if (!user.value) {
     await navigateTo("/login");
   }
 });
 
+// Handle clicks outside the dropdown to close it
+const closeDropdown = (event) => {
+  const dropdown = document.querySelector("[ref='dropdownWrapper']");
+  if (dropdown && !dropdown.contains(event.target)) {
+    dropdownOpen.value = false;
+  }
+};
+
+// Handle clicks outside the cancel dropdown to close it
+const closeCancelDropdown = (event) => {
+  const cancelDropdown = document.getElementById('cancelDropdown-' + selectedOrderId.value);
+  if (cancelDropdown && !cancelDropdown.contains(event.target)) {
+    selectedOrderId.value = null;  // Close the cancel dropdown when clicking outside
+  }
+};
+
+// Add event listener on mount and remove on unmount
+onMounted(() => {
+  document.addEventListener('click', closeDropdown);
+  document.addEventListener('click', closeCancelDropdown);  // Close cancel dropdown when clicking outside
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', closeDropdown);
+  document.removeEventListener('click', closeCancelDropdown);  // Remove cancel dropdown listener
+});
 
 onBeforeMount(async () => {
   try {
-    orders.value = await useFetch(
-      `/api/prisma/get-all-orders-by-user/${user.value.id}`
-    );
+    await userStore.fetchOrders();
+
+    // Fetch the orders based on user ID
+    orders.value = await useFetch(`/api/prisma/get-all-orders-by-user/${user.value.id}`);
+
     if (!orders.value.data) {
       throw new Error("Failed to load orders");
     }
 
-    // Optional: Manually sort by createdAt in descending order
-    orders.value.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    // Initially, show all orders
+    filteredOrders.value = orders.value.data;
+
+    // Sort orders by `createdAt` in descending order (most recent first)
+    filteredOrders.value.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   } catch (error) {
-    console.error(error);
+    console.error("Error fetching orders:", error);
   }
 });
 
-
-const toggleOrderOptions = (orderId) => {
-  selectedOrderId.value = selectedOrderId.value === orderId ? null : orderId;
+const filterOrders = (status) => {
+  dropdownOpen.value = false;  // Close dropdown after selection
+  if (status === 'ALL') {
+    filteredOrders.value = orders.value.data;
+  } else {
+    filteredOrders.value = orders.value.data.filter(order => order.orderStatus === status);
+  }
 };
 
-const viewOrderDetails = (orderId) => {
-  navigateTo(`/order/${orderId}`);
+// Toggle dropdown visibility
+const toggleDropdown = () => {
+  dropdownOpen.value = !dropdownOpen.value;
+};
+
+// Toggle order options (show cancel option for pending orders)
+const toggleOrderOptions = (orderId) => {
+  selectedOrderId.value = selectedOrderId.value === orderId ? null : orderId;
 };
 
 const cancelOrder = async (orderId) => {
@@ -122,22 +200,15 @@ const cancelOrder = async (orderId) => {
     if (orderToCancel) {
       // Update the order status to 'CANCELED'
       orderToCancel.orderStatus = 'CANCELED';
-
-      // If you're using userStore, find the order in userStore and update the status
-      const orderIndexInStore = userStore.orders.findIndex(order => order.id === orderId);
-      if (orderIndexInStore !== -1) {
-        // Update the order in the store
-        userStore.order[orderIndexInStore].orderStatus = 'CANCELED';
-      }
     } else {
       console.error("Order not found in orders list.");
     }
-
   } catch (error) {
     console.error("Error canceling order:", error);
   }
 };
 
+// Status color classes
 const statusClass = (status) => {
   switch (status) {
     case "PENDING":

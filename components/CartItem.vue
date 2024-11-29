@@ -61,6 +61,7 @@
 </template>
 
 <script setup>
+import { onBeforeMount } from "vue";
 import { useUserStore } from "~/stores/user"; // Import the user store to interact with the global state (e.g., cart)
 const userStore = useUserStore(); // Initialize the user store, allowing access to the cart and other user-related data
 
@@ -83,6 +84,9 @@ onMounted(() => {
 
   updateQuantity();
 });
+
+
+
 
 const deleteFromCart = async () => {
   const userId = userStore.user.id; // Assuming userStore holds user data

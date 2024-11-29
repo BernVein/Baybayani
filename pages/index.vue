@@ -29,8 +29,6 @@ const route = useRoute();
 const router = useRouter();
 
 
-
-
 console.log("UserStore as JSON:", JSON.stringify(userStore.$state, null, 2));
 console.log(userStore.profile?.name);
 
@@ -61,7 +59,7 @@ const filteredProducts = computed(() => {
 
 // CometChat Docked Widget Integration
 onMounted(() => {
-  //userStore.fetchCartItems();
+  userStore.fetchCartItems();
 
   // Extract and format the user's name to remove spaces
   const defaultUID = userStore.profile?.name
