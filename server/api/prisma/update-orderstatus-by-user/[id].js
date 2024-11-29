@@ -4,16 +4,24 @@ const prisma = new PrismaClient();
 export default defineEventHandler(async (event) => {
   try {
     // Parse request body
-    const { orderId, newStatus } = await readBody(event);
+    const { orderId, newStatus, newTotalPrice } = await readBody(event);
 
     if (!orderId || !newStatus) {
       throw new Error("Invalid input: orderId and newStatus are required.");
     }
 
-    // Update order status in the database
+    // Prepare data object for update
+    const updateData = { orderStatus: newStatus };
+
+    // Include newTotalPrice if provided
+    if (newTotalPrice !== undefined) {
+      updateData.totalPrice = newTotalPrice;
+    }
+
+    // Update order status and total price in the database
     const updatedOrder = await prisma.orders.update({
       where: { id: orderId },
-      data: { orderStatus: newStatus },
+      data: updateData,
     });
 
     return { success: true, updatedOrder };

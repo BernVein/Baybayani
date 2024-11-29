@@ -442,21 +442,43 @@ const closeModal = () => {
 // Delete product
 // Delete product with confirmation
 const deleteProduct = async (productId) => {
-  const confirmation = confirm("Are you sure you want to remove this item? This action cannot be undone.");
-  if (!confirmation) return;
-
   isLoading.value = true;
   try {
+    // First delete the order item
     const response = await $fetch(`/api/prisma/delete-order-item-by-id/${productId}`, {
       method: "DELETE",
     });
 
     if (response.success) {
+      // Remove the item from local state
       selectedOrder.value.orderItem = selectedOrder.value.orderItem.filter(
         (item) => item.id !== productId
       );
-    } else {
-      throw new Error(response.message || "Failed to remove product.");
+
+      // Calculate new total price from remaining items
+      const newTotalPrice = selectedOrder.value.orderItem.reduce((total, item) => {
+        return total + (item.product.price * item.quantity);
+      }, 0);
+
+      // Update the order with new total price
+      const updateResponse = await $fetch(`/api/prisma/update-orderstatus-by-user/${selectedOrder.value.id}`, {
+        method: "POST",
+        body: {
+          orderId: selectedOrder.value.id,
+          newStatus: selectedOrder.value.orderStatus,
+          newTotalPrice: newTotalPrice
+        }
+      });
+
+      if (updateResponse.success) {
+        selectedOrder.value.totalPrice = newTotalPrice; // Update local total price
+        // Also update the price in the orders list
+        const orderIndex = orders.value.findIndex(order => order.id === selectedOrder.value.id);
+        if (orderIndex !== -1) {
+          orders.value[orderIndex].totalPrice = newTotalPrice;
+        }
+      }
+      closeConfirmModal();
     }
   } catch (error) {
     console.error("Error removing product:", error);
