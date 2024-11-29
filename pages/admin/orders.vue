@@ -242,12 +242,22 @@ const fetchOrders = async () => {
 const fetchUserName = async (userId) => {
   try {
     const user = await $fetch(`/api/prisma/get-user/${userId}`);
-    return user?.name || "Unknown User";
+
+    // If user is not found or role is null, redirect to login
+    if (!user || !user.role) {
+      alert("Your session is invalid. Please log in again.");
+      navigateTo("/login");
+      return null; // Return null as the user is redirected
+    }
+
+    return user.name || "Unknown User";
   } catch (error) {
-    console.error(`Error fetching user:`, error);
-    return "Unknown User";
+    console.error("Error fetching user:", error);
+    navigateTo("/login"); // Redirect to login on error
+    return null;
   }
 };
+
 
 const formatCurrency = (value) => {
   return new Intl.NumberFormat('en-US', {
