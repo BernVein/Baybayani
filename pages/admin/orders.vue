@@ -668,6 +668,12 @@ tr {
   transition: all 0.3s ease-in-out;
 }
 
+/* Add zoom effect on hover */
+tr:hover {
+  transform: scale(1.02);
+  transition: transform 0.2s ease-in-out;
+}
+
 /* Override table styles to remove borders */
 td {
   border-bottom: none !important;

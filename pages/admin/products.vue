@@ -72,13 +72,13 @@
               <tr
                 v-for="product in paginatedProducts"
                 :key="product.id"
-                class="hover:bg-gray-200 transition duration-150 ease-in-out"
+                class="hover:bg-gray-200 transition duration-150 ease-in-out product-row"
               >
                 <td 
                   class="py-4 px-4 cursor-pointer"
                   @click="showProductDetails(product)"
                 >
-                  <span v-html="highlightMatch(product.id.toString())"></span>
+                  <span v-html="highlightMatch(formatNumber(product.id))"></span>
                 </td>
                 <td 
                   class="py-4 px-4 flex items-center space-x-3 cursor-pointer"
@@ -91,7 +91,7 @@
                   class="py-4 px-4 cursor-pointer"
                   @click="showProductDetails(product)"
                 >
-                  ₱{{ parseFloat(product.price).toFixed(2) }}
+                  ₱{{ formatNumber(parseFloat(product.price).toFixed(2)) }}
                 </td>
                 <td class="py-4 px-4 text-center flex items-center justify-center space-x-4">
                   <button 
@@ -739,6 +739,11 @@ const confirmDelete = async () => {
     isLoading.value = false;
   }
 };
+
+// Function to format numbers with commas
+const formatNumber = (number) => {
+  return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+};
 </script>
 
 <style scoped>
@@ -848,5 +853,11 @@ button:hover .group-hover\:text-white {
 /* Optional: Add transition for smoother animations */
 tr {
   transition: all 0.3s ease-in-out;
+}
+
+/* Add zoom effect on hover */
+.product-row:hover {
+  transform: scale(1.02);
+  transition: transform 0.2s ease-in-out;
 }
 </style>
