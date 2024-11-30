@@ -17,9 +17,10 @@ model User {
   name       String?
   role       String?
   created_at DateTime? @default(now()) @db.Timestamptz(6)
-  orders     Orders[]  @relation(onDelete: Cascade)  // Allows deleting user with orders
-  cart       Cart?     @relation(onDelete: Cascade)  // Allows deleting user with a cart
+  orders     Orders[]  // Corrected
+  cart       Cart?     // Corrected
 }
+
 
 
 model Cart {
