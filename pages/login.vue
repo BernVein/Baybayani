@@ -53,6 +53,7 @@ import { ref } from "vue";
 import { useRouter } from "vue-router"; // To redirect after login
 import { useUserStore } from "~/stores/user";
 import Loading from "~/components/Loading.vue"; // Import the Loading component
+import { navigateTo } from "nuxt/app";
 const userStore = useUserStore();
 const user = useSupabaseUser();
 
@@ -66,16 +67,16 @@ const loading = ref(false);
 const toastMessage = ref(null);
 const toastClass = ref("");
 
+const navigateAndReload = async () => {
+  await router.push("/"); // Navigate to the route
+  window.location.reload(); // Reload the page
+};
+
 watchEffect(async () => {
   if (user.value) {
     await navigateTo("/");
   }
 });
-
-const navigateAndReload = async () => {
-  await router.push("/"); // Navigate to the route
-  window.location.reload(); // Reload the page
-};
 
 // Reset error and success messages when user changes input
 const resetMessages = () => {

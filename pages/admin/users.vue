@@ -233,6 +233,15 @@ const users = ref([]);
 const buyers = ref(0);
 const suspendedUsers = ref(0);
 
+watchEffect(() => {
+  if (
+    route.fullPath == "/admin/users" &&
+    (!user.value || userStore.isAdmin === false)
+  ) {
+    navigateTo("/login");
+  }
+});
+
 // Fetch users from Prisma API
 const fetchUsers = async () => {
   console.log("Fetching users...");

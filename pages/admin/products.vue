@@ -376,14 +376,14 @@ userStore.isAdmin();
 const user = useSupabaseUser();
 const route = useRoute();
 
-// watchEffect(() => {
-//   if (
-//     route.fullPath == "/admin/products" &&
-//     (!user.value || userStore.isAdmin === false)
-//   ) {
-//     navigateTo("/login");
-//   }
-// });
+watchEffect(() => {
+  if (
+    route.fullPath == "/admin/products" &&
+    (!user.value || userStore.isAdmin === false)
+  ) {
+    navigateTo("/login");
+  }
+});
 
 const config = useRuntimeConfig();
 const apiUrl =

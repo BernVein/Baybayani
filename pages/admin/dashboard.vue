@@ -187,17 +187,17 @@ const toggleSidebar = () => {
   isSidebarOpen.value = !isSidebarOpen.value;
 };
 
-// watchEffect(() => {
-//   console.log("IsAdmin(Sa Dashboard)??");
-//   userStore.isAdmin();
-//   console.log(userStore.isAdmin === true);
-//   if (
-//     route.fullPath == "/admin/dashboard" &&
-//     (!user.value || userStore.isAdmin === false)
-//   ) {
-//     navigateTo("/login");
-//   }
-// });
+watchEffect(() => {
+  console.log("IsAdmin(Sa Dashboard)??");
+  userStore.isAdmin();
+  console.log(!user.value && userStore.isAdmin === true);
+  if (
+    route.fullPath == "/admin/dashboard" &&
+    (!user.value || userStore.isAdmin === false)
+  ) {
+    navigateTo("/login");
+  }
+});
 
 const totalRevenueFilter = ref("weekly");
 const topProductsFilter = ref("weekly");
