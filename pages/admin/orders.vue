@@ -230,6 +230,7 @@
                   <div>
                     <p class="text-lg font-medium">{{ product.product.title }}</p>
                     <p class="text-sm text-gray-500">Price: &#8369;{{ product.product.price }}</p>
+                    <p class="text-sm text-gray-500">Quantity: {{ product.quantity }} kg</p>
                   </div>
                 </div>
                 <button
