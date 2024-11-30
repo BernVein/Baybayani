@@ -20,7 +20,9 @@
       <div v-else class="md:flex gap-4 justify-between mx-auto w-full">
         <div class="md:w-[65%]">
           <div class="bg-white rounded-lg p-4">
-            <div class="text-2xl font-bold mb-2">
+            <div class="flex items-center text-2xl font-semibold mb-2">
+              <!-- Icon before the text -->
+              <Icon name="ph:shopping-cart-simple" size="33" class="mr-4" />
               Shopping Cart ({{ filteredCartItems.length }})
             </div>
           </div>

@@ -3,8 +3,8 @@
     <div id="OrdersPage" class="mt-4 max-w-[1200px] mx-auto px-2 min-h-[50vh]">
       <div class="bg-white w-full p-6 min-h-[150px]">
         <div class="flex items-center text-xl">
-          <Icon name="carbon:delivery" color="#5FCB04" size="35" />
-          <span class="pl-4">Orders</span>
+          <Icon name="carbon:delivery" size="35" />
+          <span class="pl-4 text-2xl font-semibold">Orders</span>
         </div>
 
         <!-- Dropdown Menu for Sorting -->
@@ -53,7 +53,8 @@
 
         <!-- Check if there are orders -->
         <div v-if="orders && filteredOrders.length > 0" class="grid grid-cols-2 gap-4">
-          <div v-for="(order, index) in filteredOrders" :key="order.id" class="border-b py-4 relative bg-gray-50 p-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
+          <div v-for="(order, index) in filteredOrders" :key="order.id"
+            class="border-b py-4 relative bg-gray-50 p-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
             <div class="flex justify-between items-center">
               <div class="flex items-center gap-2">
                 <div class="font-semibold mb-2">Order #{{ order.id }}</div>
@@ -74,7 +75,9 @@
 
             <!-- Progress Bar -->
             <div class="w-full bg-gray-200 rounded-full h-2.5 mb-4">
-              <div :style="{ width: progressWidth(order.orderStatus), backgroundColor: progressColor(order.orderStatus) }" class="h-2.5 rounded-full"></div>
+              <div
+                :style="{ width: progressWidth(order.orderStatus), backgroundColor: progressColor(order.orderStatus) }"
+                class="h-2.5 rounded-full"></div>
             </div>
 
             <!-- Order Options (Cancel button for PENDING orders) -->
@@ -102,7 +105,8 @@
             </div>
 
             <!-- Display Total Price -->
-            <div :class="order.orderStatus === 'CANCELED' ? 'text-red-500' : 'text-green-500'" class="mt-4 font-bold text-xl text-right">
+            <div :class="order.orderStatus === 'CANCELED' ? 'text-red-500' : 'text-green-500'"
+              class="mt-4 font-bold text-xl text-right">
               Total: ₱{{ order.totalPrice.toLocaleString() }}
             </div>
           </div>
