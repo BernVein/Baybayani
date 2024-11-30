@@ -17,9 +17,10 @@ model User {
   name       String?
   role       String?
   created_at DateTime? @default(now()) @db.Timestamptz(6)
-  orders     Orders[] // One-to-many relation to Orders
-  cart       Cart? // One-to-one relation with Cart (added here)
+  orders     Orders[]  @relation(onDelete: Cascade)  // Allows deleting user with orders
+  cart       Cart?     @relation(onDelete: Cascade)  // Allows deleting user with a cart
 }
+
 
 model Cart {
   id         String    @id @default(uuid()) @db.Uuid // UUID for cart ID

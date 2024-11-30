@@ -10,17 +10,11 @@
         <h1 class="text-3xl font-semibold mb-8">User Management</h1>
 
         <!-- User Stats Boxes -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-3 gap-6 mb-8">
           <!-- Total Users -->
           <div class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-red-600">
             <p class="text-lg font-medium">Total Users</p>
             <p class="text-4xl font-bold">{{ totalUsers }}</p>
-          </div>
-
-          <!-- Farmers -->
-          <div class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-green-600">
-            <p class="text-lg font-medium">Farmers</p>
-            <p class="text-4xl font-bold">{{ farmers }}</p>
           </div>
 
           <!-- Buyers -->
@@ -92,13 +86,12 @@
                 :key="user.id"
                 class="hover:bg-gray-200 hover:scale-[1.02] transition duration-150 ease-in-out"
               >
-
                 <td class="py-4 px-4 border-b text-left truncate">{{ user.name }}</td>
-                <td class="py-4 px-4 border-b text-left truncate">{{ user.contactNumber }}</td>
+                <td class="py-4 px-4 border-b text-left truncate">{{ user.contact }}</td>
                 <td class="py-4 px-4 border-b text-left truncate">{{ user.email }}</td>
                 <td class="py-4 px-4 border-b text-left">{{ (user.role.charAt(0).toUpperCase() + user.role.slice(1).toLowerCase()) }}</td>
                 <td class="py-4 px-4 border-b text-center">
-                  <button @click="deleteUser(user.id)" class="text-red-600 hover:underline">Delete</button>
+                  <button @click="deleteUser(user.email)" class="text-red-600 hover:underline">Delete</button>
                 </td>
               </tr>
             </tbody>
@@ -193,7 +186,6 @@
                 required
               >
                 <option value="" disabled>Select role</option>
-                <option value="Farmer">Farmer</option>
                 <option value="Buyer">Buyer</option>
                 <option value="Admin">Admin</option>
               </select>
@@ -238,7 +230,6 @@ const successMsg = ref(null);
 const users = ref([]);
 
 // User statistics
-const farmers = ref(0);
 const buyers = ref(0);
 const suspendedUsers = ref(0);
 
@@ -246,11 +237,11 @@ const suspendedUsers = ref(0);
 const fetchUsers = async () => {
   console.log("Fetching users...");
   loading.value = true;
-  
+
   try {
     const response = await fetch("/api/prisma/users");
     const result = await response.json();
-    
+
     if (response.ok && result.success) {
       console.log("Users fetched successfully:", result.data);
       users.value = [...result.data]; // Use spread operator to force reactivity update
@@ -267,34 +258,8 @@ const fetchUsers = async () => {
   }
 };
 
-// Function to delete a user
-const deleteUser = async (userId) => {
-  if (confirm("Are you sure you want to delete this user?")) {
-    console.log("Deleting user with ID:", userId);
-    
-    try {
-      const response = await fetch(`/api/prisma/users/${userId}`, {
-        method: "DELETE",
-      });
-      const result = await response.json();
-
-      if (response.ok && result.success) {
-        console.log("User deleted successfully");
-        fetchUsers(); // Refresh the users list after deleting
-      } else {
-        console.error("Failed to delete user:", result.message);
-        alert("Failed to delete user: " + (result.message || "Unexpected error occurred."));
-      }
-    } catch (err) {
-      console.error("Unexpected error occurred while deleting user:", err);
-      alert("Unexpected error occurred: " + err.message);
-    }
-  }
-};
-
 // Function to update statistics for user roles
 const updateStats = () => {
-  farmers.value = users.value.filter((user) => user.role === "Farmer").length;
   buyers.value = users.value.filter((user) => user.role === "Buyer").length;
   suspendedUsers.value = users.value.filter((user) => user.status === "Suspended").length;
 };
@@ -344,7 +309,7 @@ const register = async () => {
       options: {
         data: {
           name: name.value,
-          contactNumber: contact.value,
+          contact: contact.value,
           role: role.value,
         },
       },
@@ -363,6 +328,40 @@ const register = async () => {
   } catch (err) {
     console.error(`An unexpected error occurred: ${err.message}`);
     errorMsg.value = err.message;
+  }
+};
+
+// Delete User Function
+const deleteUser = async (userEmail) => {
+  if (confirm("Are you sure you want to delete this user?")) {
+    console.log("Deleting user with email:", userEmail);
+
+    try {
+      const response = await fetch('/api/prisma/deleteUser', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: userEmail }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        console.error("Failed to delete user:", result.message);
+        alert("Failed to delete user: " + result.message);
+        return;
+      }
+
+      console.log("User deleted successfully");
+      alert("User deleted successfully");
+
+      // Fetch the users again to update the UI
+      fetchUsers();
+    } catch (err) {
+      console.error("Unexpected error occurred while deleting user:", err);
+      alert("Unexpected error occurred: " + err.message);
+    }
   }
 };
 
