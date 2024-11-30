@@ -52,8 +52,8 @@
         </div>
 
         <!-- Check if there are orders -->
-        <div v-if="orders && filteredOrders.length > 0">
-          <div v-for="(order, index) in filteredOrders" :key="order.id" class="border-b py-4 relative">
+        <div v-if="orders && filteredOrders.length > 0" class="grid grid-cols-2 gap-4">
+          <div v-for="(order, index) in filteredOrders" :key="order.id" class="border-b py-4 relative bg-gray-50 p-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
             <div class="flex justify-between items-center">
               <div class="flex items-center gap-2">
                 <div class="font-semibold mb-2">Order #{{ order.id }}</div>
@@ -67,29 +67,37 @@
               </div>
             </div>
 
+            <!-- Order Date -->
+            <div class="text-sm text-gray-500 mb-2">
+              Ordered on: {{ new Date(order.created_at).toLocaleDateString() }}
+            </div>
+
             <!-- Order Options (Cancel button for PENDING orders) -->
             <div v-if="selectedOrderId === order.id && order.orderStatus === 'PENDING'"
               :id="'cancelDropdown-' + order.id"
               class="absolute right-0 bg-white border shadow-md rounded-lg w-40 p-2 z-20">
-              <button @click="cancelOrder(order.id)"
+              <button @click="showCancelModal(order.id)"
                 class="w-full text-left p-2 hover:bg-gray-100 text-red-500 transition-colors">
                 Cancel Order
               </button>
             </div>
 
-            <!-- Order Items (Only show this section for all orders) -->
+            <!-- Order Items -->
             <div v-if="order.orderItem && order.orderItem.length > 0">
               <div v-for="(item, itemIndex) in order.orderItem" :key="item.id"
-                class="flex items-center gap-3 p-1 hover:underline hover:text-blue-500">
-                <img width="40" :src="item.product.url" alt="Product Image" />
-                <NuxtLink :to="`/item/${item.productId}`">
+                class="flex items-center gap-3 p-1 transition-colors hover:bg-green-100">
+                <img width="40" :src="item.product.url" alt="Product Image" class="rounded-full" />
+                <NuxtLink :to="`/item/${item.productId}`" class="hover:text-green-500 transition-colors duration-300">
                   {{ item.product.title }} - Quantity: {{ item.quantity }} kg
                 </NuxtLink>
               </div>
             </div>
+            <div v-else class="text-gray-500 italic">
+              All products in this order are unavailable.
+            </div>
 
             <!-- Display Total Price -->
-            <div class="text-[#FF4646] mt-4 font-bold text-xl text-right">
+            <div :class="order.orderStatus === 'CANCELED' ? 'text-red-500' : 'text-green-500'" class="mt-4 font-bold text-xl text-right">
               Total: ₱{{ order.totalPrice.toLocaleString() }}
             </div>
           </div>
@@ -98,6 +106,18 @@
         <!-- No orders found -->
         <div v-else class="flex items-center justify-center">
           You have no order history
+        </div>
+      </div>
+    </div>
+
+    <!-- Cancel Confirmation Modal -->
+    <div v-if="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white p-6 rounded-lg shadow-lg">
+        <h2 class="text-lg font-semibold mb-4">Confirm Cancellation</h2>
+        <p>Are you sure you want to cancel this order?</p>
+        <div class="flex justify-end mt-4">
+          <button @click="confirmCancel" class="bg-red-500 text-white px-4 py-2 rounded-md mr-2">Yes</button>
+          <button @click="closeModal" class="bg-gray-300 px-4 py-2 rounded-md">No</button>
         </div>
       </div>
     </div>
@@ -114,6 +134,8 @@ let orders = ref(null);
 let filteredOrders = ref([]);
 let selectedOrderId = ref(null);  // Track the selected order for options
 let dropdownOpen = ref(false);  // Track dropdown visibility
+let showModal = ref(false);  // Track modal visibility
+let orderIdToCancel = ref(null);  // Track which order to cancel
 
 // Watch effect to check if the user is logged in
 watchEffect(async () => {
@@ -189,22 +211,39 @@ const toggleOrderOptions = (orderId) => {
   selectedOrderId.value = selectedOrderId.value === orderId ? null : orderId;
 };
 
-const cancelOrder = async (orderId) => {
+// Show cancel confirmation modal
+const showCancelModal = (orderId) => {
+  orderIdToCancel.value = orderId;
+  showModal.value = true;
+};
+
+// Close modal
+const closeModal = () => {
+  showModal.value = false;
+  orderIdToCancel.value = null;
+};
+
+// Confirm cancellation
+const confirmCancel = async () => {
   try {
     // Send DELETE request to cancel the order
-    await useFetch(`/api/prisma/cancel-order/${orderId}`, { method: "DELETE" });
+    await useFetch(`/api/prisma/cancel-order/${orderIdToCancel.value}`, { method: "DELETE" });
 
     // Find the order in the orders list and update its status to "CANCELED"
-    const orderToCancel = orders.value.data.find(order => order.id === orderId);
+    const orderToCancel = orders.value.data.find(order => order.id === orderIdToCancel.value);
 
     if (orderToCancel) {
       // Update the order status to 'CANCELED'
       orderToCancel.orderStatus = 'CANCELED';
+      // Refresh the orders list
+      await userStore.fetchOrders();
     } else {
       console.error("Order not found in orders list.");
     }
   } catch (error) {
     console.error("Error canceling order:", error);
+  } finally {
+    closeModal();  // Ensure modal closes after confirmation
   }
 };
 
