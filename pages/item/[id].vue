@@ -31,13 +31,27 @@
             </p>
             <div class="flex gap-4 mt-8">
               <button @click="addToCart" :disabled="isInCart"
-                class="px-6 py-3 rounded-lg text-white text-lg font-semibold bg-green-600 hover:bg-green-700 transition-transform duration-300 ease-in-out hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed">
-                <span v-if="isInCart">Added to Cart</span>
-                <span v-else>Add to Cart</span>
+                class="px-6 py-3 rounded-lg text-white text-lg font-semibold bg-green-600 hover:bg-green-700 transition-all duration-300 ease-in-out hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center">
+
+                <!-- Text when item is in cart -->
+                <span v-if="isInCart" class="transition-opacity duration-300 ease-in-out">Added to Cart</span>
+
+                <!-- Text when item is not in cart -->
+                <span v-else class="transition-opacity duration-300 ease-in-out">Add to Cart</span>
+
+                <!-- Icon when item is in cart -->
+                <Icon v-if="isInCart" name="mynaui:cart-check" size="30"
+                  class="ml-2 transition-all duration-300 ease-in-out transform scale-110" />
+
+                <!-- Icon when item is not in cart -->
+                <Icon v-else name="mynaui:cart-plus" size="30"
+                  class="ml-2 transition-all duration-300 ease-in-out transform scale-110" />
               </button>
+
               <button @click="openChatModal"
-                class="px-6 py-3 rounded-lg text-blue-600 border border-blue-600 text-lg font-semibold hover:bg-blue-50 transition-transform duration-300 ease-in-out hover:scale-105">
-                Chat Seller
+                class="px-6 py-3 rounded-lg text-blue-600 border border-blue-600 text-lg font-semibold hover:bg-blue-50 transition-transform duration-300 ease-in-out hover:scale-105 flex items-center">
+                <span class="mr-2">Chat Seller</span>
+                <Icon name="mynaui:message" size="25" />
               </button>
             </div>
           </div>
