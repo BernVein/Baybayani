@@ -43,10 +43,10 @@ export const useUserStore = defineStore("user", {
             await this.fetchCartItems();
           }
 
-          // Clear storage and cookies on successful login
-          localStorage.clear();
-          sessionStorage.clear();
-          this.clearCookies();
+          // // Clear storage and cookies on successful login
+          // localStorage.clear();
+          // sessionStorage.clear();
+          // this.clearCookies();
         }
       } catch (err) {
         console.error("Unexpected error fetching user:", err);
@@ -74,7 +74,6 @@ export const useUserStore = defineStore("user", {
 
       try {
         // Sign out from Supabase
-        await client.auth.signOut();
 
         // Clear user-related state
         this.user = null;
@@ -90,6 +89,7 @@ export const useUserStore = defineStore("user", {
         this.clearCookies();
 
         console.log("Storage and cookies cleared");
+        await client.auth.signOut();
         console.log("User signed out from Supabase");
         console.log("LOGOUT SUCCESS");
         window.location.reload();
