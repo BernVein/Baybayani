@@ -152,14 +152,14 @@ const addToCart = async () => {
 
 const openChatModal = () => {
   showChatModal.value = true;
+  showGuidedLine.value = true; // Start the animation when the chat modal is opened
+  setTimeout(() => {
+    showGuidedLine.value = false;
+  }, 3000); // Show the rectangle for 3 seconds
 };
 
 const closeChatModal = () => {
   showChatModal.value = false;
-  showGuidedLine.value = true;
-  setTimeout(() => {
-    showGuidedLine.value = false;
-  }, 3000); // Show the rectangle for 3 seconds
 };
 </script>
 
@@ -170,7 +170,7 @@ const closeChatModal = () => {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, .9);
   display: flex;
   justify-content: center;
   align-items: center;

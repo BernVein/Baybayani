@@ -2,12 +2,12 @@
   <AdminLayout>
     <div id="IndexPage" class="max-w-[1200px] mx-auto px-2">
       <div class="grid xl:grid-cols-6 lg:grid-cols-5 md:grid-cols-4 sm:grid-cols-3 grid-cols-2 gap-4">
-        <div v-if="filteredProducts" v-for="product in filteredProducts" :key="product.id"
+        <div v-if="sortedProducts" v-for="product in sortedProducts" :key="product.id"
           class="transition-all duration-500 ease-in-out transform hover:scale-105 group rounded-md overflow-hidden"
           @click="handleProductClick(product)">
           <div
             class="transition-all duration-500 ease-in-out group-hover:saturate-150 group-hover:shadow-lg group-hover:bg-white group-hover:-translate-y-1 rounded-md">
-            <ProductComponent :product="product" />
+            <ProductComponent :product="product" :isTopProduct="topProductIds.includes(product.id)" />
           </div>
         </div>
       </div>
@@ -21,6 +21,7 @@ import AdminLayout from "~/layouts/AdminLayout.vue";
 import { useUserStore } from "~/stores/user";
 import { ref, onBeforeMount, computed } from "vue";
 import { useRouter } from "vue-router";
+import axios from 'axios';
 
 // User and Product Setup
 const userStore = useUserStore();
@@ -28,22 +29,34 @@ const user = useSupabaseUser();
 const route = useRoute();
 const router = useRouter();
 
-
-console.log("UserStore as JSON:", JSON.stringify(userStore.$state, null, 2));
-console.log(userStore.profile?.name);
-
-watchEffect(() => {
-  console.log("IsAdmin??");
-  console.log(userStore.isAdmin === true);
-  if (route.fullPath == "/" && userStore.isAdmin === true) {
-    navigateTo("/admin/dashboard");
-  }
-});
-
 let products = ref(null);
+let productSales = ref({});
+
+const fetchProductSales = async () => {
+  try {
+    const response = await axios.get('/api/prisma/get-all-orders');
+    const fulfilledOrders = response.data.filter(order => order.orderStatus === 'FULFILLED');
+
+    const salesCount = {};
+    fulfilledOrders.forEach(order => {
+      order.orderItem.forEach(item => {
+        if (salesCount[item.productId]) {
+          salesCount[item.productId] += item.quantity;
+        } else {
+          salesCount[item.productId] = item.quantity;
+        }
+      });
+    });
+
+    productSales.value = salesCount;
+  } catch (error) {
+    console.error("Error fetching product sales:", error);
+  }
+};
 
 onBeforeMount(async () => {
   products.value = await useFetch("/api/prisma/get-all-products");
+  await fetchProductSales();
   setTimeout(() => (userStore.isLoading = false), 1000);
 });
 
@@ -57,6 +70,25 @@ const filteredProducts = computed(() => {
   return [];
 });
 
+// Compute top 5 products based on sales
+const topProductIds = computed(() => {
+  const sortedProducts = Object.entries(productSales.value)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 5)
+    .map(([id]) => parseInt(id));
+  return sortedProducts;
+});
+
+// Sort products with top 5 first, then by sales
+const sortedProducts = computed(() => {
+  const topProducts = filteredProducts.value.filter(product => topProductIds.value.includes(product.id));
+  const otherProducts = filteredProducts.value.filter(product => !topProductIds.value.includes(product.id));
+
+  otherProducts.sort((a, b) => (productSales.value[b.id] || 0) - (productSales.value[a.id] || 0));
+
+  return [...topProducts, ...otherProducts];
+});
+
 // CometChat Docked Widget Integration
 onMounted(() => {
   userStore.fetchCartItems();
@@ -65,9 +97,6 @@ onMounted(() => {
   const defaultUID = userStore.profile?.name
     ? userStore.profile.name.replace(/\s+/g, "").toLowerCase() // Remove spaces and convert to lowercase
     : "defaultuid"; // Fallback if the name is unavailable
-
-
-  console.log("Default UID:", defaultUID);
 
   // Load the CometChat Widget script dynamically
   const script = document.createElement("script");
