@@ -354,12 +354,15 @@ import { useUserStore } from "~/stores/user";
 
 const userStore = useUserStore();
 await userStore.isAdmin();
+const user = useSupabaseUser();
+const route = useRoute();
 
 const orders = ref([]);
 const isLoading = ref(false);
 const errorMessage = ref("");
 const isModalVisible = ref(false);
 const selectedOrder = ref(null);
+
 
 // Add these refs for pagination
 const currentPage = ref(1);

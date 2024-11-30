@@ -135,6 +135,7 @@ const filteredCartCount = computed(() => {
 // Sign out function
 const signOut = async () => {
   userStore.logout();
+  window.location.reload();
 };
 
 // Handle cart click

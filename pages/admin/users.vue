@@ -212,6 +212,11 @@ import { ref, computed, onMounted } from "vue";
 import { useNuxtApp } from "#app";
 import AdminLayout from "~/layouts/AdminLayout.vue";
 import SideBarLayout from "~/layouts/SideBarLayout.vue";
+import { useUserStore } from "~/stores/user";
+
+const userStore = useUserStore();
+const user = useSupabaseUser();
+const route = useRoute();
 
 // Modal Visibility
 const isRegisterModalVisible = ref(false);
