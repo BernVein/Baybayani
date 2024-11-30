@@ -72,6 +72,11 @@
               Ordered on: {{ new Date(order.created_at).toLocaleDateString() }}
             </div>
 
+            <!-- Progress Bar -->
+            <div class="w-full bg-gray-200 rounded-full h-2.5 mb-4">
+              <div :style="{ width: progressWidth(order.orderStatus), backgroundColor: progressColor(order.orderStatus) }" class="h-2.5 rounded-full"></div>
+            </div>
+
             <!-- Order Options (Cancel button for PENDING orders) -->
             <div v-if="selectedOrderId === order.id && order.orderStatus === 'PENDING'"
               :id="'cancelDropdown-' + order.id"
@@ -260,6 +265,38 @@ const statusClass = (status) => {
       return "bg-red-400";
     default:
       return "bg-gray-200";
+  }
+};
+
+// Progress bar width based on order status
+const progressWidth = (status) => {
+  switch (status) {
+    case "PENDING":
+      return "25%";
+    case "PROCESSING":
+      return "50%";
+    case "FULFILLED":
+      return "100%";
+    case "CANCELED":
+      return "100%";
+    default:
+      return "0%";
+  }
+};
+
+// Progress bar color based on order status
+const progressColor = (status) => {
+  switch (status) {
+    case "PENDING":
+      return "#fbbf24"; // Yellow
+    case "PROCESSING":
+      return "#3b82f6"; // Blue
+    case "FULFILLED":
+      return "#10b981"; // Green
+    case "CANCELED":
+      return "#ef4444"; // Red
+    default:
+      return "#e5e7eb"; // Gray
   }
 };
 </script>
