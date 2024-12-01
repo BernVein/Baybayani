@@ -25,7 +25,7 @@ export default defineNuxtConfig({
 
   app: {
     head: {
-      title: "Baybayani: Bringing Food to Your Table",
+      title: "Baybayani: Food to Table",
       meta: [
         { name: 'description', content: 'A private e-commerce platform for Baybayani members.' }
       ],
