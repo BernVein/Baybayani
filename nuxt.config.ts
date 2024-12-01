@@ -25,6 +25,9 @@ export default defineNuxtConfig({
 
   app: {
     head: {
+      link: [
+        { rel: 'icon', type: 'image/png', href: '/tab-logo.png' }
+      ],
       script: [{ src: "https://js.stripe.com/v3/", defer: true }],
     },
   },
