@@ -91,13 +91,6 @@ const login = async () => {
   errorMsg.value = null;
   successMsg.value = null;
 
-  // Set a timeout to refresh the page if login takes longer than 3 seconds
-  const timeoutId = setTimeout(() => {
-    if (loading.value) {
-      window.location.reload();
-    }
-  }, 3000);
-
   try {
     const response = await client.auth.signInWithPassword({
       email: email.value,
@@ -135,7 +128,6 @@ const login = async () => {
     toastMessage.value = "Login failed: " + error.message;
     toastClass.value = "bg-red-500 text-white";
   } finally {
-    clearTimeout(timeoutId); // Clear the timeout if login completes in time
     loading.value = false;
     setTimeout(() => {
       toastMessage.value = null;
