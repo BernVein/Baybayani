@@ -25,6 +25,10 @@ export default defineNuxtConfig({
 
   app: {
     head: {
+      title: "Baybayani: Bringing Food to Your Table",
+      meta: [
+        { name: 'description', content: 'A private e-commerce platform for Baybayani members.' }
+      ],
       link: [
         { rel: 'icon', type: 'image/png', href: '/tab-logo.png' }
       ],
