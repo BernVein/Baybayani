@@ -1,39 +1,41 @@
 <template>
-  <div id="AuthPage" class="flex flex-col items-center justify-center w-full h-screen bg-white md:flex-row">
-    <!-- Logo Section for Desktop -->
-    <div class="hidden md:flex items-center justify-center w-full md:w-1/2 h-1/3 md:h-full bg-gray-100 shadow-lg">
+  <div id="AuthPage" class="flex items-center justify-center w-full h-[100vh] bg-white">
+    <!-- Logo Section -->
+    <div class="flex items-center justify-center w-1/2 h-full bg-gray-100 shadow-lg">
       <img src="/logo.png" alt="Logo" class="h-full max-h-[90%] p-10 object-contain animate-fade-in" />
     </div>
 
     <!-- Login Form Section -->
-    <div class="w-full md:w-1/2 max-w-[400px] mx-auto px-6 relative z-10 bg-white bg-opacity-90 rounded-lg shadow-2xl p-8">
-      <!-- Page Title -->
-      <div class="text-center mb-6 text-2xl md:text-3xl font-bold text-[#0C6539]">Welcome Back!</div>
+    <div class="w-1/2 max-w-[400px] mx-auto px-6">
+      <div class="border border-gray-300 rounded-lg shadow-2xl p-8 bg-white animate-slide-in">
+        <!-- Page Title -->
+        <div class="text-center mb-6 text-3xl font-bold text-[#0C6539]">Welcome Back!</div>
 
-      <!-- Login form-->
-      <form @submit.prevent="login" class="space-y-5">
-        <div>
-          <label for="email" class="block text-base md:text-lg pb-2 font-medium text-gray-700">Email</label>
-          <input type="email" id="email" v-model="email" @input="resetMessages"
-            class="w-full p-3 border border-gray-400 rounded-md focus:ring-2 focus:ring-[#0C6539]"
-            placeholder="Enter your email" required />
-        </div>
+        <!-- Login form-->
+        <form @submit.prevent="login" class="space-y-5">
+          <div>
+            <label for="email" class="block text-lg pb-2 font-medium text-gray-700">Email</label>
+            <input type="email" id="email" v-model="email" @input="resetMessages"
+              class="w-full p-3 border border-gray-400 rounded-md focus:ring-2 focus:ring-[#0C6539]"
+              placeholder="Enter your email" required />
+          </div>
 
-        <div>
-          <label for="password" class="block text-base md:text-lg pb-2 font-medium text-gray-700">Password</label>
-          <input type="password" id="password" v-model="password" @input="resetMessages"
-            class="w-full p-3 border border-gray-400 rounded-md focus:ring-2 focus:ring-[#0C6539]"
-            placeholder="Enter your password" required />
-        </div>
+          <div>
+            <label for="password" class="block text-lg pb-2 font-medium text-gray-700">Password</label>
+            <input type="password" id="password" v-model="password" @input="resetMessages"
+              class="w-full p-3 border border-gray-400 rounded-md focus:ring-2 focus:ring-[#0C6539]"
+              placeholder="Enter your password" required />
+          </div>
 
-        <div>
-          <button type="submit" :disabled="loading"
-            class="w-full py-3 bg-[#0C6539] text-white font-semibold rounded-md hover:bg-[#0A5230] focus:outline-none focus:ring-2 focus:ring-blue-400">
-            <span v-if="loading">Logging in...</span>
-            <span v-else>Login</span>
-          </button>
-        </div>
-      </form>
+          <div>
+            <button type="submit" :disabled="loading"
+              class="w-full py-3 bg-[#0C6539] text-white font-semibold rounded-md hover:bg-[#0A5230] focus:outline-none focus:ring-2 focus:ring-blue-400">
+              <span v-if="loading">Logging in...</span>
+              <span v-else>Login</span>
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
 
     <!-- Toast Notification -->
@@ -193,35 +195,5 @@ const login = async () => {
 
 .animate-toast {
   animation: toastIn 0.5s ease-out, toastOut 0.5s ease-in 2.5s forwards;
-}
-
-/* Mobile-specific styles */
-@media (max-width: 768px) {
-  #AuthPage {
-    position: relative;
-    overflow: hidden;
-  }
-
-  #AuthPage::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-image: url('/logo.png');
-    background-size: cover;
-    background-position: center;
-    filter: blur(8px);
-    z-index: 0;
-  }
-
-  .relative.z-10 {
-    position: relative;
-    z-index: 10;
-    background-color: rgba(255, 255, 255, 0.9); /* Semi-transparent background for readability */
-    border-radius: 8px;
-    padding: 16px;
-  }
 }
 </style>
