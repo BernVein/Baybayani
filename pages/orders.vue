@@ -52,7 +52,7 @@
         </div>
 
         <!-- Check if there are orders -->
-        <div v-if="orders && filteredOrders.length > 0" class="grid grid-cols-2 gap-4">
+        <div v-if="orders && filteredOrders.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div v-for="(order, index) in filteredOrders" :key="order.id"
             class="border-b py-4 relative bg-gray-50 p-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
             <div class="flex justify-between items-center">

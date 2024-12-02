@@ -33,11 +33,6 @@
             <Icon name="ph:shopping-cart-simple-light" size="33" />
             <span class="pl-4">Cart</span>
           </div>
-          <div
-            class="flex items-center justify-center bg-[#FF4646] h-[35px] min-w-[35px] text-lg text-white rounded-full"
-          >
-            {{ userStore.cart?.length || 0 }}
-          </div>
         </li>
 
         <li
@@ -82,11 +77,11 @@ const signOut = () => {
   userStore.logout();
   //client.auth.signOut();
   //userStore.isMenuOverlay = false;
-  //return navigateTo("/");
+  return navigateTo("/login");
 };
 
 const signIn = () => {
   userStore.isMenuOverlay = false;
-  return navigateTo("/auth");
+  return navigateTo("/login");
 };
 </script>

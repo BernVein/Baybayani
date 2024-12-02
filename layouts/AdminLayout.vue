@@ -136,6 +136,7 @@ const filteredCartCount = computed(() => {
 const signOut = async () => {
   userStore.logout();
   window.location.reload();
+  window.location.href = "/login"; // Redirect to login page after logout
 };
 
 // Handle cart click
