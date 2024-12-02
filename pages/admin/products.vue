@@ -69,58 +69,31 @@
               </tr>
             </thead>
             <tbody>
-              <tr
-                v-for="product in paginatedProducts"
-                :key="product.id"
-                class="hover:bg-gray-200 transition duration-150 ease-in-out product-row"
-              >
-                <td 
-                  class="py-4 px-4 cursor-pointer"
-                  @click="showProductDetails(product)"
-                >
+              <tr v-for="product in paginatedProducts" :key="product.id"
+                class="hover:bg-gray-200 transition duration-150 ease-in-out product-row">
+                <td class="py-4 px-4 cursor-pointer" @click="showProductDetails(product)">
                   <span v-html="highlightMatch(formatNumber(product.id))"></span>
                 </td>
-                <td 
-                  class="py-4 px-4 flex items-center space-x-3 cursor-pointer"
-                  @click="showProductDetails(product)"
-                >
+                <td class="py-4 px-4 flex items-center space-x-3 cursor-pointer" @click="showProductDetails(product)">
                   <img :src="product.url" alt="product image" class="w-10 h-10 rounded-full object-cover" />
                   <span v-html="highlightMatch(product.title)"></span>
                 </td>
-                <td 
-                  class="py-4 px-4 cursor-pointer"
-                  @click="showProductDetails(product)"
-                >
+                <td class="py-4 px-4 cursor-pointer" @click="showProductDetails(product)">
                   ₱{{ formatNumber(parseFloat(product.price).toFixed(2)) }}
                 </td>
                 <td class="py-4 px-4 text-center flex items-center justify-center space-x-4">
-                  <button 
-                    @click.stop="toggleProductVisibility(product)" 
-                    :disabled="isProductInOrderItem(product.id)"
-                    class="text-gray-600 hover:text-blue-600 disabled:opacity-50"
-                  >
-                    <Icon 
-                      :name="product.hidden ? 'ph:eye-slash-bold' : 'ph:eye-bold'" 
-                      size="20" 
-                    />
+                  <button @click.stop="toggleProductVisibility(product)" :disabled="isProductInOrderItem(product.id)"
+                    class="text-gray-600 hover:text-blue-600 disabled:opacity-50">
+                    <Icon :name="product.hidden ? 'ph:eye-slash-bold' : 'ph:eye-bold'" size="20" />
                   </button>
-                  <button 
-                    @click.stop="openEditModal(product)" 
-                    class="text-gray-600 hover:text-gray-800"
-                  >
+                  <button @click.stop="openEditModal(product)" class="text-gray-600 hover:text-gray-800">
                     <Icon name="ph:pencil-simple-bold" size="20" />
                   </button>
-                  <button 
-                    @click.stop="markProductAsDeleted(product.id)" 
-                    :disabled="isProductInOrderItem(product.id)"
-                    class="text-gray-600 hover:text-red-800 disabled:opacity-50"
-                  >
+                  <button @click.stop="markProductAsDeleted(product.id)" :disabled="isProductInOrderItem(product.id)"
+                    class="text-gray-600 hover:text-red-800 disabled:opacity-50">
                     <Icon name="ph:trash-bold" size="20" />
                   </button>
-                  <span 
-                    v-if="isProductInOrderItem(product.id)" 
-                    class="text-red-600 text-sm"
-                  >
+                  <span v-if="isProductInOrderItem(product.id)" class="text-red-600 text-sm">
                     Cannot delete, product exists in cart items.
                   </span>
                 </td>
@@ -133,11 +106,7 @@
             <!-- Items per page selector -->
             <div class="flex items-center gap-2">
               <span class="text-sm text-gray-700">Show</span>
-              <select 
-                v-model="itemsPerPage" 
-                class="border rounded px-2 py-1 text-sm"
-                @change="currentPage = 1"
-              >
+              <select v-model="itemsPerPage" class="border rounded px-2 py-1 text-sm" @change="currentPage = 1">
                 <option value="5">5</option>
                 <option value="10">10</option>
                 <option value="25">25</option>
@@ -153,34 +122,21 @@
 
             <!-- Pagination buttons -->
             <div class="flex gap-2">
-              <button
-                @click="currentPage--"
-                :disabled="currentPage === 1"
-                class="pagination-button"
-                :class="currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'"
-              >
+              <button @click="currentPage--" :disabled="currentPage === 1" class="pagination-button"
+                :class="currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'">
                 Previous
               </button>
-              
-              <button
-                v-for="page in displayedPages"
-                :key="page"
-                @click="typeof page === 'number' ? currentPage = page : null"
-                class="pagination-button"
-                :class="[
+
+              <button v-for="page in displayedPages" :key="page"
+                @click="typeof page === 'number' ? currentPage = page : null" class="pagination-button" :class="[
                   typeof page === 'number' ? (currentPage === page ? 'bg-blue-500 text-white' : 'hover:bg-gray-100') : '',
                   typeof page === 'string' ? 'cursor-default' : ''
-                ]"
-              >
+                ]">
                 {{ page }}
               </button>
 
-              <button
-                @click="currentPage++"
-                :disabled="currentPage === totalPages"
-                class="pagination-button"
-                :class="currentPage === totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'"
-              >
+              <button @click="currentPage++" :disabled="currentPage === totalPages" class="pagination-button"
+                :class="currentPage === totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'">
                 Next
               </button>
             </div>
@@ -257,24 +213,18 @@
     <div v-if="isViewModalVisible" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 relative">
         <!-- Close button -->
-        <button 
-          @click="closeViewModal" 
-          class="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
-        >
+        <button @click="closeViewModal" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700">
           <Icon name="ph:x-bold" size="24" />
         </button>
 
         <!-- Modal content -->
         <div class="space-y-6">
           <h2 class="text-2xl font-bold text-center">Product Details</h2>
-          
+
           <!-- Product image -->
           <div class="flex justify-center">
-            <img 
-              :src="selectedProduct?.url" 
-              :alt="selectedProduct?.title"
-              class="w-48 h-48 object-cover rounded-lg shadow-lg"
-            />
+            <img :src="selectedProduct?.url" :alt="selectedProduct?.title"
+              class="w-48 h-48 object-cover rounded-lg shadow-lg" />
           </div>
 
           <!-- Product details -->
@@ -294,10 +244,8 @@
             <div>
               <p class="text-gray-600">Status</p>
               <p class="font-semibold">
-                <span 
-                  class="px-2 py-1 rounded-full text-sm"
-                  :class="selectedProduct?.hidden ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'"
-                >
+                <span class="px-2 py-1 rounded-full text-sm"
+                  :class="selectedProduct?.hidden ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'">
                   {{ selectedProduct?.hidden ? 'Unavailable' : 'Available' }}
                 </span>
               </p>
@@ -316,41 +264,34 @@
 
     <!-- Add Toast Container -->
     <div class="fixed top-4 right-4 z-50">
-      <div v-for="toast in toasts" :key="toast.id" 
-        class="mb-2 p-4 rounded-lg shadow-lg transform transition-all duration-300 animate-slide-in"
-        :class="{
+      <div v-for="toast in toasts" :key="toast.id"
+        class="mb-2 p-4 rounded-lg shadow-lg transform transition-all duration-300 animate-slide-in" :class="{
           'bg-green-500 text-white': toast.type === 'success',
           'bg-red-500 text-white': toast.type === 'error'
-        }"
-      >
+        }">
         {{ toast.message }}
       </div>
     </div>
 
     <!-- Delete Confirmation Modal -->
-    <div v-if="isDeleteModalVisible" 
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div v-if="isDeleteModalVisible" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4 relative animate-fade-in">
         <div class="text-center space-y-4">
           <Icon name="ph:warning-circle-bold" class="text-red-500 mx-auto" size="64" />
-          
+
           <h2 class="text-2xl font-bold text-gray-900">Delete Product</h2>
-          
+
           <p class="text-gray-600">
             Are you sure you want to delete this product? This action cannot be undone.
           </p>
 
           <div class="flex justify-center gap-4 mt-6">
-            <button
-              @click="closeDeleteModal"
-              class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors"
-            >
+            <button @click="closeDeleteModal"
+              class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors">
               Cancel
             </button>
-            <button
-              @click="confirmDelete"
-              class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors flex items-center gap-2"
-            >
+            <button @click="confirmDelete"
+              class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors flex items-center gap-2">
               <Icon name="ph:trash-bold" size="20" />
               Delete
             </button>
@@ -510,12 +451,12 @@ const updateProduct = async () => {
   isLoading.value = true;
   try {
     const formData = new FormData();
-    
+
     // Add all product fields to formData
     formData.append("title", product.value.title);
     formData.append("description", product.value.description);
     formData.append("price", product.value.price);
-    
+
     // Only append image if a new one is selected
     if (product.value.image) {
       formData.append("image", product.value.image);
@@ -563,7 +504,7 @@ const toggleProductVisibility = async (product) => {
     if (response) {
       await fetchProducts();
       showToast(
-        `Product is now ${!product.hidden ? 'hidden' : 'visible'} 👁️`, 
+        `Product is now ${!product.hidden ? 'hidden' : 'visible'} 👁️`,
         "success"
       );
     }
@@ -580,7 +521,7 @@ const markProductAsDeleted = (productId) => {
     showToast("Cannot delete product that exists in cart items.", "error");
     return;
   }
-  
+
   productToDelete.value = productId;
   isDeleteModalVisible.value = true;
 };
@@ -799,6 +740,7 @@ button:hover .group-hover\:text-white {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -809,6 +751,7 @@ button:hover .group-hover\:text-white {
     transform: translateX(100%);
     opacity: 0;
   }
+
   to {
     transform: translateX(0);
     opacity: 1;
@@ -825,6 +768,7 @@ button:hover .group-hover\:text-white {
     opacity: 0;
     transform: translateY(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -841,6 +785,7 @@ button:hover .group-hover\:text-white {
     opacity: 0;
     transform: translateY(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

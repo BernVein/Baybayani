@@ -1,4 +1,4 @@
-import prisma from '../../utils/prisma'
+import prisma from "../../utils/prisma";
 
 export default defineEventHandler(async (event) => {
   try {
@@ -21,7 +21,6 @@ export default defineEventHandler(async (event) => {
     });
     return products;
   } catch (error) {
-    console.error("Error fetching products:", error);
     return { error: "Error fetching products", message: error.message };
   }
 });
