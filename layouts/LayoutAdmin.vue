@@ -3,7 +3,7 @@
         <div id="MainHeader" class="flex items-center w-full bg-[#fafafa] shadow-[0px_1px_5px_3px_rgba(0,_0,_0,_0.25)]">
           <div class="flex lg:justify-start justify-between gap-10 max-w-[1150px] w-full px-3 py-5 mx-auto">
             <!-- Logo with Press and Color Animation -->
-            <NuxtLink to="/"
+            <NuxtLink to="/admin/index1"
               class="min-w-[170px] transform transition-transform duration-300 ease-in-out hover:scale-105 active:scale-95">
               <img width="170" src="/baybayani-logo.png"
                 class="transition-colors duration-300 ease-in-out hover:brightness-90" />
@@ -37,16 +37,16 @@
 
             <div class="absolute bg-white max-w-[580px] w-full mt-11 ml-52 rounded-lg">
               <div v-if="items && items.data" v-for="item in items.data" class="p-1">
-                <NuxtLink :to="`/item/${item.id}`"
-                  class="flex items-center justify-between w-full cursor-pointer hover:bg-gray-100">
+                <div class="flex items-center justify-between w-full cursor-default hover:bg-gray-100">
                   <div class="flex items-center">
                     <img class="rounded-md" width="40" :src="item.url" />
                     <div class="truncate ml-2">{{ item.title }}</div>
                   </div>
                   <div class="truncate">₱{{ item.price }}</div>
-                </NuxtLink>
+                </div>
               </div>
             </div>
+
             <!-- 
             <button @click="handleCartClick" class="flex items-center pt-2">
               <div class="relative md:block hidden transform transition-transform duration-300 ease-in-out hover:scale-105"
