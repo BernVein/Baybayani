@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout>
+  <LayoutAdmin>
     <div class="flex items-center justify-center w-full h-screen">
       <div class="w-full h-[100vh] max-w-[1200px] bg-[#fafafa] p-6 rounded-lg">
         <!-- Title -->
@@ -13,74 +13,39 @@
               <label for="name" class="block text-sm font-medium text-gray-700">
                 Farmer Name
               </label>
-              <input
-                v-model="farmer.name"
-                id="name"
-                type="text"
-                required
-                class="w-full mt-2 p-3 border border-gray-300 rounded-md"
-                placeholder="Enter farmer name"
-              />
+              <input v-model="farmer.name" id="name" type="text" required
+                class="w-full mt-2 p-3 border border-gray-300 rounded-md" placeholder="Enter farmer name" />
             </div>
 
             <!-- Farmer Contact Number -->
             <div>
-              <label
-                for="contact"
-                class="block text-sm font-medium text-gray-700"
-              >
+              <label for="contact" class="block text-sm font-medium text-gray-700">
                 Contact Number
               </label>
-              <input
-                v-model="farmer.contact"
-                id="contact"
-                type="tel"
-                required
-                class="w-full mt-2 p-3 border border-gray-300 rounded-md"
-                placeholder="Enter contact number"
-              />
+              <input v-model="farmer.contact" id="contact" type="tel" required
+                class="w-full mt-2 p-3 border border-gray-300 rounded-md" placeholder="Enter contact number" />
             </div>
 
             <!-- Searchable and Collapsible Products List -->
             <div>
-              <label
-                for="products"
-                class="block text-sm font-medium text-gray-700"
-              >
+              <label for="products" class="block text-sm font-medium text-gray-700">
                 Products Supplied by Farmer
               </label>
 
               <!-- Search Input -->
-              <input
-                v-model="searchQuery"
-                type="text"
-                class="w-full mt-2 p-3 border border-gray-300 rounded-md"
-                placeholder="Search products..."
-              />
+              <input v-model="searchQuery" type="text" class="w-full mt-2 p-3 border border-gray-300 rounded-md"
+                placeholder="Search products..." />
 
               <!-- Toggle Button -->
-              <button
-                type="button"
-                @click="toggleCollapse"
-                class="mt-2 text-blue-600 hover:text-blue-700"
-              >
+              <button type="button" @click="toggleCollapse" class="mt-2 text-blue-600 hover:text-blue-700">
                 {{ collapsed ? "Show Products" : "Hide Products" }}
               </button>
 
               <!-- Products List (Checkboxes) -->
               <div v-if="!collapsed" class="mt-4 max-h-60 overflow-y-auto">
-                <div
-                  v-for="product in filteredProducts"
-                  :key="product.id"
-                  class="flex items-center mb-2"
-                >
-                  <input
-                    type="checkbox"
-                    :id="'product-' + product.id"
-                    :value="product.id"
-                    v-model="selectedProducts"
-                    class="mr-2"
-                  />
+                <div v-for="product in filteredProducts" :key="product.id" class="flex items-center mb-2">
+                  <input type="checkbox" :id="'product-' + product.id" :value="product.id" v-model="selectedProducts"
+                    class="mr-2" />
                   <label :for="'product-' + product.id" class="text-sm">
                     {{ product.title }}
                   </label>
@@ -98,10 +63,7 @@
 
             <!-- Submit Button -->
             <div class="mt-6 text-right">
-              <button
-                type="submit"
-                class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700"
-              >
+              <button type="submit" class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700">
                 Add Farmer
               </button>
             </div>
@@ -109,12 +71,12 @@
         </form>
       </div>
     </div>
-  </AdminLayout>
+  </LayoutAdmin>
 </template>
 
 <script setup>
 import { ref, onBeforeMount, computed } from "vue";
-import AdminLayout from "~/layouts/AdminLayout.vue";
+import LayoutAdmin from "~/layouts/LayoutAdmin.vue";
 
 import { useUserStore } from "~/stores/user";
 const userStore = useUserStore();

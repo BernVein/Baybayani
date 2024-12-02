@@ -6,7 +6,7 @@
       :class="{ 'translate-x-0': isSidebarOpen }" />
 
     <!-- Admin Layout -->
-    <AdminLayout class="admin-layout">
+    <LayoutAdmin class="admin-layout">
       <div class="main-content flex-1 overflow-y-auto p-6">
         <!-- Title and Refresh Section -->
         <div class="flex justify-between items-center mb-8">
@@ -15,10 +15,8 @@
             <span class="text-sm text-gray-600" v-if="lastUpdated">
               Last updated: {{ formatLastUpdated }}
             </span>
-            <button 
-              @click="fetchDashboardData" 
-              class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
-            >
+            <button @click="fetchDashboardData"
+              class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2">
               <Icon name="mdi:refresh" />
               Refresh Data
             </button>
@@ -45,10 +43,8 @@
           </div>
           <div class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-blue-600">
             <p class="text-lg font-medium">Total Revenue</p>
-            <div 
-              class="text-4xl font-bold overflow-hidden relative group cursor-help"
-              :title="`₱${formatNumber(dashboardSummary.rawTotalRevenue)}`"
-            >
+            <div class="text-4xl font-bold overflow-hidden relative group cursor-help"
+              :title="`₱${formatNumber(dashboardSummary.rawTotalRevenue)}`">
               <span :key="`revenue-${animationKey}`" class="inline-block animate-number">
                 ₱{{ dashboardSummary.totalRevenue }}
               </span>
@@ -60,10 +56,8 @@
           </div>
           <div class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-yellow-600">
             <p class="text-lg font-medium">Revenue Today</p>
-            <div 
-              class="text-4xl font-bold overflow-hidden relative group cursor-help"
-              :title="`₱${formatNumber(dashboardSummary.rawTodayRevenue)}`"
-            >
+            <div class="text-4xl font-bold overflow-hidden relative group cursor-help"
+              :title="`₱${formatNumber(dashboardSummary.rawTodayRevenue)}`">
               <span :key="`today-${animationKey}`" class="inline-block animate-number">
                 ₱{{ dashboardSummary.todayRevenue }}
               </span>
@@ -107,19 +101,11 @@
               <li v-if="filteredTopProducts.length === 0" class="text-center text-gray-500">
                 No sales data available
               </li>
-              <li 
-                v-for="product in filteredTopProducts" 
-                :key="`${product.name}-${animationKey}`"
-                class="flex items-center justify-between p-2 hover:bg-gray-50 rounded-lg"
-              >
+              <li v-for="product in filteredTopProducts" :key="`${product.name}-${animationKey}`"
+                class="flex items-center justify-between p-2 hover:bg-gray-50 rounded-lg">
                 <div class="flex items-center space-x-3">
                   <div class="w-10 h-10 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center">
-                    <img 
-                      v-if="product.url" 
-                      :src="product.url" 
-                      :alt="product.name"
-                      class="w-full h-full object-cover"
-                    >
+                    <img v-if="product.url" :src="product.url" :alt="product.name" class="w-full h-full object-cover">
                     <span v-else>{{ product.name.charAt(0) }}</span>
                   </div>
                   <span class="font-medium">{{ product.name }}</span>
@@ -166,13 +152,13 @@
           </div>
         </div>
       </div>
-    </AdminLayout>
+    </LayoutAdmin>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, computed, onUnmounted } from "vue";
-import AdminLayout from "~/layouts/AdminLayout.vue";
+import LayoutAdmin from "~/layouts/LayoutAdmin.vue";
 import SideBarLayout from "~/layouts/SideBarLayout.vue";
 import Chart from "chart.js/auto";
 
@@ -230,19 +216,19 @@ const fetchDashboardData = async () => {
   try {
     // Increment key to trigger animation
     animationKey.value++;
-    
+
     const [ordersResponse, productsResponse] = await Promise.all([
       $fetch('/api/prisma/get-all-orders'),
       $fetch('/api/prisma/get-all-products')
     ]);
-    
-    orders.value = ordersResponse.filter(order => 
-      order.orderStatus === 'FULFILLED' && 
-      order.orderItem && 
+
+    orders.value = ordersResponse.filter(order =>
+      order.orderStatus === 'FULFILLED' &&
+      order.orderItem &&
       order.orderItem.length > 0
     );
     products.value = productsResponse;
-    
+
     // Update charts and timestamp
     updateTotalRevenueChart();
     updateTopProducts();
@@ -258,13 +244,13 @@ const fetchDashboardData = async () => {
 const filterDataByDate = (data, filter) => {
   const today = new Date();
   const pastDate = new Date();
-  
+
   if (filter === 'weekly') {
     pastDate.setDate(today.getDate() - 7);
   } else {
     pastDate.setMonth(today.getMonth() - 1);
   }
-  
+
   return data.filter(item => {
     const itemDate = new Date(item.created_at);
     return itemDate >= pastDate && itemDate <= today;
@@ -375,14 +361,14 @@ const initializeCharts = () => {
 // Update the chart update functions to use the new charts object
 const updateTotalRevenueChart = () => {
   if (!charts.totalRevenue) return;
-  
+
   const filteredOrders = filterDataByDate(orders.value, totalRevenueFilter.value);
-  
+
   let labels, data;
   if (totalRevenueFilter.value === 'weekly') {
     labels = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
     data = new Array(7).fill(0);
-    
+
     filteredOrders.forEach(order => {
       const dayIndex = new Date(order.created_at).getDay();
       data[dayIndex] += order.totalPrice || 0;
@@ -390,13 +376,13 @@ const updateTotalRevenueChart = () => {
   } else {
     labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     data = new Array(12).fill(0);
-    
+
     filteredOrders.forEach(order => {
       const monthIndex = new Date(order.created_at).getMonth();
       data[monthIndex] += order.totalPrice || 0;
     });
   }
-  
+
   charts.totalRevenue.data.labels = labels;
   charts.totalRevenue.data.datasets[0].data = data;
   charts.totalRevenue.update();
@@ -408,14 +394,14 @@ const filteredTopProducts = ref([]);
 // Update the Product Sales Chart function
 const updateProductSalesChart = () => {
   if (!charts.productSales) return;
-  
+
   const filteredOrders = filterDataByDate(orders.value, productSalesFilter.value);
-  
+
   let labels, data;
   if (productSalesFilter.value === 'weekly') {
     labels = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
     data = new Array(7).fill(0);
-    
+
     filteredOrders.forEach(order => {
       const dayIndex = new Date(order.created_at).getDay();
       // Sum all product quantities for this day
@@ -426,7 +412,7 @@ const updateProductSalesChart = () => {
   } else {
     labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     data = new Array(12).fill(0);
-    
+
     filteredOrders.forEach(order => {
       const monthIndex = new Date(order.created_at).getMonth();
       // Sum all product quantities for this month
@@ -435,7 +421,7 @@ const updateProductSalesChart = () => {
       });
     });
   }
-  
+
   charts.productSales.data.labels = labels;
   charts.productSales.data.datasets[0].data = data;
   charts.productSales.update();
@@ -444,9 +430,9 @@ const updateProductSalesChart = () => {
 // Update the Product Sales Trend Chart function
 const updateProductSalesTrendChart = () => {
   if (!charts.productSalesTrend) return;
-  
+
   const filteredOrders = filterDataByDate(orders.value, productSalesTrendFilter.value);
-  
+
   // Calculate sales per product
   const productSales = {};
   filteredOrders.forEach(order => {
@@ -458,15 +444,15 @@ const updateProductSalesTrendChart = () => {
       productSales[productName] += item.quantity;
     });
   });
-  
+
   // Get top 4 products for the pie chart
   const topProducts = Object.entries(productSales)
-    .sort(([,a], [,b]) => b - a)
+    .sort(([, a], [, b]) => b - a)
     .slice(0, 4);
-  
+
   const labels = topProducts.map(([name]) => name);
-  const data = topProducts.map(([,value]) => value);
-  
+  const data = topProducts.map(([, value]) => value);
+
   charts.productSalesTrend.data.labels = labels;
   charts.productSalesTrend.data.datasets[0].data = data;
   charts.productSalesTrend.update();
@@ -475,7 +461,7 @@ const updateProductSalesTrendChart = () => {
 // Update the Top Products function
 const updateTopProducts = () => {
   const filteredOrders = filterDataByDate(orders.value, topProductsFilter.value);
-  
+
   // Calculate total sales per product
   const productSales = {};
   filteredOrders.forEach(order => {
@@ -492,7 +478,7 @@ const updateTopProducts = () => {
       productSales[productId].sold += item.quantity;
     });
   });
-  
+
   // Sort by sales and get top 4
   filteredTopProducts.value = Object.values(productSales)
     .sort((a, b) => b.sold - a.sold)
@@ -510,18 +496,18 @@ const formatLargeNumber = (number) => {
 // Update dashboardSummary computed to use the new formatting function
 const dashboardSummary = computed(() => {
   const totalProducts = products.value.length;
-  
-  const totalSold = orders.value.reduce((sum, order) => 
+
+  const totalSold = orders.value.reduce((sum, order) =>
     sum + (order.orderItem?.reduce((itemSum, item) => itemSum + (item.quantity || 0), 0) || 0), 0);
-    
-  const rawTotalRevenue = orders.value.reduce((sum, order) => 
+
+  const rawTotalRevenue = orders.value.reduce((sum, order) =>
     sum + (order.totalPrice || 0), 0);
-  
+
   const today = new Date().setHours(0, 0, 0, 0);
   const rawTodayRevenue = orders.value
     .filter(order => new Date(order.created_at).setHours(0, 0, 0, 0) === today)
     .reduce((sum, order) => sum + (order.totalPrice || 0), 0);
-    
+
   return {
     totalProducts,
     totalSold,
@@ -577,6 +563,7 @@ onUnmounted(() => {
     transform: translateY(100%);
     opacity: 0;
   }
+
   100% {
     transform: translateY(0);
     opacity: 1;
@@ -589,9 +576,7 @@ onUnmounted(() => {
 
 /* Tooltip styles */
 .tooltip {
-  @apply invisible opacity-0 absolute -bottom-12 left-1/2 transform -translate-x-1/2
-         bg-gray-900 text-white px-4 py-2 rounded text-base whitespace-nowrap
-         transition-all duration-200 z-50;
+  @apply invisible opacity-0 absolute -bottom-12 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-4 py-2 rounded text-base whitespace-nowrap transition-all duration-200 z-50;
 }
 
 /* Show tooltip on hover */
@@ -602,8 +587,7 @@ onUnmounted(() => {
 /* Optional: Add a small arrow to the tooltip */
 .tooltip::before {
   content: '';
-  @apply absolute -top-2 left-1/2 transform -translate-x-1/2
-         border-solid border-8 border-transparent border-b-gray-900;
+  @apply absolute -top-2 left-1/2 transform -translate-x-1/2 border-solid border-8 border-transparent border-b-gray-900;
 }
 
 /* Add smooth transition for hover effect */

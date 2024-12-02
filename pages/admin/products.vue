@@ -4,7 +4,7 @@
     <SideBarLayout class="sidebar" />
 
     <!-- Admin Layout -->
-    <AdminLayout class="admin-layout">
+    <LayoutAdmin class="admin-layout">
       <div class="main-content flex-1 overflow-y-auto p-6">
         <!-- Title -->
         <h1 class="text-3xl font-semibold mb-8 text-center">
@@ -143,7 +143,7 @@
           </div>
         </div>
       </div>
-    </AdminLayout>
+    </LayoutAdmin>
 
     <!-- Add/Edit Product Modal -->
     <div v-if="isModalVisible" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -305,7 +305,7 @@
 <script setup>
 import axios from "axios";
 import { ref, computed, onMounted, watch } from "vue";
-import AdminLayout from "~/layouts/AdminLayout.vue";
+import LayoutAdmin from "~/layouts/LayoutAdmin.vue";
 import SideBarLayout from "~/layouts/SideBarLayout.vue";
 import { useUserStore } from "~/stores/user";
 import { useRuntimeConfig } from "#imports";
