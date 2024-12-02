@@ -32,21 +32,20 @@ export const useUserStore = defineStore("user", {
       try {
         const client = useSupabaseClient();
         const { data, error } = await client.auth.getUser();
-        if (error) {
-          console.error("Error fetching user:", error);
-        } else {
-          this.user = data.user;
-          console.log("Fetched user ID:", this.user.id);
-          const profileData = await fetchUserProfile(this.user.id);
-          this.profile = profileData;
-          if (!this.isAdmin()) {
-            await this.fetchCartItems();
-          }
 
-          // // Clear storage and cookies on successful login
-          // localStorage.clear();
-          // sessionStorage.clear();
-          // this.clearCookies();
+        // Safeguard: Check if user data is valid
+        if (error || !data || !data.user) {
+          console.error("Error fetching user or user is null:", error);
+          this.user = null; // Ensure user state is null
+          return; // Exit early if there's an error or no valid user
+        }
+
+        this.user = data.user;
+        console.log("Fetched user ID:", this.user.id);
+        const profileData = await fetchUserProfile(this.user.id);
+        this.profile = profileData;
+        if (!this.isAdmin()) {
+          await this.fetchCartItems();
         }
       } catch (err) {
         console.error("Unexpected error fetching user:", err);
