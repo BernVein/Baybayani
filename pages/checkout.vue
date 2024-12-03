@@ -64,19 +64,29 @@ import AdminLayout from "~/layouts/AdminLayout.vue";
 import { useUserStore } from "~/stores/user";
 const userStore = useUserStore();
 const user = useSupabaseUser();
-const route = useRoute();
+
 
 //definePageMeta({ middleware: "auth" });
 
 let total = ref(0);
 
-// watchEffect(() => {
-//   if (route.fullPath == "/checkout" && !user.value) {
-//     navigateTo("/login");
-//   } else if (route.fullPath == "/checkout" && userStore.checkout.length === 0) {
-//     navigateTo("/shoppingcart");
-//   }
-// });
+
+
+const route = useRoute();
+const role = userStore.profile?.role;
+watchEffect(() => {
+  if (route.fullPath == "/checkout" &&
+    (!user.value || role === "Admin")) {
+    navigateTo("/admin/dashboard");
+  }
+  else if (route.fullPath == "/checkout" && !user.value) {
+    navigateTo("/login");
+  } else if (route.fullPath == "/checkout" && userStore.checkout.length === 0) {
+    navigateTo("/shoppingcart");
+  }
+});
+
+
 
 onMounted(() => {
   if (route.fullPath == "/checkout" && !user.value) {
@@ -118,8 +128,8 @@ const placeOrder = async () => {
     userStore.checkout = []; // Clear the checkout items
     console.log("Checkout items cleared.");
     userStore.refreshFlag = 1;
-    // await userStore.fetchCartItems();
-    // await userStore.fetchOrders();
+    await userStore.fetchCartItems();
+    await userStore.fetchOrders();
 
     // Redirect to the success page after a short delay
   } catch (error) {

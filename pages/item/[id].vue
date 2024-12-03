@@ -79,6 +79,8 @@ import AdminLayout from "~/layouts/AdminLayout.vue";
 import { useUserStore } from "~/stores/user";
 import { ref, computed, onBeforeMount, watchEffect } from "vue";
 
+const user = useSupabaseUser();
+
 const userStore = useUserStore();
 const route = useRoute();
 
@@ -88,18 +90,26 @@ let images = ref([]);
 let addtocartResponse = ref(null);
 let showChatModal = ref(false);
 let showGuidedLine = ref(false);
+const role = userStore.profile?.role;
 
 onBeforeMount(async () => {
   product.value = await useFetch(`/api/prisma/get-product-by-id/${route.params.id}`);
 });
 
 watchEffect(() => {
+
+  if (!user.value || role === "Admin") {
+    navigateTo("/admin/dashboard");
+  }
   if (product.value && product.value.data) {
     currentImage.value = product.value.data.url;
     images.value = [product.value.data.url];
     userStore.isLoading = false;
   }
 });
+
+
+
 
 const isInCart = computed(() => {
   const currentProductId = route.params.id;

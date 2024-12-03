@@ -178,7 +178,6 @@ const email = ref("");
 const password = ref("");
 const name = ref("");
 const contact = ref("");
-const role = ref("");
 const errorMsg = ref(null);
 const successMsg = ref(null);
 
@@ -189,10 +188,11 @@ const users = ref([]);
 const buyers = ref(0);
 const suspendedUsers = ref(0);
 
+const role = userStore.profile?.role;
 watchEffect(() => {
   if (
     route.fullPath == "/admin/users" &&
-    (!user.value || userStore.isAdmin === false)
+    (!user.value || role === "User")
   ) {
     navigateTo("/login");
   }

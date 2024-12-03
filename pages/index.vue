@@ -20,12 +20,27 @@
 import AdminLayout from "~/layouts/AdminLayout.vue";
 import { useUserStore } from "~/stores/user";
 import { ref, onBeforeMount, computed } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute } from "vue-router";
+const user = useSupabaseUser();
 
 const userStore = useUserStore();
-const router = useRouter();
 
 let products = ref(null);
+
+
+const route = useRoute();
+const role = userStore.profile?.role;
+watchEffect(() => {
+  if (route.fullPath == "/" &&
+    (!user.value || role === "Admin")) {
+    navigateTo("/admin/dashboard");
+  }
+  else if (route.fullPath == "/" && !user.value) {
+    navigateTo("/login");
+  }
+});
+
+
 
 onBeforeMount(async () => {
   products.value = await useFetch("/api/prisma/get-all-products");

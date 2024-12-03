@@ -167,6 +167,9 @@ const userStore = useUserStore();
 const user = useSupabaseUser();
 const route = useRoute();
 
+const role = userStore.profile?.role;
+
+
 const isSidebarOpen = ref(false);
 
 const toggleSidebar = () => {
@@ -175,11 +178,12 @@ const toggleSidebar = () => {
 
 watchEffect(() => {
   console.log("IsAdmin(Sa Dashboard)??");
-  userStore.isAdmin();
+  console.log(role);
+
   console.log(!user.value && userStore.isAdmin === true);
   if (
     route.fullPath == "/admin/dashboard" &&
-    (!user.value || userStore.isAdmin === false)
+    (!user.value || role === "User")
   ) {
     navigateTo("/login");
   }

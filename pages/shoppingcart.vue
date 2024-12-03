@@ -83,14 +83,21 @@ import AdminLayout from "~/layouts/AdminLayout.vue";
 import { useUserStore } from "~/stores/user";
 import { ref, computed, watchEffect, onBeforeMount } from "vue";
 
+
+
 const userStore = useUserStore();
 const user = useSupabaseUser();
+const route = useRoute();
+const role = userStore.profile?.role;
 
 // Redirect to the login page if the user is not logged in
 watchEffect(() => {
-  if (!user.value) {
-    console.log()
-    navigateTo("/login"); // Ensure `navigateTo` is correctly imported or available globally
+  if (route.fullPath == "/shoppingcart" &&
+    (!user.value || role === "Admin")) {
+    navigateTo("/admin/dashboard");
+  }
+  else if (route.fullPath == "/shoppingcart" && !user.value) {
+    navigateTo("/login");
   }
 });
 

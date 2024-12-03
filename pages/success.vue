@@ -21,14 +21,20 @@ const userStore = useUserStore();
 const user = useSupabaseUser();
 const route = useRoute();
 //await userStore.isAdmin();
+const role = userStore.profile?.role;
 
-watchEffect(async () => {
-  if (!user.value) {
-    await navigateTo("/login");
-    // } else if (route.fullPath == "/success" && userStore.isAdmin === true) {
-    //   await navigateTo("/admin/dashboard");
+
+// Redirect to the login page if the user is not logged in
+watchEffect(() => {
+  if (route.fullPath == "/success" &&
+    (!user.value || role === "Admin")) {
+    navigateTo("/admin/dashboard");
+  }
+  else if (route.fullPath == "/success" && !user.value) {
+    navigateTo("/login");
   }
 });
+
 
 onMounted(() => {
   setTimeout(() => (userStore.isLoading = false), 300);

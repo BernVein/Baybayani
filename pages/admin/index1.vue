@@ -36,20 +36,31 @@
 <script setup>
 import LayoutAdmin from "~/layouts/LayoutAdmin.vue";
 import SideBarLayout from "~/layouts/SideBarLayout.vue";
-import { useUserStore } from "~/stores/user";
 import { ref, onBeforeMount, computed } from "vue";
-import { useRouter } from "vue-router";
 const clickDisabled = ref(true); // Set to true to disable clicking
+import { useUserStore } from "~/stores/user";
+
 
 
 const userStore = useUserStore();
-const router = useRouter();
 
 const isSidebarOpen = ref(false);
 
 const toggleSidebar = () => {
     isSidebarOpen.value = !isSidebarOpen.value;
 };
+
+const user = useSupabaseUser();
+const role = userStore.profile?.role;
+const route = useRoute();
+watchEffect(() => {
+    if (
+        route.fullPath == "/admin/index1" &&
+        (!user.value || role === "User")
+    ) {
+        navigateTo("/login");
+    }
+});
 
 
 let products = ref(null);

@@ -147,9 +147,16 @@ let showModal = ref(false);  // Track modal visibility
 let orderIdToCancel = ref(null);  // Track which order to cancel
 
 // Watch effect to check if the user is logged in
-watchEffect(async () => {
-  if (!user.value) {
-    await navigateTo("/login");
+const route = useRoute();
+const role = userStore.profile?.role;
+
+watchEffect(() => {
+  if (route.fullPath == "/orders" &&
+    (!user.value || role === "Admin")) {
+    navigateTo("/admin/dashboard");
+  }
+  else if (route.fullPath == "/orders" && !user.value) {
+    navigateTo("/login");
   }
 });
 

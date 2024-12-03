@@ -334,12 +334,11 @@ const user = useSupabaseUser();
 const route = useRoute();
 
 
-userStore.isAdmin();
-
+const role = userStore.profile?.role;
 watchEffect(() => {
   if (
     route.fullPath == "/admin/products" &&
-    (!user.value || userStore.isAdmin === false)
+    (!user.value || role === "User")
   ) {
     navigateTo("/login");
   }

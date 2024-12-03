@@ -295,14 +295,16 @@ const selectedProduct = ref(null);
 const isConfirmModalVisible = ref(false);
 const selectedProductId = ref(null);
 
+const role = userStore.profile?.role;
 watchEffect(() => {
   if (
     route.fullPath == "/admin/orders" &&
-    (!user.value || userStore.isAdmin === false)
+    (!user.value || role === "User")
   ) {
     navigateTo("/login");
   }
 });
+
 
 // Fetch orders from the API
 const fetchOrders = async () => {

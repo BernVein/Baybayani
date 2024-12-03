@@ -15,6 +15,9 @@
 import { onMounted } from "vue";
 import SideBarLayout from "~/layouts/SideBarLayout.vue";
 import LayoutAdmin from "~/layouts/LayoutAdmin.vue";
+import { useUserStore } from "~/stores/user";
+const userStore = useUserStore();
+
 
 export default {
   name: "ChatPage",
@@ -23,6 +26,19 @@ export default {
     LayoutAdmin,
   },
   setup() {
+
+    const user = useSupabaseUser();
+    const role = userStore.profile?.role;
+    const route = useRoute();
+    watchEffect(() => {
+      if (
+        route.fullPath == "/admin/chat" &&
+        (!user.value || role === "User")
+      ) {
+        navigateTo("/login");
+      }
+    });
+
     onMounted(() => {
       // Load the CometChat Widget script dynamically
       const script = document.createElement("script");

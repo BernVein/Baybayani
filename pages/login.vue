@@ -107,13 +107,14 @@ const login = async () => {
       await userStore.fetchUser();
       console.log("USEEEEEEEEEEEEEEEEEEERRR");
       userStore.isLoading = 1;
-      await userStore.fetchCartItems();
+      //await userStore.fetchCartItems();
       console.log("CARTTTTTTTTTTTTTTTTT");
-      await userStore.fetchOrders();
+      //await userStore.fetchOrders();
       console.log("ORDERRRRRRRRRRRRR");
       toastMessage.value = "Successfully logged in as " + userData.toLowerCase() + "!";
       toastClass.value = "bg-green-500 text-white";
       console.log("status", userStore.user);
+      console.log("ADMIN??????????/", userStore.profile.role);
 
       if (userStore.isAdmin) {
         router.push("/admin/dashboard").then(() => {

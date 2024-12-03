@@ -23,10 +23,10 @@ export const useUserStore = defineStore("user", {
     async fetchUser() {
       console.log("FETCHING!");
 
-      if (this.user) {
-        console.log("ALREADY LOGGED IN");
-        return; // Skip fetching if user is already set
-      }
+      // if (this.user) {
+      //   console.log("ALREADY LOGGED IN");
+      //   return; // Skip fetching if user is already set
+      // }
       console.log("FETCH USER RUNNING");
       this.isLoading = true;
       try {
@@ -63,6 +63,7 @@ export const useUserStore = defineStore("user", {
         this.isAdmin = true;
         return true;
       }
+
       this.isAdmin = false;
       return false;
     },
@@ -198,6 +199,9 @@ export const useUserStore = defineStore("user", {
           name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
       }
     },
+  },
+  persist: {
+    paths: ["user", "profile", "isAdmin"], // Only persist the 'user' and 'profile' states
   },
 
   //persist: true, // This will persist the store data
