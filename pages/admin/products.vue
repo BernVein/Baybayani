@@ -178,11 +178,22 @@
                 class="w-full mt-1 p-2 border border-gray-300 rounded-md" placeholder="Enter product price (e.g., 100)"
                 required />
             </div>
+
+
+            <!-- Image Upload -->
             <div>
-              <label for="url" class="block text-sm font-medium text-gray-700">Image URL</label>
-              <input id="url" type="text" v-model="product.url"
-                class="w-full mt-1 p-2 border border-gray-300 rounded-md" placeholder="Enter image URL" required />
+              <label for="image" class="block text-sm font-medium text-gray-700">
+                Product Image
+              </label>
+              <input type="file" id="image" @change="handleFileChange"
+                class="mt-2 p-3 border border-gray-300 rounded-md" accept="image/*" />
+              <div v-if="imagePreview" class="mt-4">
+                <p>Image Preview:</p>
+                <img :src="imagePreview" alt="Image Preview" class="w-48 h-48 object-cover mt-2" />
+              </div>
             </div>
+
+
             <div class="flex justify-end space-x-4">
               <button type="button" @click="closeModal"
                 class="px-4 py-2 border border-gray-300 rounded-md text-gray-500 hover:bg-gray-100">
@@ -310,13 +321,20 @@ import SideBarLayout from "~/layouts/SideBarLayout.vue";
 import { useUserStore } from "~/stores/user";
 import { useRuntimeConfig } from "#imports";
 import Loading from '~/components/Loading.vue';
+import Compressor from "compressorjs";
+const supabase = useSupabaseClient();
 
+const imagePreview = ref(null); // For image preview
+
+
+const compressedImage = ref(null); // For the compressed image file
 const userStore = useUserStore();
-
-userStore.isAdmin();
 
 const user = useSupabaseUser();
 const route = useRoute();
+
+
+userStore.isAdmin();
 
 watchEffect(() => {
   if (
@@ -326,6 +344,160 @@ watchEffect(() => {
     navigateTo("/login");
   }
 });
+
+function getPublicUrl(bucketName, filePath) {
+  const supabaseUrl = "https://ucijbmsogggpigwppfpu.supabase.co"; // Replace with your Supabase project URL
+  return `${supabaseUrl}/storage/v1/object/public/${bucketName}/${filePath}`;
+}
+
+// Handle file change and compress the image
+const handleFileChange = (event) => {
+  console.log("Handle File Change Running");
+  const file = event.target.files[0];
+  if (!file) return;
+
+  // Compress the image using Compressor.js
+  new Compressor(file, {
+    quality: 0.6, // Set image quality (60%)
+    maxWidth: 800, // Resize image to max width 800px (aspect ratio maintained)
+    maxHeight: 800, // Resize image to max height 800px (aspect ratio maintained)
+    success(result) {
+      // Create a new image element to load the compressed image
+      const img = new Image();
+      img.onload = () => {
+        // Create a canvas to crop and resize the image to 800x800
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+
+        // Set the canvas size to 800x800
+        canvas.width = 800;
+        canvas.height = 800;
+
+        // Calculate the center crop coordinates
+        const x = (img.width - 800) / 2; // Crop from the center horizontally
+        const y = (img.height - 800) / 2; // Crop from the center vertically
+
+        // Draw the image on the canvas (crop and fit to 800x800)
+        ctx.drawImage(img, x, y, 800, 800, 0, 0, 800, 800);
+
+        // Convert the canvas to Blob for uploading
+        canvas.toBlob(
+          (blob) => {
+            // Use the Blob to create a preview URL
+            compressedImage.value = blob;
+            imagePreview.value = URL.createObjectURL(blob); // Display preview of the resized image
+          },
+          "image/jpeg",
+          0.8
+        );
+      };
+      img.src = URL.createObjectURL(result); // Load the compressed image into the img element
+      console.log(result);
+      console.log("COPRESSION SUCCESS");
+    },
+    error(err) {
+      console.error("Image compression failed", err);
+    },
+  });
+};
+
+const addProduct = async () => {
+  console.log("ADD product running");
+  isLoading.value = false;
+  if (!compressedImage.value) {
+    alert("Please upload a valid image.");
+    return;
+  }
+
+  const fileName = `products/images/${Date.now()}_${Math.random().toString(36).substring(2, 15)}.jpg`;
+
+  console.log(fileName);
+
+  const { data, error } = await supabase.storage
+    .from("product-images") // Replace with your Supabase bucket name 
+    .upload(fileName, compressedImage.value);
+
+  console.log("Upload response:", data); // Log upload response
+
+  if (error) {
+    console.error("Image upload failed", error);
+    return;
+  }
+
+  // Construct the public URL for the uploaded image
+  const imageUrl = getPublicUrl("product-images", data.path); // Use the path from the upload response
+
+  console.log("Uploaded Image URL:", imageUrl); // This is where you check the URL
+
+  try {
+    // Send as JSON object instead of FormData
+    const response = await $fetch("/api/prisma/add-product", {
+      method: "POST",
+      body: {
+        title: product.value.title,
+        description: product.value.description,
+        price: parseInt(product.value.price),
+        url: imageUrl, // Save image URL
+      },
+    });
+
+    // Check for response structure
+    if (response.body?.product) {
+      await fetchProducts();
+      closeModal();
+      showToast("Product added successfully! 🎉", "success");
+
+      // Reset form after submission
+      product.value = {
+        title: "",
+        description: "",
+        price: 0,
+        imageUrl: "",
+      };
+      imagePreview.value = null;
+    } else {
+      throw new Error("Failed to add product");
+    }
+  } catch (error) {
+    console.error("Error adding product:", error);
+    showToast("Failed to add product........... Please try again.", "error");
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+
+// const addProduct = async () => {
+//   isLoading.value = true;
+//   try {
+//     // Send as JSON object instead of FormData
+//     const response = await $fetch("/api/prisma/add-product", {
+//       method: "POST",
+//       body: {
+//         title: product.value.title,
+//         description: product.value.description,
+//         price: parseInt(product.value.price),
+//         url: product.value.url
+//       },
+//     });
+
+//     // Check for response structure
+//     if (response.body?.product) {
+//       await fetchProducts();
+//       closeModal();
+//       showToast("Product added successfully! 🎉", "success");
+//     } else {
+//       throw new Error("Failed to add product");
+//     }
+//   } catch (error) {
+//     console.error("Error adding product:", error);
+//     showToast("Failed to add product. Please try again.", "error");
+//   } finally {
+//     isLoading.value = false;
+//   }
+// };
+
+
 
 const config = useRuntimeConfig();
 const apiUrl =
@@ -402,7 +574,7 @@ const fetchOrderItems = async () => {
     );
     if (response.status === 200) {
       orderItems.value = response.data;
-      console.log("Order Items:", orderItems.value); // Print the order items in the console
+      //console.log("Order Items:", orderItems.value); // Print the order items in the console
     } else {
       throw new Error("Failed to fetch order items");
     }
@@ -417,66 +589,64 @@ const isProductInOrderItem = (productId) => {
   );
 };
 
-const addProduct = async () => {
-  isLoading.value = true;
-  try {
-    // Send as JSON object instead of FormData
-    const response = await $fetch("/api/prisma/add-product", {
-      method: "POST",
-      body: {
-        title: product.value.title,
-        description: product.value.description,
-        price: parseInt(product.value.price),
-        url: product.value.url
-      },
-    });
-
-    // Check for response structure
-    if (response.body?.product) {
-      await fetchProducts();
-      closeModal();
-      showToast("Product added successfully! 🎉", "success");
-    } else {
-      throw new Error("Failed to add product");
-    }
-  } catch (error) {
-    console.error("Error adding product:", error);
-    showToast("Failed to add product. Please try again.", "error");
-  } finally {
-    isLoading.value = false;
-  }
-};
-
 const updateProduct = async () => {
+  console.log("UPDATE product running");
   isLoading.value = true;
+
   try {
-    const formData = new FormData();
+    // If a new image is selected, we need to handle the upload process
+    console.log("upload running");
+    let imageUrl = product.value.url; // Use the existing image URL if no new image is selected
 
-    // Add all product fields to formData
-    formData.append("title", product.value.title);
-    formData.append("description", product.value.description);
-    formData.append("price", product.value.price);
-
-    // Only append image if a new one is selected
     if (product.value.image) {
-      formData.append("image", product.value.image);
+      const fileName = `products/images/${Date.now()}_${Math.random().toString(36).substring(2, 15)}.jpg`;
+      console.log("New image selected:", fileName);
+
+      // Upload the new image to Supabase
+      const { data, error } = await supabase.storage
+        .from("product-images")
+        .upload(fileName, product.value.image);
+
+      console.log("Upload response:", data);
+
+      if (error) {
+        console.error("Image upload failed", error);
+        throw new Error("Image upload failed");
+      }
+
+      // Get the public URL of the uploaded image
+      imageUrl = getPublicUrl("product-images", data.path);
     }
 
+    // Prepare the data for updating the product
     const response = await $fetch(`/api/prisma/update-product/${product.value.id}`, {
       method: "PUT",
       body: {
         title: product.value.title,
         description: product.value.description,
         price: parseInt(product.value.price),
-        url: product.value.url, // Keep existing URL if no new image
-      }
+        url: imageUrl, // Use the new or existing image URL
+      },
     });
 
-    // Check for response.body since that's where the data is nested
+    // Log the response to inspect its structure
+    console.log("Response body:", response.body);
+
+    // Check for successful update
     if (response.body?.product) {
       await fetchProducts();
       closeModal();
       showToast("Product updated successfully! ✨", "success");
+
+      // Reset form after successful update
+      product.value = {
+        title: "",
+        description: "",
+        price: 0,
+        url: "", // Clear the image URL as it's no longer needed
+        image: null, // Reset the image field
+      };
+      imagePreview.value = null;
     } else {
       throw new Error("Failed to update product");
     }
@@ -487,6 +657,49 @@ const updateProduct = async () => {
     isLoading.value = false;
   }
 };
+
+
+
+// const updateProduct = async () => {
+//   isLoading.value = true;
+//   try {
+//     const formData = new FormData();
+
+//     // Add all product fields to formData
+//     formData.append("title", product.value.title);
+//     formData.append("description", product.value.description);
+//     formData.append("price", product.value.price);
+
+//     // Only append image if a new one is selected
+//     if (product.value.image) {
+//       formData.append("image", product.value.image);
+//     }
+
+//     const response = await $fetch(`/api/prisma/update-product/${product.value.id}`, {
+//       method: "PUT",
+//       body: {
+//         title: product.value.title,
+//         description: product.value.description,
+//         price: parseInt(product.value.price),
+//         url: product.value.url, // Keep existing URL if no new image
+//       }
+//     });
+
+//     // Check for response.body since that's where the data is nested
+//     if (response.body?.product) {
+//       await fetchProducts();
+//       closeModal();
+//       showToast("Product updated successfully! ✨", "success");
+//     } else {
+//       throw new Error("Failed to update product");
+//     }
+//   } catch (error) {
+//     console.error("Error updating product:", error);
+//     showToast("Failed to update product. Please try again.", "error");
+//   } finally {
+//     isLoading.value = false;
+//   }
+// };
 
 const toggleProductVisibility = async (product) => {
   if (isProductInOrderItem(product.id)) {

@@ -7,8 +7,8 @@ export default defineEventHandler(async (event) => {
 
   // Get userId and productId from the URL path parameters
   const { userId, productId } = event.context.params;
-  console.log("User ID:", userId);
-  console.log("Product ID:", productId);
+  //console.log("User ID:", userId);
+  //console.log("Product ID:", productId);
 
   // If userId or productId is missing, return an error response
   if (!userId || !productId) {
