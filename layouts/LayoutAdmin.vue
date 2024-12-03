@@ -112,8 +112,8 @@ import { ref, computed, onMounted } from "vue";
 const userStore = useUserStore();
 
 await userStore.fetchUser();
-await userStore.fetchCartItems();
-await userStore.fetchOrders();
+//await userStore.fetchCartItems();
+//await userStore.fetchOrders();
 
 const isSearching = ref(false);
 const searchItem = ref("");

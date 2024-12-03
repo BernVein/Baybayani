@@ -119,6 +119,7 @@ const deleteFromCart = async () => {
 
     if (data.success === 1) {
       console.log("Product successfully removed from cart!");
+      //await userStore.fetchCartItems();
       // Optionally update the store or UI here
     } else {
       console.log("Error:", data.message);

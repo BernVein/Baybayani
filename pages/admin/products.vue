@@ -595,7 +595,7 @@ const updateProduct = async () => {
 
   try {
     // If a new image is selected, we need to handle the upload process
-    console.log("upload running");
+    console.log("upload running"); a
     let imageUrl = product.value.url; // Use the existing image URL if no new image is selected
 
     if (product.value.image) {

@@ -30,6 +30,7 @@ let products = ref(null);
 onBeforeMount(async () => {
   products.value = await useFetch("/api/prisma/get-all-products");
   setTimeout(() => (userStore.isLoading = true), 1000);
+
 });
 
 // Compute filtered products to exclude hidden and deleted products
@@ -44,7 +45,7 @@ const filteredProducts = computed(() => {
 
 // CometChat Docked Widget Integration
 onMounted(() => {
-  userStore.fetchCartItems();
+
 
   const defaultUID = userStore.profile?.name
     ? userStore.profile.name.replace(/\s+/g, "").toLowerCase()

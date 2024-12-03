@@ -19,10 +19,12 @@
         <!-- Right Section: Product Details -->
         <div class="w-[50%] bg-white p-6 rounded-lg shadow-md transition-all duration-500 ease-in-out hover:shadow-lg">
           <div v-if="product && product.data">
-            <h1 class="text-4xl font-semibold text-gray-800 transition-colors duration-300 ease-in-out hover:text-green-600">
+            <h1
+              class="text-4xl font-semibold text-gray-800 transition-colors duration-300 ease-in-out hover:text-green-600">
               {{ product.data.title }}
             </h1>
-            <div class="text-3xl font-bold p-2 text-red-500 transition-colors duration-300 ease-in-out hover:text-red-600">
+            <div
+              class="text-3xl font-bold p-2 text-red-500 transition-colors duration-300 ease-in-out hover:text-red-600">
               ₱{{ product.data.price }} / kg
             </div>
             <p class="mt-6 font-light text-lg text-gray-600">Product Details:</p>
@@ -142,7 +144,7 @@ const addToCart = async () => {
     );
 
     userStore.refreshFlag = 1;
-    await userStore.fetchCartItems();
+    //await userStore.fetchCartItems();
   } catch (error) {
     console.error("Error adding product to cart:", error);
   } finally {
@@ -219,16 +221,19 @@ const closeChatModal = () => {
     height: 0;
     opacity: 1;
   }
+
   50% {
     width: 300px;
     height: 0;
     opacity: 1;
   }
+
   75% {
     width: 300px;
     height: 200px;
     opacity: 1;
   }
+
   100% {
     width: 300px;
     height: 200px;

@@ -182,7 +182,7 @@ onBeforeUnmount(() => {
 
 onBeforeMount(async () => {
   try {
-    await userStore.fetchOrders();
+    //await userStore.fetchOrders();
 
     // Fetch the orders based on user ID
     orders.value = await useFetch(`/api/prisma/get-all-orders-by-user/${user.value.id}`);

@@ -174,6 +174,7 @@ export const useUserStore = defineStore("user", {
           }
           console.log(orderResponse.value.data);
           console.log("SUCCESS");
+          this.isLoading = false;
         } catch (error) {
           console.error("Failed to fetch cart:", error);
           this.isLoading = false;
@@ -199,5 +200,5 @@ export const useUserStore = defineStore("user", {
     },
   },
 
-  persist: true, // This will persist the store data
+  //persist: true, // This will persist the store data
 });

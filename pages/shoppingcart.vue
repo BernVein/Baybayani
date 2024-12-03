@@ -1,6 +1,7 @@
 <template>
   <AdminLayout>
     <div id="ShoppingCartPage" class="mt-4 max-w-[1200px] mx-auto px-2">
+
       <div v-if="!filteredCartItems.length" class="h-[500px] flex items-center justify-center">
         <div class="pt-20">
           <img class="mx-auto" width="250" src="/baybayani-logo.png" />
@@ -73,13 +74,14 @@
         </div>
       </div>
     </div>
+
   </AdminLayout>
 </template>
 
 <script setup>
 import AdminLayout from "~/layouts/AdminLayout.vue";
 import { useUserStore } from "~/stores/user";
-import { ref, computed, watchEffect } from "vue";
+import { ref, computed, watchEffect, onBeforeMount } from "vue";
 
 const userStore = useUserStore();
 const user = useSupabaseUser();
@@ -91,6 +93,9 @@ watchEffect(() => {
     navigateTo("/login"); // Ensure `navigateTo` is correctly imported or available globally
   }
 });
+
+
+
 
 let selectedArray = ref([]);
 

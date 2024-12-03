@@ -27,6 +27,7 @@
                     </div>
                 </div>
             </div>
+
         </LayoutAdmin>
     </div>
 </template>
@@ -70,7 +71,7 @@ const filteredProducts = computed(() => {
 
 // CometChat Docked Widget Integration
 onMounted(() => {
-    userStore.fetchCartItems();
+    // userStore.fetchCartItems();
 
     const defaultUID = userStore.profile?.name
         ? userStore.profile.name.replace(/\s+/g, "").toLowerCase()
