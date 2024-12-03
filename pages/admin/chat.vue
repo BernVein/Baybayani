@@ -16,7 +16,6 @@ import { onMounted } from "vue";
 import SideBarLayout from "~/layouts/SideBarLayout.vue";
 import LayoutAdmin from "~/layouts/LayoutAdmin.vue";
 import { useUserStore } from "~/stores/user";
-const userStore = useUserStore();
 
 
 export default {
@@ -27,9 +26,14 @@ export default {
   },
   setup() {
 
+    const userStore = useUserStore();
+
     const user = useSupabaseUser();
     const role = userStore.profile?.role;
     const route = useRoute();
+
+
+
     watchEffect(() => {
       if (
         route.fullPath == "/admin/chat" &&
@@ -82,6 +86,7 @@ export default {
     });
   },
 };
+
 </script>
 
 <style scoped>
