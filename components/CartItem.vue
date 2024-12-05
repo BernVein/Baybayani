@@ -47,12 +47,12 @@
       </div>
       <!-- Quantity Selector -->
       <div class="flex items-center justify-between mt-3">
-        <button @click="decreaseQuantity" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-full">
+        <button @click="decreaseQuantity" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md">
           -
         </button>
         <input type="text" class="mx-2 w-[50px] text-center border-gray-300 border rounded-md"
-          v-model="product.quantity" @blur="updateQuantity" />
-        <button @click="increaseQuantity" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-full">
+          v-model="product.quantity" @blur="validateAndUpdateQuantity" @input="validateInput" />
+        <button @click="increaseQuantity" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md">
           +
         </button>
       </div>
@@ -170,6 +170,7 @@ const updateQuantity = () => {
 // Function to increase quantity
 const increaseQuantity = () => {
   product.value.quantity++; // Increment quantity
+  console.log("QUAnityt type", typeof product.value.quantity);
   updateQuantity(); // Update the quantity in the store
 };
 
@@ -180,5 +181,33 @@ const decreaseQuantity = () => {
     product.value.quantity--; // Decrement quantity
     updateQuantity(); // Update the quantity in the store
   }
+};
+
+const validateInput = () => {
+  // Only sanitize non-numeric characters but allow partial input
+  product.value.quantity = product.value.quantity.replace(/\D/g, '');
+};
+
+const validateAndUpdateQuantity = () => {
+  // Ensure the quantity is a valid number and within the expected range when the input loses focus
+  let quantity = parseInt(product.value.quantity);
+
+  console.log("CLLLLLLLLLLLLLLED");
+
+  console.log("quanitty", quantity);
+  console.log("Data type of quantity:", typeof quantity);
+
+
+  // If invalid, default to 1
+  if (isNaN(quantity) || quantity < 1) {
+    product.value.quantity = '1'; // Default to 1 if invalid or less than 1
+  } else if (quantity > 100) {
+    product.value.quantity = '100'; // Optional: enforce a max quantity of 100
+  } else {
+    product.value.quantity = quantity;
+  }
+
+  // Update quantity in the store after validation
+  updateQuantity();
 };
 </script>
