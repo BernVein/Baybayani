@@ -589,35 +589,32 @@ const isProductInOrderItem = (productId) => {
 };
 
 const updateProduct = async () => {
-  console.log("UPDATE product running");
-  isLoading.value = true;
+  let imageUrl = product.value.url;  // Start with the existing image URL
 
   try {
-    // If a new image is selected, we need to handle the upload process
-    console.log("upload running"); a
-    let imageUrl = product.value.url; // Use the existing image URL if no new image is selected
+    console.log("UPDATE product running");
+    isLoading.value = true;
 
-    if (product.value.image) {
+    // If there's a new image to upload, validate it
+    if (compressedImage.value) {
       const fileName = `products/images/${Date.now()}_${Math.random().toString(36).substring(2, 15)}.jpg`;
-      console.log("New image selected:", fileName);
 
-      // Upload the new image to Supabase
       const { data, error } = await supabase.storage
-        .from("product-images")
-        .upload(fileName, product.value.image);
+        .from("product-images") // Your Supabase bucket name
+        .upload(fileName, compressedImage.value);
 
-      console.log("Upload response:", data);
+      console.log("Upload response (update):", data); // Log upload response
 
       if (error) {
-        console.error("Image upload failed", error);
-        throw new Error("Image upload failed");
+        console.error("Image upload failed (update)", error);
+        return;
       }
 
-      // Get the public URL of the uploaded image
-      imageUrl = getPublicUrl("product-images", data.path);
+      // If image upload is successful, get the new image URL
+      imageUrl = getPublicUrl("product-images", data.path); // Use the path from the upload response
     }
 
-    // Prepare the data for updating the product
+    // Send update request to update product info
     const response = await $fetch(`/api/prisma/update-product/${product.value.id}`, {
       method: "PUT",
       body: {
@@ -639,13 +636,13 @@ const updateProduct = async () => {
 
       // Reset form after successful update
       product.value = {
-        title: "",
-        description: "",
-        price: 0,
-        url: "", // Clear the image URL as it's no longer needed
+        title: product.value.title, // Keep the updated title
+        description: product.value.description, // Keep the updated description
+        price: product.value.price, // Keep the updated price
+        url: imageUrl, // Keep the updated image URL (or the existing one)
         image: null, // Reset the image field
       };
-      imagePreview.value = null;
+      imagePreview.value = imageUrl; // Update preview with the new image URL (or existing one)
     } else {
       throw new Error("Failed to update product");
     }
