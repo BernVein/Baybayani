@@ -58,7 +58,7 @@
             <div class="flex justify-between items-center">
               <div class="flex items-center gap-2">
                 <div class="font-semibold mb-2">Order #{{ order.id }}</div>
-                <div :class="statusClass(order.orderStatus)" class="w-3.5 h-3.5 rounded-full"></div>
+                <div :class="['status-indicator', statusClass(order.orderStatus)]"></div>
                 <span class="ml-2 text-sm capitalize">{{ order.orderStatus }}</span>
               </div>
               <!-- Show 3 dots menu only for PENDING orders -->
@@ -311,3 +311,31 @@ const progressColor = (status) => {
   }
 };
 </script>
+
+<style scoped>
+/* Ensure the status indicators are always circular */
+.status-indicator {
+  width: 14px; /* Fixed width */
+  height: 14px; /* Fixed height */
+  border-radius: 50%; /* Make it a circle */
+  display: inline-block; /* Ensure it stays inline */
+  flex-shrink: 0; /* Prevent shrinking */
+}
+
+/* Example status colors */
+.bg-yellow-400 {
+  background-color: #fbbf24; /* Yellow */
+}
+
+.bg-blue-400 {
+  background-color: #3b82f6; /* Blue */
+}
+
+.bg-green-400 {
+  background-color: #10b981; /* Green */
+}
+
+.bg-red-400 {
+  background-color: #ef4444; /* Red */
+}
+</style>
