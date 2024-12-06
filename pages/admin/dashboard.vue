@@ -368,16 +368,38 @@ const updateTotalRevenueChart = () => {
 
   const filteredOrders = filterDataByDate(orders.value, totalRevenueFilter.value);
 
-  let labels, data;
+  let labels = [];
+  let data = [];
+
   if (totalRevenueFilter.value === 'weekly') {
-    labels = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-    data = new Array(7).fill(0);
+    // Calculate weeks in the current month
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+    const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
+    const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0);
+    const weeks = [];
+
+    let startOfWeek = new Date(firstDayOfMonth);
+    while (startOfWeek <= lastDayOfMonth) {
+      const endOfWeek = new Date(startOfWeek);
+      endOfWeek.setDate(startOfWeek.getDate() + 6);
+      weeks.push({ start: new Date(startOfWeek), end: new Date(endOfWeek) });
+      startOfWeek.setDate(startOfWeek.getDate() + 7);
+    }
+
+    labels = weeks.map((_, index) => `Week ${index + 1}`);
+    data = new Array(weeks.length).fill(0);
 
     filteredOrders.forEach(order => {
-      const dayIndex = new Date(order.created_at).getDay();
-      data[dayIndex] += order.totalPrice || 0;
+      const orderDate = new Date(order.created_at);
+      weeks.forEach((week, index) => {
+        if (orderDate >= week.start && orderDate <= week.end) {
+          data[index] += order.totalPrice || 0;
+        }
+      });
     });
   } else {
+    // Monthly logic remains unchanged
     labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     data = new Array(12).fill(0);
 
@@ -403,24 +425,42 @@ const updateProductSalesChart = () => {
 
   let labels, data;
   if (productSalesFilter.value === 'weekly') {
-    labels = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-    data = new Array(7).fill(0);
+    // Calculate weeks in the current month
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+    const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
+    const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0);
+    const weeks = [];
+
+    let startOfWeek = new Date(firstDayOfMonth);
+    while (startOfWeek <= lastDayOfMonth) {
+      const endOfWeek = new Date(startOfWeek);
+      endOfWeek.setDate(startOfWeek.getDate() + 6);
+      weeks.push({ start: new Date(startOfWeek), end: new Date(endOfWeek) });
+      startOfWeek.setDate(startOfWeek.getDate() + 7);
+    }
+
+    labels = weeks.map((_, index) => `Week ${index + 1}`);
+    data = new Array(weeks.length).fill(0);
 
     filteredOrders.forEach(order => {
-      const dayIndex = new Date(order.created_at).getDay();
-      // Sum all product quantities for this day
       order.orderItem.forEach(item => {
-        data[dayIndex] += item.quantity;
+        const orderDate = new Date(order.created_at);
+        weeks.forEach((week, index) => {
+          if (orderDate >= week.start && orderDate <= week.end) {
+            data[index] += item.quantity;
+          }
+        });
       });
     });
   } else {
+    // Monthly logic remains unchanged
     labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     data = new Array(12).fill(0);
 
     filteredOrders.forEach(order => {
-      const monthIndex = new Date(order.created_at).getMonth();
-      // Sum all product quantities for this month
       order.orderItem.forEach(item => {
+        const monthIndex = new Date(order.created_at).getMonth();
         data[monthIndex] += item.quantity;
       });
     });
