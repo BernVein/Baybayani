@@ -8,7 +8,7 @@
 
       <div id="ProductDetails">
         <span class="flex items-center justify-start gap-3 px-1 pt-1 pb-1">
-          <span class="text-[#FF6674] font-semibold text-lg">₱{{ priceComputed }}</span>
+          <span class="text-[#FF6674] font-semibold text-lg">₱{{ priceComputed }} / kilo</span>
         </span>
 
         <div class="flex items-center gap-1 px-1 relative -top-1">
