@@ -3,9 +3,11 @@
           <div id="MainHeader"
             class="flex items-center w-full bg-[#fafafa] shadow-[0px_1px_5px_3px_rgba(0,_0,_0,_0.25)]">
             <div class="flex lg:justify-start justify-between gap-10 max-w-[1150px] w-full px-3 py-5 mx-auto">
-              <!-- Logo with Press and Color Animation  -->
-              <NuxtLink to="/"
-                class="min-w-[170px] transform transition-transform duration-300 ease-in-out hover:scale-105 active:scale-95">
+              <!-- House Icon with Circle Background to the Left of the Logo -->
+              <NuxtLink to="/" class="flex items-center">
+                <div class="flex items-center justify-center min-w-[40px] min-h-[40px] bg-green-600 rounded-full hover:bg-green-700 transition duration-300 cursor-pointer mr-2 overflow-hidden">
+                  <Icon name="ph:house" size="20" class="text-white" />
+                </div>
                 <img width="170" src="/baybayani-logo.png"
                   class="transition-colors duration-300 ease-in-out hover:brightness-90" />
               </NuxtLink>
