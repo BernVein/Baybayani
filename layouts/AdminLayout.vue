@@ -5,27 +5,17 @@
             <div class="flex lg:justify-start justify-between gap-10 max-w-[1150px] w-full px-3 py-5 mx-auto">
               <!-- Home Button with Click Event -->
               <div @click="navigateHome" class="flex items-center cursor-pointer">
-                <div class="flex items-center justify-center min-w-[40px] min-h-[40px] bg-green-600 rounded-full hover:bg-green-700 transition duration-300 mr-2 overflow-hidden">
+                <div
+                  class="flex items-center justify-center min-w-[40px] min-h-[40px] bg-green-600 rounded-full hover:bg-green-700 transition duration-300 mr-2 overflow-hidden">
                   <Icon name="ph:house" size="20" class="text-white" />
                 </div>
                 <img width="170" src="/baybayani-logo.png"
                   class="transition-colors duration-300 ease-in-out hover:brightness-90" />
               </div>
 
-              <!-- <div class="max-w-[700px] w-full md:block hidden pt-2">
-                <div class="relative">
-                  <div class="flex items-center border-2 border-[#0C6539] rounded-md w-full">
-                    <input class="w-full placeholder-gray-400 text-sm pl-3 focus:outline-none"
-                      placeholder="Search a product" type="text" v-model="searchItem" />
-                    <Icon v-if="isSearching" name="eos-icons:loading" size="25" class="mr-2 animate-spin" />
-                    <button class="flex items-center h-[100%] p-1.5 px-2 bg-[#0C6539]">
-                      <Icon name="ph:magnifying-glass" size="20" color="#ffffff" />
-                    </button>
-                  </div>
-                </div>
-              </div> -->
 
-              <div class="max-w-[700px] w-full md:block hidden pt-2">
+
+              <div class="ml-10 max-w-[500px] w-full md:block hidden pt-2">
                 <div class="relative">
                   <div class="flex items-center border-2 border-[#0C6539] rounded-md w-full">
                     <input class="w-full placeholder-gray-400 text-sm pl-3 focus:outline-none"
