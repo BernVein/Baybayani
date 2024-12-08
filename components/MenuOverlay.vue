@@ -70,7 +70,7 @@ const user = useSupabaseUser();
 
 const goTo = (url) => {
   userStore.isMenuOverlay = false;
-  return navigateTo(`/${url}`);
+  window.location.href = `/${url}`;
 };
 
 const signOut = () => {
