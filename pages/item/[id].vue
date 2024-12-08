@@ -21,13 +21,15 @@
         <!-- Right Section: Product Details -->
         <div class="w-full lg:w-[50%] bg-white p-6 rounded-lg shadow-md transition-all duration-500 ease-in-out hover:shadow-lg">
           <div v-if="product && product.data">
-            <h1
-              class="text-2xl lg:text-4xl font-semibold text-gray-800 transition-colors duration-300 ease-in-out hover:text-green-600">
-              {{ product.data.title }}
-            </h1>
-            <div
-              class="text-lg lg:text-3xl font-bold p-2 text-red-500 transition-colors duration-300 ease-in-out hover:text-red-600">
-              ₱{{ product.data.price }} / kg
+            <div class="flex items-center justify-between">
+              <h1
+                class="text-2xl lg:text-4xl font-semibold text-gray-800 transition-colors duration-300 ease-in-out hover:text-green-600">
+                {{ product.data.title }}
+              </h1>
+              <div
+                class="text-lg lg:text-3xl font-bold p-2 text-red-500 transition-colors duration-300 ease-in-out hover:text-red-600">
+                ₱{{ product.data.price }} / kg
+              </div>
             </div>
             <p class="mt-6 text-sm lg:text-lg font-light text-gray-600">Product Details:</p>
             <p class="text-xs lg:text-md text-gray-700 mb-4 transition-colors duration-300 ease-in-out hover:text-gray-900">
@@ -63,8 +65,8 @@
       </div>
 
       <!-- Modal Pop-up -->
-      <div v-if="showChatModal" class="modal-overlay">
-        <div class="modal-content">
+      <div v-if="showChatModal" :class="['modal-overlay', { 'fade-out': isFadingOut }]">
+        <div class="modal-content" :class="{ 'fade-out': isFadingOut }">
           <p>The chat bubble can be seen at the bottom left of the screen.</p>
           <button @click="closeChatModal" class="close-modal-button">Got it!</button>
         </div>
@@ -92,6 +94,7 @@ let images = ref([]);
 let addtocartResponse = ref(null);
 let showChatModal = ref(false);
 let showGuidedLine = ref(false);
+let isFadingOut = ref(false);
 const role = userStore.profile?.role;
 
 onBeforeMount(async () => {
@@ -173,7 +176,11 @@ const openChatModal = () => {
 };
 
 const closeChatModal = () => {
-  showChatModal.value = false;
+  isFadingOut.value = true;
+  setTimeout(() => {
+    showChatModal.value = false;
+    isFadingOut.value = false;
+  }, 500); // Match this duration with the fade-out animation duration
 };
 </script>
 
@@ -189,6 +196,7 @@ const closeChatModal = () => {
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  animation: fadeIn 0.5s forwards;
 }
 
 .modal-content {
@@ -199,12 +207,17 @@ const closeChatModal = () => {
   color: #333;
   max-width: 300px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 0.5s forwards;
+}
+
+.fade-out {
+  animation: fadeOut 0.5s forwards;
 }
 
 .close-modal-button {
   margin-top: 10px;
   padding: 5px 10px;
-  background-color: #007bff;
+  background-color: #03A9F4;
   color: #fff;
   border: none;
   border-radius: 5px;
@@ -213,7 +226,7 @@ const closeChatModal = () => {
 }
 
 .close-modal-button:hover {
-  background-color: #0056b3;
+  background-color: #0288D1;
 }
 
 .rectangle-animation {
@@ -222,7 +235,7 @@ const closeChatModal = () => {
   left: 0;
   width: 0;
   height: 0;
-  border: 4px solid #007bff;
+  border: 2px solid #03A9F4;
   animation: drawAndFadeRectangle 3s forwards;
   z-index: 1000;
 }
@@ -235,20 +248,38 @@ const closeChatModal = () => {
   }
 
   50% {
-    width: 300px;
+    width: 100px;
     height: 0;
     opacity: 1;
   }
 
   75% {
-    width: 300px;
-    height: 200px;
+    width: 100px;
+    height: 75px;
     opacity: 1;
   }
 
   100% {
-    width: 300px;
-    height: 200px;
+    width: 0px;
+    height: 75px;
+    opacity: 0;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
     opacity: 0;
   }
 }
