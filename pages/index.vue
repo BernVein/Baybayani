@@ -27,9 +27,9 @@ const userStore = useUserStore();
 
 let products = ref(null);
 
-
 const route = useRoute();
 const role = userStore.profile?.role;
+
 watchEffect(() => {
   if (route.fullPath == "/" &&
     (!user.value || role === "Admin")) {
@@ -40,12 +40,9 @@ watchEffect(() => {
   }
 });
 
-
-
 onBeforeMount(async () => {
   products.value = await useFetch("/api/prisma/get-all-products");
   setTimeout(() => (userStore.isLoading = true), 1000);
-
 });
 
 // Compute filtered products to exclude hidden and deleted products
@@ -58,10 +55,13 @@ const filteredProducts = computed(() => {
   return [];
 });
 
+const handleProductClick = (product) => {
+  console.log("Product clicked:", product);
+  window.location.href = `/item/${product.id}`
+};
+
 // CometChat Docked Widget Integration
 onMounted(() => {
-
-
   const defaultUID = userStore.profile?.name
     ? userStore.profile.name.replace(/\s+/g, "").toLowerCase()
     : "defaultuid";
