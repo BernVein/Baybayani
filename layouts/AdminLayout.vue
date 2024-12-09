@@ -9,10 +9,10 @@
                   class="flex items-center justify-center min-w-[40px] min-h-[40px] bg-green-600 rounded-full hover:bg-green-700 transition duration-300 mr-2 overflow-hidden">
                   <Icon name="ph:house" size="20" class="text-white" />
                 </div>
+
                 <img width="170" src="/baybayani-logo.png"
                   class="transition-colors duration-300 ease-in-out hover:brightness-90" />
               </div>
-
 
 
               <div class="ml-10 max-w-[500px] w-full md:block hidden pt-2">
@@ -85,6 +85,67 @@
                 </button>
               </NuxtLink>
 
+              <div class="md:hidden flex items-center">
+                <button @click="toggleSearchBar" class="flex items-center cursor-pointer -mr-8 mb-1">
+                  <Icon name="ph:magnifying-glass" size="28" color="#0C6539" />
+                </button>
+              </div>
+
+              <!-- <div v-show="isSearchVisible" class="mt-4 px-4 w-full">
+                <div class="relative max-w-[800px] mx-auto">
+                  <div class="flex items-center border-2 border-[#0C6539] rounded-md w-full">
+                    <input class="w-full placeholder-gray-400 text-sm pl-3 focus:outline-none"
+                      placeholder="Search a product" type="text" v-model="searchItem" />
+                    <Icon v-if="isSearching" name="eos-icons:loading" size="25" class="mr-2 animate-spin" />
+                    <button class="flex items-center h-[100%] p-1.5 px-2 bg-[#0C6539]">
+                      <Icon name="ph:magnifying-glass" size="20" color="#ffffff" />
+                    </button>
+                  </div>
+                </div>
+              </div> -->
+
+              <div v-show="isSearchVisible"
+                class="w-full absolute bg-white border-2 border-[#0C6539] rounded-md shadow-lg mt-16 -ml-3">
+                <div class="relative w-full mx-auto">
+                  <div class="flex items-center border-b border-[#0C6539]">
+                    <input class="w-full placeholder-gray-400 text-sm pl-3 focus:outline-none"
+                      placeholder="Search a product" type="text" v-model="searchItem" />
+                    <Icon v-if="isSearching" name="eos-icons:loading" size="25" class="mr-2 animate-spin" />
+                    <button class="flex items-center h-[100%] p-1.5 px-2 bg-[#0C6539]">
+                      <Icon name="ph:magnifying-glass" size="20" color="#ffffff" />
+                    </button>
+                  </div>
+
+                  <div v-if="items && items.data" class="max-h-[300px] overflow-y-auto">
+                    <div v-for="item in items.data" :key="item.id" class="p-2 hover:bg-gray-100">
+                      <NuxtLink :to="`/item/${item.id}`" class="flex items-center justify-between cursor-pointer">
+                        <div class="flex items-center">
+                          <img class="rounded-md" width="40" :src="item.url" />
+                          <div class="truncate ml-2">{{ item.title }}</div>
+                        </div>
+                        <div class="truncate">₱{{ item.price }}</div>
+                      </NuxtLink>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+
+              <!-- <div v-if="isSearchVisible" class="ml-10 max-w-[500px] w-full md:block hidden pt-2">
+                <div class="relative">
+                  <div class="flex items-center border-2 border-[#0C6539] rounded-md w-full">
+                    <input class="w-full placeholder-gray-400 text-sm pl-3 focus:outline-none"
+                      placeholder="Search a product" type="text" v-model="searchItem" />
+                    <Icon v-if="isSearching" name="eos-icons:loading" size="25" class="mr-2 animate-spin" />
+                    <button class="flex items-center h-[100%] p-1.5 px-2 bg-[#0C6539]">
+                      <Icon name="ph:magnifying-glass" size="20" color="#ffffff" />
+                    </button>
+                  </div>
+                </div>
+              </div> -->
+
+
+
               <!-- Profile Menu with Username Below on Hover -->
               <div id="ProfileMenu" class="md:block hidden pt-3 relative group">
                 <ul class="flex items-center justify-end text-sm text-[#333333] font-bold">
@@ -115,7 +176,7 @@
 
               <button @click="userStore.isMenuOverlay = true"
                 class="md:hidden block rounded-full p-1.5 -mt-[4px] hover:bg-gray-200">
-                <Icon name="radix-icons:hamburger-menu" size="33" />
+                <Icon name="radix-icons:hamburger-menu" size="32" class="text-[#0C6539]" />
               </button>
             </div>
           </div>
@@ -137,6 +198,33 @@ const isOrderHover = ref(false);
 const isSearching = ref(false);
 const searchItem = ref("");
 const items = ref(null);
+const isSearchVisible = ref(false); // Track visibility of the search bar
+const searchBarRef = ref(null);  // Reference to the search bar element
+
+
+const toggleSearchBar = () => {
+  console.log('Toggling search bar visibility');
+  if (isSearchVisible.value) {
+    items.value = null;  // Clear the search results when closing the search bar
+  }
+  isSearchVisible.value = !isSearchVisible.value; // Toggle visibility
+};
+
+const closeSearchBar = (event) => {
+  // Check if the clicked target is outside the search bar or the search button
+  if (searchBarRef.value && !searchBarRef.value.contains(event.target) && !event.target.closest('.ph:magnifying-glass')) {
+    isSearchVisible.value = false;
+    items.value = null;  // Clear the search results when closing the search bar
+  }
+};
+
+
+// const closeSearchBar = (event) => {
+//   if (searchBarRef.value && !searchBarRef.value.contains(event.target) && !event.target.closest('.ph:magnifying-glass')) {
+//     isSearchVisible.value = false;
+//   }
+// };
+
 
 // Safely filter cart items count
 const filteredCartCount = computed(() => {
@@ -163,28 +251,30 @@ const signOut = async () => {
 };
 
 const searchByName = useDebounce(async () => {
-  isSearching.value = true;
+  if (!searchItem.value) {
+    // If the searchItem is empty, don't perform the fetch or search
+    items.value = []; // Clear the results
+    isSearching.value = false;
+    return;
+  }
 
-  items.value = await useFetch(
-    `/api/prisma/search-by-name/${searchItem.value}`
-  );
-  isSearching.value = false;
-}, 100);
+  // Proceed with fetching the search results only if the searchItem has a value
+  isSearching.value = true;
+  try {
+    items.value = await useFetch(`/api/prisma/search-by-name/${searchItem.value}`);
+  } catch (error) {
+    console.error("Error fetching search results:", error);
+  } finally {
+    isSearching.value = false;
+  }
+}, 500);
 
 watch(
   () => searchItem.value,
-  async () => {
-    if (!searchItem.value) {
-      setTimeout(() => {
-        items.value = "";
-        isSearching.value = false;
-        return;
-      }, 500);
-    }
+  () => {
     searchByName();
   }
 );
-
 const handleProductClick = (product) => {
   console.log("Product clicked:", product);
   window.location.href = `/item/${product.id}`;
@@ -192,6 +282,8 @@ const handleProductClick = (product) => {
 
 // CometChat Docked Widget Integration
 onMounted(() => {
+  document.addEventListener("click", closeSearchBar);
+
   const defaultUID = userStore.profile?.name
     ? userStore.profile.name.replace(/\s+/g, "").toLowerCase()
     : "defaultuid";
@@ -245,3 +337,9 @@ const navigateHome = () => {
   window.location.href = `/`;
 };
 </script>
+<style scoped>
+/* Style for the dropdown that contains the search bar */
+#search-bar {
+  z-index: 50;
+}
+</style>
