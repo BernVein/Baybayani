@@ -92,7 +92,7 @@ const deleteFromCart = async () => {
   const userId = userStore.user.id; // Assuming userStore holds user data
   const productId = props.product.id; // Assuming props.product holds the product to delete
 
-  console.log("Deleting product:", productId);
+  //console.log("Deleting product:", productId);
 
   userStore.cartItems = userStore.cartItems.filter(
     (item) => item.productId !== productId
@@ -118,11 +118,11 @@ const deleteFromCart = async () => {
     const data = await response.json();
 
     if (data.success === 1) {
-      console.log("Product successfully removed from cart!");
+      //  console.log("Product successfully removed from cart!");
       await userStore.fetchCartItems();
       // Optionally update the store or UI here
     } else {
-      console.log("Error:", data.message);
+      //console.log("Error:", data.message);
     }
   } catch (error) {
     console.error("Error deleting product from cart:", error);
@@ -130,7 +130,7 @@ const deleteFromCart = async () => {
 };
 
 const toggleSelection = () => {
-  console.log("Toggle Clicked!");
+  //  console.log("Toggle Clicked!");
   isSelected.value = !isSelected.value;
   emitSelectionUpdate();
 };
@@ -160,17 +160,17 @@ const updateQuantity = () => {
   if (cartIndex !== -1) {
     // Update the quantity in the store
     userStore.cartItems[cartIndex].quantity = product.value.quantity;
-    console.log("current quantity", userStore.cartItems[cartIndex].quantity);
+    //console.log("current quantity", userStore.cartItems[cartIndex].quantity);
     emitSelectionUpdate();
   } else {
-    console.log("Product not found in cart");
+    //console.log("Product not found in cart");
   }
 };
 
 // Function to increase quantity
 const increaseQuantity = () => {
   product.value.quantity++; // Increment quantity
-  console.log("QUAnityt type", typeof product.value.quantity);
+  // console.log("QUAnityt type", typeof product.value.quantity);
   updateQuantity(); // Update the quantity in the store
 };
 
@@ -192,10 +192,10 @@ const validateAndUpdateQuantity = () => {
   // Ensure the quantity is a valid number and within the expected range when the input loses focus
   let quantity = parseInt(product.value.quantity);
 
-  console.log("CLLLLLLLLLLLLLLED");
+  // console.log("CLLLLLLLLLLLLLLED");
 
-  console.log("quanitty", quantity);
-  console.log("Data type of quantity:", typeof quantity);
+  //console.log("quanitty", quantity);
+  //console.log("Data type of quantity:", typeof quantity);
 
 
   // If invalid, default to 1

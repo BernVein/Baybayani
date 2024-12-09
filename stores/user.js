@@ -21,13 +21,13 @@ export const useUserStore = defineStore("user", {
   actions: {
     // Fetch user profile and cart items
     async fetchUser() {
-      console.log("FETCHING!");
+      //    console.log("FETCHING!");
 
       // if (this.user) {
       //   console.log("ALREADY LOGGED IN");
       //   return; // Skip fetching if user is already set
       // }
-      console.log("FETCH USER RUNNING");
+      //  console.log("FETCH USER RUNNING");
       this.isLoading = true;
       try {
         const client = useSupabaseClient();
@@ -36,7 +36,7 @@ export const useUserStore = defineStore("user", {
           console.error("Error fetching user:", error);
         } else {
           this.user = data.user;
-          console.log("Fetched user ID:", this.user.id);
+          //    console.log("Fetched user ID:", this.user.id);
           const profileData = await fetchUserProfile(this.user.id);
           this.profile = profileData;
           if (!this.isAdmin()) {
@@ -58,7 +58,7 @@ export const useUserStore = defineStore("user", {
 
     isAdmin() {
       if (!this.user) return false;
-      console.log("ROLE", this.profile.role);
+      //  console.log("ROLE", this.profile.role);
       if (this.profile.role === "Admin") {
         this.isAdmin = true;
         return true;
@@ -70,7 +70,7 @@ export const useUserStore = defineStore("user", {
 
     // Logout action
     async logout() {
-      console.log("Logout function called");
+      //   console.log("Logout function called");
       const client = useSupabaseClient();
 
       try {
@@ -89,10 +89,10 @@ export const useUserStore = defineStore("user", {
         sessionStorage.clear();
         this.clearCookies();
 
-        console.log("Storage and cookies cleared");
+        //console.log("Storage and cookies cleared");
         await client.auth.signOut();
-        console.log("User signed out from Supabase");
-        console.log("LOGOUT SUCCESS");
+        // console.log("User signed out from Supabase");
+        // console.log("LOGOUT SUCCESS");
         window.location.reload();
       } catch (error) {
         console.error("Error during logout:", error);
@@ -103,7 +103,7 @@ export const useUserStore = defineStore("user", {
     async fetchCartItems() {
       if (this.isAdmin === true) return;
 
-      console.log("FETCH CART RUNNING");
+      //   console.log("FETCH CART RUNNING");
       this.isLoading = true;
       let cartResponse = ref(null);
 
@@ -114,7 +114,7 @@ export const useUserStore = defineStore("user", {
         this.isLoading = false;
         return;
       }
-      console.log("Fetching cart items for user ID:", userId);
+      //     console.log("Fetching cart items for user ID:", userId);
       this.refreshFlag = 0;
 
       if (userId) {
@@ -122,14 +122,14 @@ export const useUserStore = defineStore("user", {
           cartResponse.value = await useFetch(
             `/api/prisma/get-cart-by-user/${userId}`
           );
-          console.log("THIS IS A TEST");
+          // console.log("THIS IS A TEST");
           if (cartResponse.value.data) {
             this.cart = cartResponse.value.data;
           }
 
           if (cartResponse.value.data && cartResponse.value.data.cartItems) {
             this.cartItems = cartResponse.value.data.cartItems;
-            console.log("Cart items fetched successfully");
+            // console.log("Cart items fetched successfully");
             this.isLoading = false;
           } else {
             this.isLoading = false;
@@ -149,7 +149,7 @@ export const useUserStore = defineStore("user", {
 
     async fetchOrders() {
       if (this.isAdmin === true) return;
-      console.log("FETCH ORDER RUNNING");
+      //  console.log("FETCH ORDER RUNNING");
       this.isLoading = true;
       let orderResponse = ref(null);
       const userId = this.user?.id;
@@ -159,22 +159,22 @@ export const useUserStore = defineStore("user", {
         this.isLoading = false;
         return;
       }
-      console.log("Fetching ORDERSSsS for user ID:", userId);
+      //  console.log("Fetching ORDERSSsS for user ID:", userId);
 
       if (userId) {
         try {
-          console.log("THIS IS A ORDER TEST");
+          //  console.log("THIS IS A ORDER TEST");
 
           orderResponse.value = await useFetch(
             `/api/prisma/get-all-orders-by-user/${userId}`
           );
-          console.log("Done Order");
+          //  console.log("Done Order");
 
           if (orderResponse.value.data) {
             this.order = orderResponse.value.data;
           }
-          console.log(orderResponse.value.data);
-          console.log("SUCCESS");
+          // console.log(orderResponse.value.data);
+          // console.log("SUCCESS");
           this.isLoading = false;
         } catch (error) {
           console.error("Failed to fetch cart:", error);

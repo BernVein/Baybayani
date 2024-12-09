@@ -61,7 +61,7 @@ export const registerUser = async (userData = {}) => {
       });
 
       if (response.success) {
-        console.log("User data saved successfully");
+        //   console.log("User data saved successfully");
         return { success: true, message: "User registered and data saved." };
       } else {
         console.error("Error saving user data");

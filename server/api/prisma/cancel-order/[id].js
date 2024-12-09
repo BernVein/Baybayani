@@ -3,8 +3,8 @@ const prisma = new PrismaClient();
 
 export default defineEventHandler(async (event) => {
   const orderID = event.context.params.id; // Extract the orderID from the event params
-  console.log("Printing order ID");
-  console.log(orderID);
+  // console.log("Printing order ID");
+  // console.log(orderID);
 
   try {
     // Update the order status to CANCELED
@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
       },
     });
 
-    console.log("UPDATED SUCCESSFULLY");
+    // console.log("UPDATED SUCCESSFULLY");
 
     // Return a success message
     return { message: "Order status updated to CANCELED successfully." };

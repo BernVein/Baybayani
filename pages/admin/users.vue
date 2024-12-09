@@ -200,7 +200,7 @@ watchEffect(() => {
 
 // Fetch users from Prisma API
 const fetchUsers = async () => {
-  console.log("Fetching users...");
+  //console.log("Fetching users...");
   loading.value = true;
 
   try {
@@ -208,7 +208,7 @@ const fetchUsers = async () => {
     const result = await response.json();
 
     if (response.ok && result.success) {
-      console.log("Users fetched successfully:", result.data);
+      //  console.log("Users fetched successfully:", result.data);
       users.value = [...result.data]; // Use spread operator to force reactivity update
       updateStats(); // Update the stats after fetching users
     } else {
@@ -286,7 +286,7 @@ const register = async () => {
       return;
     }
 
-    console.log("Successfully registered!", data);
+    // console.log("Successfully registered!", data);
     successMsg.value = "Successfully registered!";
     fetchUsers(); // Fetch updated users after registration
     closeRegisterModal();
@@ -299,7 +299,7 @@ const register = async () => {
 // Delete User Function
 const deleteUser = async (userEmail) => {
   if (confirm("Are you sure you want to delete this user?")) {
-    console.log("Deleting user with email:", userEmail);
+    //  console.log("Deleting user with email:", userEmail);
 
     try {
       const response = await fetch('/api/prisma/deleteUser', {
@@ -318,7 +318,7 @@ const deleteUser = async (userEmail) => {
         return;
       }
 
-      console.log("User deleted successfully");
+      //console.log("User deleted successfully");
       alert("User deleted successfully");
 
       // Fetch the users again to update the UI

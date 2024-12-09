@@ -95,7 +95,7 @@ onMounted(() => {
     navigateTo("/shoppingcart");
   }
   userStore.checkout.forEach((item) => {
-    console.log(item); // Print the item to inspect its properties
+    // console.log(item); // Print the item to inspect its properties
     total.value += item.product.price * item.quantity;
   });
 });
@@ -107,14 +107,14 @@ const removeOrderedItems = (checkout) => {
 
 const placeOrder = async () => {
   try {
-    console.log("Placing the order...");
+    // console.log("Placing the order...");
 
     // Log user and checkout items before creating the order
-    console.log("User ID:", user.value.id); // Log user ID
-    console.log("Checkout items:", userStore.checkout); // Log the checkout items
+    // console.log("User ID:", user.value.id); // Log user ID
+    //console.log("Checkout items:", userStore.checkout); // Log the checkout items
 
     setTimeout(() => {
-      console.log("Redirecting to the success page...");
+      // console.log("Redirecting to the success page...");
       navigateTo("/success"); // Redirect to the success page
     }, 100);
     await createOrder();
@@ -126,7 +126,7 @@ const placeOrder = async () => {
     // Clear the checkout items after placing the order
     //userStore.cart = []; // Clear the cart (optional, if you want to empty the cart after order)
     userStore.checkout = []; // Clear the checkout items
-    console.log("Checkout items cleared.");
+    //  console.log("Checkout items cleared.");
     userStore.refreshFlag = 1;
     await userStore.fetchCartItems();
     await userStore.fetchOrders();
@@ -139,18 +139,18 @@ const placeOrder = async () => {
 
 const createOrder = async () => {
   try {
-    console.log("Creating order with the following data:");
-
+    // console.log("Creating order with the following data:");
+    //
     const checkoutData = userStore.checkout.map((item) => ({
       productId: item.product.id,
       quantity: item.quantity,
     }));
 
     // Log the order data before sending it to the backend
-    console.log("Order data:", {
-      userId: user.value.id,
-      checkoutItem: checkoutData,
-    });
+    // console.log("Order data:", {
+    //   userId: user.value.id,
+    //   checkoutItem: checkoutData,
+    // });
 
     // Send the request to the backend to create the order
     const response = await useFetch("/api/prisma/create-order", {
@@ -165,7 +165,7 @@ const createOrder = async () => {
     });
 
     // Log the response from the API
-    console.log("Order response:", response);
+    // console.log("Order response:", response);
   } catch (error) {
     console.error("Error creating the order:", error);
   }

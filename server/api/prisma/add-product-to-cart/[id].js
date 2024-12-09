@@ -40,11 +40,11 @@ export default defineEventHandler(async (event) => {
         },
       });
 
-      console.log("Product successfully added to cart!");
+      //console.log("Product successfully added to cart!");
       return { success: 1 }; // Return 1 for success
     } else {
       // If the product is already in the cart, return 0
-      console.log("Product is already in the cart.");
+      //  console.log("Product is already in the cart.");
       return { success: 0 }; // Return 0 if product already exists in cart
     }
   } catch (error) {

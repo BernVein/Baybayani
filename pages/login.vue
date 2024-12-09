@@ -6,7 +6,8 @@
     </div>
 
     <!-- Login Form Section -->
-    <div class="w-full md:w-1/2 max-w-[400px] mx-auto px-6 relative z-10 bg-white bg-opacity-90 rounded-lg shadow-2xl p-8">
+    <div
+      class="w-full md:w-1/2 max-w-[400px] mx-auto px-6 relative z-10 bg-white bg-opacity-90 rounded-lg shadow-2xl p-8">
       <!-- Page Title -->
       <div class="text-center mb-6 text-2xl md:text-3xl font-bold text-[#0C6539]">Welcome Back!</div>
 
@@ -94,7 +95,7 @@ const login = async () => {
       email: email.value,
       password: password.value,
     });
-    console.log("info", response);
+    //console.log("info", response);
 
     if (response.error) {
       errorMsg.value = response.error.message;
@@ -103,15 +104,15 @@ const login = async () => {
     } else if (response.data.user) {
       const userData = response.data.user.user_metadata?.role || "User";
       await userStore.fetchUser();
-      console.log("USEEEEEEEEEEEEEEEEEEERRR");
+      //console.log("USEEEEEEEEEEEEEEEEEEERRR");
       userStore.isLoading = 1;
       await userStore.fetchCartItems();
-      console.log("CARTTTTTTTTTTTTTTTTT");
+      // console.log("CARTTTTTTTTTTTTTTTTT");
       await userStore.fetchOrders();
-      console.log("ORDERRRRRRRRRRRRR");
+      // console.log("ORDERRRRRRRRRRRRR");
       toastMessage.value = "Successfully logged in as " + userData.toLowerCase() + "!";
       toastClass.value = "bg-green-500 text-white";
-      console.log("status", userStore.user);
+      // console.log("status", userStore.user);
 
       if (userStore.isAdmin) {
         router.push("/admin/dashboard").then(() => {

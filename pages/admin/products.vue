@@ -351,7 +351,7 @@ function getPublicUrl(bucketName, filePath) {
 
 // Handle file change and compress the image
 const handleFileChange = (event) => {
-  console.log("Handle File Change Running");
+  // console.log("Handle File Change Running");
   const file = event.target.files[0];
   if (!file) return;
 
@@ -391,8 +391,8 @@ const handleFileChange = (event) => {
         );
       };
       img.src = URL.createObjectURL(result); // Load the compressed image into the img element
-      console.log(result);
-      console.log("COPRESSION SUCCESS");
+      //  console.log(result);
+      // console.log("COPRESSION SUCCESS");
     },
     error(err) {
       console.error("Image compression failed", err);
@@ -401,7 +401,7 @@ const handleFileChange = (event) => {
 };
 
 const addProduct = async () => {
-  console.log("ADD product running");
+  //  console.log("ADD product running");
   isLoading.value = false;
   if (!compressedImage.value) {
     alert("Please upload a valid image.");
@@ -410,13 +410,13 @@ const addProduct = async () => {
 
   const fileName = `products/images/${Date.now()}_${Math.random().toString(36).substring(2, 15)}.jpg`;
 
-  console.log(fileName);
+  // console.log(fileName);
 
   const { data, error } = await supabase.storage
     .from("product-images") // Replace with your Supabase bucket name 
     .upload(fileName, compressedImage.value);
 
-  console.log("Upload response:", data); // Log upload response
+  //console.log("Upload response:", data); // Log upload response
 
   if (error) {
     console.error("Image upload failed", error);
@@ -426,7 +426,7 @@ const addProduct = async () => {
   // Construct the public URL for the uploaded image
   const imageUrl = getPublicUrl("product-images", data.path); // Use the path from the upload response
 
-  console.log("Uploaded Image URL:", imageUrl); // This is where you check the URL
+  // console.log("Uploaded Image URL:", imageUrl); // This is where you check the URL
 
   try {
     // Send as JSON object instead of FormData
@@ -592,7 +592,7 @@ const updateProduct = async () => {
   let imageUrl = product.value.url;  // Start with the existing image URL
 
   try {
-    console.log("UPDATE product running");
+    //  console.log("UPDATE product running");
     isLoading.value = true;
 
     // If there's a new image to upload, validate it
@@ -603,7 +603,7 @@ const updateProduct = async () => {
         .from("product-images") // Your Supabase bucket name
         .upload(fileName, compressedImage.value);
 
-      console.log("Upload response (update):", data); // Log upload response
+      // console.log("Upload response (update):", data); // Log upload response
 
       if (error) {
         console.error("Image upload failed (update)", error);
@@ -626,7 +626,7 @@ const updateProduct = async () => {
     });
 
     // Log the response to inspect its structure
-    console.log("Response body:", response.body);
+    //  console.log("Response body:", response.body);
 
     // Check for successful update
     if (response.body?.product) {

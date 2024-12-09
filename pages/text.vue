@@ -24,14 +24,14 @@ export default {
         authKey: "aab766213fba5c11e11ede09f1f0d0d0735dd6f9", // Your Auth Key
       })
         .then(() => {
-          console.log("Initialization completed successfully");
+          //  console.log("Initialization completed successfully");
 
           // Log in a user
           CometChatWidget.login({
             uid: "cometchat-uid-1", // Replace with the user's UID
           })
             .then(() => {
-              console.log("User login successful");
+              //  console.log("User login successful");
 
               // Launch the widget in a docked layout
               CometChatWidget.launch({

@@ -105,13 +105,13 @@ const initializeCometChatWidget = (defaultUID) => {
         authKey: "aab766213fba5c11e11ede09f1f0d0d0735dd6f9",
     })
         .then(() => {
-            console.log("Initialization completed successfully");
+            //  console.log("Initialization completed successfully");
 
             CometChatWidget.login({
                 uid: defaultUID,
             })
                 .then(() => {
-                    console.log("User login successful");
+                    //  console.log("User login successful");
 
                     CometChatWidget.launch({
                         widgetID: "ce919709-5388-4331-a9c4-64c5ced133f5",

@@ -431,7 +431,7 @@ const updateOrderStatusByUser = async (orderId, newStatus) => {
     });
 
     if (response.success) {
-      console.log(`Order ${orderId} status updated to ${newStatus}`);
+      // console.log(`Order ${orderId} status updated to ${newStatus}`);
       const updatedOrder = orders.value.find((order) => order.id === orderId);
       if (updatedOrder) {
         updatedOrder.orderStatus = newStatus;

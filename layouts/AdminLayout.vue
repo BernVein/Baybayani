@@ -203,7 +203,7 @@ const searchBarRef = ref(null);  // Reference to the search bar element
 
 
 const toggleSearchBar = () => {
-  console.log('Toggling search bar visibility');
+  // console.log('Toggling search bar visibility');
   if (isSearchVisible.value) {
     items.value = null;  // Clear the search results when closing the search bar
   }
@@ -241,8 +241,8 @@ await userStore.fetchUser();
 await userStore.fetchCartItems();
 await userStore.fetchOrders();
 userStore.isLoading = false;
-console.log("THIS FUNCTION IS USED");
-console.log(userStore.isLoading);
+//console.log("THIS FUNCTION IS USED");
+//console.log(userStore.isLoading);
 
 // Sign out function
 const signOut = async () => {
@@ -276,7 +276,7 @@ watch(
   }
 );
 const handleProductClick = (product) => {
-  console.log("Product clicked:", product);
+  //console.log("Product clicked:", product);
   window.location.href = `/item/${product.id}`;
 };
 
@@ -305,13 +305,13 @@ const initializeCometChatWidget = (defaultUID) => {
     authKey: "aab766213fba5c11e11ede09f1f0d0d0735dd6f9",
   })
     .then(() => {
-      console.log("Initialization completed successfully");
+      //console.log("Initialization completed successfully");
 
       CometChatWidget.login({
         uid: defaultUID,
       })
         .then(() => {
-          console.log("User login successful");
+          // console.log("User login successful");
 
           CometChatWidget.launch({
             widgetID: "ce919709-5388-4331-a9c4-64c5ced133f5",

@@ -4,8 +4,8 @@ export default defineEventHandler(async (event) => {
   // Decode the URL-encoded search term (this handles %20 and other encoded characters)
   const searchTerm = decodeURIComponent(event.context.params.id.trim());
 
-  console.log("Search Running!");
-  console.log("Decoded search term:", searchTerm);
+  //  console.log("Search Running!");
+  // console.log("Decoded search term:", searchTerm);
 
   // If the search term is empty, return an empty array
   if (!searchTerm) {

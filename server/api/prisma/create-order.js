@@ -7,12 +7,12 @@ export default defineEventHandler(async (event) => {
 
     // Read the request body
     const body = await readBody(event);
-    console.log("Received body:", body);
+    // console.log("Received body:", body);
 
     const { userId, checkoutItem } = body; // Assuming userId and checkoutItem are sent in the request body
 
     if (!userId || !checkoutItem || checkoutItem.length === 0) {
-      console.log("Missing userId or checkoutItem.");
+      // console.log("Missing userId or checkoutItem.");
       return {
         status: "error",
         message: "Missing userId or checkout items.",
@@ -25,7 +25,7 @@ export default defineEventHandler(async (event) => {
     });
 
     if (!user) {
-      console.log(`User not found with id: ${userId}`);
+      //  console.log(`User not found with id: ${userId}`);
       return {
         status: "error",
         message: "User not found.",
@@ -39,7 +39,7 @@ export default defineEventHandler(async (event) => {
     });
 
     if (!cart) {
-      console.log(`Cart not found for userId: ${userId}`);
+      //  console.log(`Cart not found for userId: ${userId}`);
       return {
         status: "error",
         message: "Cart not found for the user.",
@@ -59,7 +59,7 @@ export default defineEventHandler(async (event) => {
       });
 
       if (!product) {
-        console.log(`Product with id ${productId} not found.`);
+        //  console.log(`Product with id ${productId} not found.`);
         return {
           status: "error",
           message: `Product with id ${productId} not found.`,
@@ -70,7 +70,7 @@ export default defineEventHandler(async (event) => {
       totalPrice += product.price * quantity;
     }
 
-    console.log("Total price calculated:", totalPrice);
+    // console.log("Total price calculated:", totalPrice);
 
     // 4. Create the order record in the Orders table
     const order = await prisma.orders.create({
@@ -89,7 +89,7 @@ export default defineEventHandler(async (event) => {
       },
     });
 
-    console.log("Order created successfully:", order);
+    // console.log("Order created successfully:", order);
 
     // 5. Delete the specific cart items that were ordered
     const cartItemsToDelete = checkoutItem.map((item) => ({
@@ -104,7 +104,7 @@ export default defineEventHandler(async (event) => {
           productId: item.productId, // Match by productId
         },
       });
-      console.log(`Deleted cart item with productId: ${item.productId}`);
+      //  console.log(`Deleted cart item with productId: ${item.productId}`);
     }
 
     // 6. Return the created order along with the items

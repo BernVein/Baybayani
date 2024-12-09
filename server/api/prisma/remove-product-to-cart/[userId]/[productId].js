@@ -3,7 +3,7 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 export default defineEventHandler(async (event) => {
-  console.log("DELETE PRODUCT FROM CART RUNNING");
+  // console.log("DELETE PRODUCT FROM CART RUNNING");
 
   // Get userId and productId from the URL path parameters
   const { userId, productId } = event.context.params;
@@ -34,7 +34,7 @@ export default defineEventHandler(async (event) => {
     );
 
     if (!cartItem) {
-      console.log("Product not found in cart.");
+      //  console.log("Product not found in cart.");
       return { success: 0, message: "Product not found in cart" };
     }
 

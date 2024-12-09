@@ -25,7 +25,7 @@ export default defineEventHandler(async (event) => {
           userId: userId, // Create a cart with the user's ID
         },
       });
-      console.log("CREATED NEW CART FOR USER: " + userId);
+      //    console.log("CREATED NEW CART FOR USER: " + userId);
     }
     return cart;
   } catch (error) {

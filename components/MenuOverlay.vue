@@ -5,52 +5,39 @@
         <img width="170" src="/baybayani-logo.png" />
       </NuxtLink>
 
-      <button
-        @click="userStore.isMenuOverlay = false"
-        class="rounded-full p-1 hover:bg-gray-200"
-      >
+      <button @click="userStore.isMenuOverlay = false" class="rounded-full p-1 hover:bg-gray-200">
         <Icon name="mdi:close" size="30" />
       </button>
     </div>
 
     <div class="flex items-center justify-between pt-5">
       <ul class="w-full">
-        <li
-          @click="goTo('orders')"
-          class="relative flex items-center justify-between py-2.5 border-b px-3 hover:bg-gray-100 cursor-pointer"
-        >
+        <li @click="goTo('orders')"
+          class="relative flex items-center justify-between py-2.5 border-b px-3 hover:bg-gray-100 cursor-pointer">
           <div class="flex items-center text-[20px] font-semibold">
             <Icon name="ph:pen-light" size="33" />
             <span class="pl-4">My Orders</span>
           </div>
         </li>
 
-        <li
-          @click="goTo('shoppingcart')"
-          class="relative flex items-center justify-between py-2.5 border-b px-3 hover:bg-gray-100 cursor-pointer"
-        >
+        <li @click="goTo('shoppingcart')"
+          class="relative flex items-center justify-between py-2.5 border-b px-3 hover:bg-gray-100 cursor-pointer">
           <div class="flex items-center text-[20px] font-semibold">
             <Icon name="ph:shopping-cart-simple-light" size="33" />
             <span class="pl-4">Cart</span>
           </div>
         </li>
 
-        <li
-          v-if="user"
-          @click="signOut()"
-          class="relative flex items-center justify-between py-2.5 border-b px-3 hover:bg-gray-100 cursor-pointer"
-        >
+        <li v-if="user" @click="signOut()"
+          class="relative flex items-center justify-between py-2.5 border-b px-3 hover:bg-gray-100 cursor-pointer">
           <div class="flex items-center text-[20px] font-semibold">
             <Icon name="ph:sign-out-light" size="33" />
             <span class="pl-4">Sign out</span>
           </div>
         </li>
 
-        <li
-          v-else
-          @click="signIn()"
-          class="relative flex items-center justify-between py-2.5 border-b px-3 hover:bg-gray-100 cursor-pointer"
-        >
+        <li v-else @click="signIn()"
+          class="relative flex items-center justify-between py-2.5 border-b px-3 hover:bg-gray-100 cursor-pointer">
           <div class="flex items-center text-[20px] font-semibold">
             <Icon name="ph:sign-in-light" size="33" />
             <span class="pl-4">Sign In</span>
