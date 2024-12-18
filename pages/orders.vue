@@ -61,11 +61,6 @@
                 <div :class="['status-indicator', statusClass(order.orderStatus)]"></div>
                 <span class="ml-2 text-sm capitalize">{{ order.orderStatus }}</span>
               </div>
-              <!-- Show 3 dots menu only for PENDING orders -->
-              <div v-if="order.orderStatus === 'PENDING'" @click.stop="toggleOrderOptions(order.id)"
-                class="cursor-pointer">
-                <Icon name="carbon:overflow-menu-horizontal" size="24" />
-              </div>
             </div>
 
             <!-- Order Date -->
@@ -78,16 +73,6 @@
               <div
                 :style="{ width: progressWidth(order.orderStatus), backgroundColor: progressColor(order.orderStatus) }"
                 class="h-2.5 rounded-full"></div>
-            </div>
-
-            <!-- Order Options (Cancel button for PENDING orders) -->
-            <div v-if="selectedOrderId === order.id && order.orderStatus === 'PENDING'"
-              :id="'cancelDropdown-' + order.id"
-              class="absolute right-0 bg-white border shadow-md rounded-lg w-40 p-2 z-20">
-              <button @click="showCancelModal(order.id)"
-                class="w-full text-left p-2 hover:bg-gray-100 text-red-500 transition-colors">
-                Cancel Order
-              </button>
             </div>
 
             <!-- Order Items -->
@@ -104,10 +89,23 @@
               All products in this order are unavailable.
             </div>
 
-            <!-- Display Total Price -->
-            <div :class="order.orderStatus === 'CANCELED' ? 'text-red-500' : 'text-green-500'"
-              class="mt-4 font-bold text-xl text-right">
-              Total: ₱{{ order.totalPrice.toLocaleString() }}
+            <!-- Total Price and Cancel Button -->
+            <div class="flex justify-between items-center mt-4">
+
+
+              <!-- Cancel Order button, only visible for PENDING orders -->
+              <div v-if="order.orderStatus === 'PENDING'">
+                <button @click="showCancelModal(order.id)"
+                  class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition-colors">
+                  Cancel Order
+                </button>
+              </div>
+
+              <!-- Display Total Price -->
+              <div :class="order.orderStatus === 'CANCELED' ? 'text-red-500' : 'text-green-500'"
+                class="font-bold text-xl">
+                Total: ₱{{ order.totalPrice.toLocaleString() }}
+              </div>
             </div>
           </div>
         </div>
@@ -132,6 +130,7 @@
     </div>
   </AdminLayout>
 </template>
+
 
 <script setup>
 import AdminLayout from "~/layouts/AdminLayout.vue";
@@ -315,27 +314,36 @@ const progressColor = (status) => {
 <style scoped>
 /* Ensure the status indicators are always circular */
 .status-indicator {
-  width: 14px; /* Fixed width */
-  height: 14px; /* Fixed height */
-  border-radius: 50%; /* Make it a circle */
-  display: inline-block; /* Ensure it stays inline */
-  flex-shrink: 0; /* Prevent shrinking */
+  width: 14px;
+  /* Fixed width */
+  height: 14px;
+  /* Fixed height */
+  border-radius: 50%;
+  /* Make it a circle */
+  display: inline-block;
+  /* Ensure it stays inline */
+  flex-shrink: 0;
+  /* Prevent shrinking */
 }
 
 /* Example status colors */
 .bg-yellow-400 {
-  background-color: #fbbf24; /* Yellow */
+  background-color: #fbbf24;
+  /* Yellow */
 }
 
 .bg-blue-400 {
-  background-color: #3b82f6; /* Blue */
+  background-color: #3b82f6;
+  /* Blue */
 }
 
 .bg-green-400 {
-  background-color: #10b981; /* Green */
+  background-color: #10b981;
+  /* Green */
 }
 
 .bg-red-400 {
-  background-color: #ef4444; /* Red */
+  background-color: #ef4444;
+  /* Red */
 }
 </style>

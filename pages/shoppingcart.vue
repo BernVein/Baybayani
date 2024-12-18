@@ -153,6 +153,7 @@ const selectedRadioFunc = (e) => {
 
 // Handle checkout process
 const goToCheckout = () => {
+  console.log("CLIKCEDDD")
   if (selectedArray.value.length === 0 || !filteredCartItems.value.length) {
     console.warn("No items selected or cart is empty");
     return;

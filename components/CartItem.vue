@@ -174,7 +174,7 @@ const deleteFromCart = async () => {
 };
 
 const toggleSelection = async () => {
-  //  console.log("Toggle Clicked!");
+  console.log("Toggle Clicked!");
   isSelected.value = !isSelected.value;
   await saveSelectionToDatabase(); // Save the updated selection to the database
 
@@ -206,7 +206,7 @@ const updateQuantity = () => {
   if (cartIndex !== -1) {
     // Update the quantity in the store
     userStore.cartItems[cartIndex].quantity = product.value.quantity;
-    //console.log("current quantity", userStore.cartItems[cartIndex].quantity);
+    console.log("current quantity", userStore.cartItems[cartIndex].quantity);
     emitSelectionUpdate();
   } else {
     //console.log("Product not found in cart");
@@ -246,10 +246,10 @@ const validateAndUpdateQuantity = () => {
   // Ensure the quantity is a valid number and within the expected range when the input loses focus
   let quantity = parseInt(product.value.quantity);
 
-  // console.log("CLLLLLLLLLLLLLLED");
+  console.log("CLLLLLLLLLLLLLLED");
 
-  //console.log("quanitty", quantity);
-  //console.log("Data type of quantity:", typeof quantity);
+  console.log("quanitty", quantity);
+  console.log("Data type of quantity:", typeof quantity);
 
 
   // If invalid, default to 1
@@ -266,11 +266,11 @@ const validateAndUpdateQuantity = () => {
 };
 
 const updateQuantityInDatabase = async () => {
-  console.log("Falag1");
+  // console.log("Falag1");
 
-  console.log(userStore.cart.id);
-  console.log(product.value.id);
-  console.log(product.value.quantity);
+  // console.log(userStore.cart.id);
+  // console.log(product.value.id);
+  // console.log(product.value.quantity);
 
   try {
     // Sending the request to update the quantity
