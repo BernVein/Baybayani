@@ -108,12 +108,15 @@ let isSelected = ref(false);
 // });
 
 onMounted(() => {
+  console.log("tesy")
+  console.log(userStore.cartItems)
   const cartIndex = userStore.cartItems.findIndex(
     (item) => item.productId === product.value.id
   );
 
   if (cartIndex !== -1) {
     // Set the default value from the database to the product's quantity
+    isSelected.value = userStore.cartItems[cartIndex].checked;
     product.value.quantity = userStore.cartItems[cartIndex].quantity;
   } else {
     // If the product is not in the cart, set the default quantity to 1
@@ -166,9 +169,11 @@ const deleteFromCart = async () => {
   }
 };
 
-const toggleSelection = () => {
+const toggleSelection = async () => {
   //  console.log("Toggle Clicked!");
   isSelected.value = !isSelected.value;
+  await saveSelectionToDatabase(); // Save the updated selection to the database
+
   emitSelectionUpdate();
 };
 
@@ -285,6 +290,31 @@ const updateQuantityInDatabase = async () => {
     console.error("Error:", error);
   }
 };
+
+const saveSelectionToDatabase = async () => {
+  const userId = userStore.user.id;  // Assuming the user ID is stored in the userStore
+  const productId = product.value.id; // Assuming product ID is accessible
+
+  try {
+    const response = await $fetch('/api/prisma/update-selection', {
+      method: 'POST',
+      body: {
+        cartId: userStore.cart.id,  // User's cart ID
+        productId: product.value.id,  // Product's ID
+        isSelected: isSelected.value,  // New selected state (true/false)
+      },
+    });
+
+    if (response.success) {
+      console.log('Selection updated successfully');
+    } else {
+      console.error('Error updating selection:', response.error);
+    }
+  } catch (error) {
+    console.error('Error saving selection to database:', error);
+  }
+};
+
 
 
 // const updateQuantityInDatabase = async () => {

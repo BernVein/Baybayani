@@ -1,15 +1,15 @@
 import prisma from "../../utils/prisma"; // Import Prisma client
 
 export default defineEventHandler(async (event) => {
-  console.log("Called 1");
+  //   console.log("Called 1");
 
   try {
     // Extract data from the body of the request using readBody
     const { cartId, productId, quantity } = await readBody(event);
 
-    console.log(cartId);
-    console.log(productId);
-    console.log(quantity);
+    // console.log(cartId);
+    // console.log(productId);
+    // console.log(quantity);
 
     // Ensure quantity is a valid number
     if (isNaN(quantity) || quantity < 1) {
