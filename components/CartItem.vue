@@ -108,8 +108,12 @@ let isSelected = ref(false);
 // });
 
 onMounted(() => {
-  console.log("tesy")
-  console.log(userStore.cartItems)
+  console.log("tesy");
+  console.log(userStore.cartItems);
+
+  // Sort cart items by `created_at` (in descending order, most recent first)
+  userStore.cartItems.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
   const cartIndex = userStore.cartItems.findIndex(
     (item) => item.productId === product.value.id
   );
