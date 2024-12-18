@@ -3,16 +3,6 @@
   <div class="flex justify-start my-2">
     <!-- Check Button -->
     <div class="my-auto">
-      <!-- <div @mouseenter="isHover = true" @mouseleave="isHover = false"
-        class="flex items-center justify-start p-0.5 cursor-pointer">
-        <div @click="toggleSelection"
-          class="flex items-center justify-center h-[20px] w-[20px] rounded-full border mr-5 ml-2" :class="[
-            isHover ? 'border-[#0C6539]' : 'border-gray-300',
-            isSelected ? 'bg-[#0C6539]' : '',
-          ]">
-          <div class="h-[8px] w-[8px] rounded-full bg-white" />
-        </div>
-      </div> -->
 
       <div @mouseenter="isHover = true" @mouseleave="isHover = false"
         class="flex items-center justify-start p-0.5 cursor-pointer">
@@ -21,8 +11,8 @@
         <div @click="toggleSelection"
           class="flex items-center justify-center h-[20px] w-[20px] rounded border mr-5 ml-2" :class="{
             'border-[#0C6539]': isSelected,                   // Border when selected (Green)
-            'border-[#0C6539]': isHover && !isSelected,       // Border when hovered and not selected
-            'border-gray-300': !isSelected && !isHover        // Default border when not selected and not hovered
+            // 'border-[#0C6539]': isHover && !isSelected,       // Border when hovered and not selected
+            // 'border-gray-300': !isSelected && !isHover        // Default border when not selected and not hovered
           }">
 
           <input type="checkbox" class="hidden" v-model="isSelected" />
@@ -31,7 +21,6 @@
           <div v-if="isSelected" class="h-[16px] w-[16px] flex items-center justify-center">
             <Icon name="mingcute:check-fill" size="80" class="text-[#0C6539]" />
           </div>
-          <!-- Show empty circle when not selected -->
         </div>
       </div>
 
@@ -106,15 +95,32 @@ const emit = defineEmits(["selectedRadio"]); // Define the event `selectedRadio`
 let isHover = ref(false);
 let isSelected = ref(false);
 
+// onMounted(() => {
+//   const cartIndex = userStore.cartItems.findIndex(
+//     (item) => item.productId === product.value.id
+//   );
+
+//   if (cartIndex !== -1) {
+//     product.value.quantity = userStore.cartItems[cartIndex].quantity;
+//   }
+
+//   updateQuantity();
+// });
+
 onMounted(() => {
   const cartIndex = userStore.cartItems.findIndex(
     (item) => item.productId === product.value.id
   );
 
   if (cartIndex !== -1) {
+    // Set the default value from the database to the product's quantity
     product.value.quantity = userStore.cartItems[cartIndex].quantity;
+  } else {
+    // If the product is not in the cart, set the default quantity to 1
+    product.value.quantity = 1;
   }
 
+  // This ensures the quantity is synced with the data and is displayed correctly
   updateQuantity();
 });
 
@@ -199,17 +205,25 @@ const updateQuantity = () => {
 };
 
 // Function to increase quantity
-const increaseQuantity = () => {
-  product.value.quantity++; // Increment quantity
-  // console.log("QUAnityt type", typeof product.value.quantity);
-  updateQuantity(); // Update the quantity in the store
+// const increaseQuantity = () => {
+//   product.value.quantity++; // Increment quantity
+//   // console.log("QUAnityt type", typeof product.value.quantity);
+
+//   updateQuantity(); // Update the quantity in the store
+// };
+
+const increaseQuantity = async () => {
+  product.value.quantity++;
+  await updateQuantityInDatabase();
+  updateQuantity();
 };
 
 // Function to decrease quantity
-const decreaseQuantity = () => {
+const decreaseQuantity = async () => {
   if (props.product.quantity > 1) {
     // Prevent decreasing quantity below 1
     product.value.quantity--; // Decrement quantity
+    await updateQuantityInDatabase();
     updateQuantity(); // Update the quantity in the store
   }
 };
@@ -241,4 +255,69 @@ const validateAndUpdateQuantity = () => {
   // Update quantity in the store after validation
   updateQuantity();
 };
+
+const updateQuantityInDatabase = async () => {
+  console.log("Falag1");
+
+  console.log(userStore.cart.id);
+  console.log(product.value.id);
+  console.log(product.value.quantity);
+
+  try {
+    // Sending the request to update the quantity
+    const response = await $fetch('/api/prisma/update-quantity', {
+      method: 'POST',
+      body: {
+        cartId: userStore.cart.id, // User's ID
+        productId: product.value.id, // Product's ID
+        quantity: product.value.quantity, // Updated quantity
+      },
+    });
+
+    // Check if the response indicates success
+    if (response.success) {
+      console.log("Cart item updated:", response.updatedCartItem);
+    } else {
+      console.error("Error updating quantity:", response.error);
+    }
+  } catch (error) {
+    // Error handling if the fetch fails
+    console.error("Error:", error);
+  }
+};
+
+
+// const updateQuantityInDatabase = async () => {
+//   const userId = userStore.user.id;
+//   const productId = product.value.id;
+
+//   console.log("CALLLED 1");
+
+//   try {
+//     const response = await fetch(
+//       `/api/prisma/update-quantity/${userId}/${productId}`,
+//       {
+//         method: "PUT",
+//         headers: {
+//           "Content-Type": "application/json",
+//         },
+//         body: JSON.stringify({
+//           quantity: product.value.quantity,
+//         }),
+//       }
+//     );
+//     console.log("CALLLED 3");
+//     const data = await response.json();
+//     if (data.success === 1) {
+//       console.log("Quantity successfully updated in the database!");
+//     } else {
+//       console.log("CALLLED error");
+//       console.error("Error updating quantity:", data.message);
+//     }
+//   } catch (error) {
+//     console.log("CALLLED error daan");
+//     console.error("Error updating quantity in database:", error);
+//   }
+// };
+
 </script>
