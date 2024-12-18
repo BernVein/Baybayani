@@ -96,7 +96,7 @@
               <!-- Cancel Order button, only visible for PENDING orders -->
               <div v-if="order.orderStatus === 'PENDING'">
                 <button @click="showCancelModal(order.id)"
-                  class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition-colors">
+                  class=" text-red-500 font-semibold underline px-4 py-2 rounded-md hover:bg-red-600 hover:text-white transition-colors">
                   Cancel Order
                 </button>
               </div>
