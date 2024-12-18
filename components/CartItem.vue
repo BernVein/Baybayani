@@ -3,7 +3,7 @@
   <div class="flex justify-start my-2">
     <!-- Check Button -->
     <div class="my-auto">
-      <div @mouseenter="isHover = true" @mouseleave="isHover = false"
+      <!-- <div @mouseenter="isHover = true" @mouseleave="isHover = false"
         class="flex items-center justify-start p-0.5 cursor-pointer">
         <div @click="toggleSelection"
           class="flex items-center justify-center h-[20px] w-[20px] rounded-full border mr-5 ml-2" :class="[
@@ -12,7 +12,30 @@
           ]">
           <div class="h-[8px] w-[8px] rounded-full bg-white" />
         </div>
+      </div> -->
+
+      <div @mouseenter="isHover = true" @mouseleave="isHover = false"
+        class="flex items-center justify-start p-0.5 cursor-pointer">
+
+        <!-- Checkbox to select/deselect product -->
+        <div @click="toggleSelection"
+          class="flex items-center justify-center h-[20px] w-[20px] rounded border mr-5 ml-2" :class="{
+            'border-[#0C6539]': isSelected,                   // Border when selected (Green)
+            'border-[#0C6539]': isHover && !isSelected,       // Border when hovered and not selected
+            'border-gray-300': !isSelected && !isHover        // Default border when not selected and not hovered
+          }">
+
+          <input type="checkbox" class="hidden" v-model="isSelected" />
+
+          <!-- Show checkmark when selected -->
+          <div v-if="isSelected" class="h-[16px] w-[16px] flex items-center justify-center">
+            <Icon name="mingcute:check-fill" size="80" class="text-[#0C6539]" />
+          </div>
+          <!-- Show empty circle when not selected -->
+        </div>
       </div>
+
+
     </div>
 
     <!-- Product Image -->
@@ -46,16 +69,26 @@
         </button>
       </div>
       <!-- Quantity Selector -->
-      <div class="flex items-center justify-between mt-3">
-        <button @click="decreaseQuantity" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md">
+      <div class="flex items-center justify-start mt-3">
+        <!-- Decrease Button -->
+        <button @click="decreaseQuantity"
+          class="w-[34px] h-[34px] bg-gray-200 hover:bg-gray-300 border border-gray-300 rounded-l-md flex items-center justify-center">
           -
         </button>
-        <input type="text" class="mx-2 w-[50px] text-center border-gray-300 border rounded-md"
+
+        <!-- Quantity Input -->
+        <input type="text" class="w-[45px] h-[34px] text-center border-t border-b border-gray-300 mx-0"
           v-model="product.quantity" @blur="validateAndUpdateQuantity" @input="validateInput" />
-        <button @click="increaseQuantity" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md">
+
+        <!-- Increase Button -->
+        <button @click="increaseQuantity"
+          class="w-[34px] h-[34px] bg-gray-200 hover:bg-gray-300 border border-gray-300 rounded-r-md flex items-center justify-center">
           +
         </button>
       </div>
+
+
+
     </div>
   </div>
 </template>
@@ -84,8 +117,6 @@ onMounted(() => {
 
   updateQuantity();
 });
-
-
 
 
 const deleteFromCart = async () => {
