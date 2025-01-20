@@ -71,18 +71,22 @@ const user = useSupabaseUser();
 let total = ref(0);
 
 
-
 const route = useRoute();
 const role = userStore.profile?.role;
 watchEffect(() => {
   if (route.fullPath == "/checkout" &&
     (!user.value || role === "Admin")) {
-    navigateTo("/admin/dashboard");
+    //navigateTo("/admin/dashboard");
+    window.location.href = "/admin/dashboard";
   }
   else if (route.fullPath == "/checkout" && !user.value) {
-    navigateTo("/login");
+    //navigateTo("/login");
+    window.location.href = "/login";
+
   } else if (route.fullPath == "/checkout" && userStore.checkout.length === 0) {
-    navigateTo("/shoppingcart");
+    //navigateTo("/shoppingcart");
+    window.location.href = "/shoppingcart";
+
   }
 });
 
@@ -90,9 +94,12 @@ watchEffect(() => {
 
 onMounted(() => {
   if (route.fullPath == "/checkout" && !user.value) {
-    navigateTo("/login");
+    //navigateTo("/login");
+    window.location.href = "/login";
+
   } else if (route.fullPath == "/checkout" && userStore.checkout.length === 0) {
-    navigateTo("/shoppingcart");
+    //navigateTo("/shoppingcart");
+    window.location.href = "/shoppingcart";
   }
   userStore.checkout.forEach((item) => {
     // console.log(item); // Print the item to inspect its properties
@@ -115,7 +122,9 @@ const placeOrder = async () => {
 
     setTimeout(() => {
       // console.log("Redirecting to the success page...");
-      navigateTo("/success"); // Redirect to the success page
+      //navigateTo("/success"); // Redirect to the success page
+      window.location.href = "/success";
+
     }, 100);
     await createOrder();
 

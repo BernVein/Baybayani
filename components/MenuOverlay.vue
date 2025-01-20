@@ -64,11 +64,13 @@ const signOut = () => {
   userStore.logout();
   //client.auth.signOut();
   //userStore.isMenuOverlay = false;
-  return navigateTo("/login");
+  // return navigateTo("/login");
+  window.location.href = "/login";
 };
 
 const signIn = () => {
   userStore.isMenuOverlay = false;
-  return navigateTo("/login");
+  // return navigateTo("/login");
+  window.location.href = "/login";
 };
 </script>

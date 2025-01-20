@@ -85,6 +85,7 @@
                 </NuxtLink>
               </div>
             </div>
+
             <div v-else class="text-gray-500 italic">
               All products in this order are unavailable.
             </div>
@@ -242,6 +243,7 @@ const closeModal = () => {
 const confirmCancel = async () => {
   try {
     // Send DELETE request to cancel the order
+
     await useFetch(`/api/prisma/cancel-order/${orderIdToCancel.value}`, { method: "DELETE" });
 
     // Find the order in the orders list and update its status to "CANCELED"
@@ -251,7 +253,9 @@ const confirmCancel = async () => {
       // Update the order status to 'CANCELED'
       orderToCancel.orderStatus = 'CANCELED';
       // Refresh the orders list
-      await userStore.fetchOrders();
+      // navigateTo('/orders');
+      // await userStore.fetchOrders();
+      window.location.href = "/orders";
     } else {
       console.error("Order not found in orders list.");
     }

@@ -9,8 +9,8 @@
 
         <!-- Checkbox to select/deselect product -->
         <div @click="toggleSelection"
-          class="flex items-center justify-center h-[20px] w-[20px] rounded border mr-5 ml-2" :class="{
-            'border-[#0C6539]': isSelected,                   // Border when selected (Green)
+          class="flex items-center border-[#0C6539] justify-center h-[20px] w-[20px] rounded border mr-5 ml-2" :class="{
+            'border-[#0C6539] border-2': isSelected,                   // Border when selected (Green)
             // 'border-[#0C6539]': isHover && !isSelected,       // Border when hovered and not selected
             // 'border-gray-300': !isSelected && !isHover        // Default border when not selected and not hovered
           }">
@@ -107,29 +107,43 @@ let isSelected = ref(false);
 //   updateQuantity();
 // });
 
+// onMounted(() => {
+//   console.log("tesy");
+//   console.log(userStore.cartItems);
+
+//   // Sort cart items by `created_at` (in descending order, most recent first)
+//   userStore.cartItems.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+//   const cartIndex = userStore.cartItems.findIndex(
+//     (item) => item.productId === product.value.id
+//   );
+
+//   if (cartIndex !== -1) {
+//     // Set the default value from the database to the product's quantity
+//     isSelected.value = userStore.cartItems[cartIndex].checked;
+//     product.value.quantity = userStore.cartItems[cartIndex].quantity;
+//   } else {
+//     // If the product is not in the cart, set the default quantity to 1
+//     product.value.quantity = 1;
+//   }
+
+//   // This ensures the quantity is synced with the data and is displayed correctly
+//   updateQuantity();
+// });
+
 onMounted(() => {
-  console.log("tesy");
-  console.log(userStore.cartItems);
-
-  // Sort cart items by `created_at` (in descending order, most recent first)
-  userStore.cartItems.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
   const cartIndex = userStore.cartItems.findIndex(
     (item) => item.productId === product.value.id
   );
 
   if (cartIndex !== -1) {
-    // Set the default value from the database to the product's quantity
     isSelected.value = userStore.cartItems[cartIndex].checked;
     product.value.quantity = userStore.cartItems[cartIndex].quantity;
   } else {
-    // If the product is not in the cart, set the default quantity to 1
     product.value.quantity = 1;
   }
-
-  // This ensures the quantity is synced with the data and is displayed correctly
-  updateQuantity();
 });
+
 
 
 const deleteFromCart = async () => {
@@ -173,13 +187,21 @@ const deleteFromCart = async () => {
   }
 };
 
+// const toggleSelection = async () => {
+//   console.log("Toggle Clicked!");
+//   isSelected.value = !isSelected.value;
+//   await saveSelectionToDatabase(); // Save the updated selection to the database
+
+//   emitSelectionUpdate();
+// };
+
 const toggleSelection = async () => {
   console.log("Toggle Clicked!");
-  isSelected.value = !isSelected.value;
-  await saveSelectionToDatabase(); // Save the updated selection to the database
-
-  emitSelectionUpdate();
+  isSelected.value = !isSelected.value;  // Toggle the selection state
+  await saveSelectionToDatabase();  // Save the updated selection to the database
+  emitSelectionUpdate();  // Notify parent component of the selection change
 };
+
 
 const emitSelectionUpdate = () => {
   emit("selectedRadio", {

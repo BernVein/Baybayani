@@ -2,6 +2,7 @@ export default defineNuxtRouteMiddleware((from, to) => {
   const user = useSupabaseUser();
 
   if (!user.value && to.fullPath == "/checkout") {
-    return navigateTo("/auth");
+    // return navigateTo("/auth");
+    window.location.href = "/login";
   }
 });

@@ -1,3 +1,4 @@
+<!-- shoppingcart.vue -->
 <template>
   <AdminLayout>
     <div id="ShoppingCartPage" class="mt-4 max-w-[1200px] mx-auto px-2">
@@ -10,10 +11,11 @@
 
           <!-- If not logged, goto login page -->
           <div v-if="!user" class="flex text-center">
-            <NuxtLink to="/login"
-              class="bg-[#FD374F] w-full text-white text-[21px] font-semibold p-1.5 rounded-full mt-4">
+            <div @click="navigateLogin"
+              class=" bg-[#FD374F] w-full text-white text-[21px] font-semibold p-1.5 rounded-full mt-4">
               Sign in
-            </NuxtLink>
+            </div>
+
           </div>
         </div>
       </div>
@@ -28,12 +30,29 @@
             </div>
           </div>
 
-          <div class="bg-[#FEEEEF] rounded-lg p-4 mt-4">
-            <div class="text-red-500 font-bold">
-              Always ask for the availability of each item before adding to
-              checkout!
+          <div class="bg-[#FEEEEF] rounded-lg p-4 mt-4 flex justify-end items-center">
+            <!-- Label for 'Select All' aligned to the right -->
+            <span class="text-md mr-2">Select All</span>
+
+            <!-- Select All Checkbox Section on the right -->
+            <div @mouseenter="isHover = true" @mouseleave="isHover = false"
+              class="flex items-center justify-start p-0.5 cursor-pointer">
+              <!-- Custom Checkbox -->
+              <div @click="toggleSelectAll"
+                class="flex items-center justify-center h-[20px] w-[20px] rounded border mr-5 ml-2" :class="{
+                  'border-[#0C6539] border-2': selectAll,  // Green border when selected
+                  'border-gray-500': !selectAll,  // Default gray border when not selected
+                }">
+                <input type="checkbox" class="hidden" v-model="selectAll" />
+
+                <!-- Show checkmark when selected -->
+                <div v-if="selectAll" class="h-[16px] w-[16px] flex items-center justify-center">
+                  <Icon name="mingcute:check-fill" size="80" class="text-[#0C6539]" />
+                </div>
+              </div>
             </div>
           </div>
+
 
           <!-- The code dynamically renders a list of CartItem components from the user's cart, passing each product's data and selection state, and listens for selection changes to handle updates in the parent component. -->
 
@@ -83,6 +102,102 @@ import AdminLayout from "~/layouts/AdminLayout.vue";
 import { useUserStore } from "~/stores/user";
 import { ref, computed, watchEffect, onBeforeMount } from "vue";
 
+const selectAll = ref(false);  // Manage the "Select All" checkbox state
+const isHover = ref(false);    // Track hover state for styling
+
+
+// const toggleSelectAll = () => {
+//   selectAll.value = !selectAll.value;
+
+//   // If selecting all, mark each item in the filtered cart as selected.
+//   if (selectAll.value) {
+//     filteredCartItems.value.forEach(item => {
+//       const existingIndex = selectedArray.value.findIndex(selectedItem => selectedItem.id === item.product.id);
+//       if (existingIndex === -1) {
+//         selectedArray.value.push({ id: item.product.id, val: true, quantity: item.quantity });
+//       }
+//     });
+//   } else {
+//     // If deselecting all, clear the selectedArray.
+//     selectedArray.value = [];
+//   }
+// };
+
+const handleItemSelection = (cartItem) => {
+  const index = selectedArray.value.findIndex(item => item.id === cartItem.product.id);
+
+  if (cartItem.checked) {
+    // Item selected
+    if (index === -1) {
+      selectedArray.value.push({
+        id: cartItem.product.id,
+        val: true,
+        quantity: cartItem.quantity
+      });
+    }
+  } else {
+    // Item deselected
+    if (index !== -1) {
+      selectedArray.value.splice(index, 1);
+    }
+  }
+
+  updateSelectAllState();
+};
+
+
+
+const toggleSelectAll = () => {
+  const newState = selectAll.value;
+  cartItems.value.forEach((item) => {
+    item.isSelected = newState;
+  });
+  updateSelections();
+};
+
+const handleSelectionChange = ({ id, val }) => {
+  const item = cartItems.value.find((item) => item.id === id);
+  if (item) item.isSelected = val;
+
+  updateSelections();
+};
+const updateSelections = async () => {
+  const selectedItems = cartItems.value.filter(item => item.isSelected);
+  await userStore.updateSelectedItems(selectedItems);
+};
+
+const isIndeterminate = computed(() => {
+  const selectedCount = cartItems.value.filter(item => item.isSelected).length;
+  return selectedCount > 0 && selectedCount < cartItems.value.length;
+});
+
+const selectedRadioFunc = (e) => {
+  const existingIndex = selectedArray.value.findIndex(item => item.id === e.id);
+
+  if (e.val) {
+    // If the item is selected, add it to selectedArray
+    if (existingIndex === -1) {
+      selectedArray.value.push({ ...e, quantity: e.quantity });
+    } else {
+      selectedArray.value[existingIndex].quantity = e.quantity;
+    }
+  } else {
+    // If the item is deselected, remove it from selectedArray
+    if (existingIndex !== -1) {
+      selectedArray.value.splice(existingIndex, 1);
+    }
+  }
+
+  // After manual selection, update the selectAll checkbox state
+  updateSelectAllState();
+};
+
+const updateSelectAllState = () => {
+  // The selectAll checkbox should be checked only if every item in the cart is selected.
+  selectAll.value = filteredCartItems.value.every(item => {
+    return selectedArray.value.some(selectedItem => selectedItem.id === item.product.id && selectedItem.val);
+  });
+};
 
 
 const userStore = useUserStore();
@@ -100,8 +215,6 @@ watchEffect(() => {
     navigateTo("/login");
   }
 });
-
-
 
 
 let selectedArray = ref([]);
@@ -134,22 +247,6 @@ const totalPriceComputed = computed(() => {
   );
 });
 
-// Handle radio selection for cart items
-const selectedRadioFunc = (e) => {
-  const existingIndex = selectedArray.value.findIndex((item) => item.id === e.id);
-
-  if (e.val) {
-    if (existingIndex === -1) {
-      selectedArray.value.push({ ...e, quantity: e.quantity });
-    } else {
-      selectedArray.value[existingIndex].quantity = e.quantity;
-    }
-  } else {
-    if (existingIndex !== -1) {
-      selectedArray.value.splice(existingIndex, 1);
-    }
-  }
-};
 
 // Handle checkout process
 const goToCheckout = () => {
@@ -170,4 +267,10 @@ const goToCheckout = () => {
 
   navigateTo("/checkout"); // Ensure navigation works correctly
 };
+
+const navigateLogin = () => {
+  window.location.href = `/login`;
+};
+
+
 </script>
