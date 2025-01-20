@@ -27,7 +27,7 @@
           <div id="Items" class="bg-white rounded-lg p-4 mt-4">
             <div v-for="(cartItem, index) in userStore.checkout" :key="cartItem.id">
               <!-- Use the index to find the specific cartItem in the checkout array -->
-              <CheckoutItem :product="userStore.checkout[index].product" />
+              <CheckoutItem :product="userStore.checkout[index]" />
             </div>
           </div>
         </div>
@@ -79,15 +79,18 @@ watchEffect(() => {
     //navigateTo("/admin/dashboard");
     window.location.href = "/admin/dashboard";
   }
+
+
   else if (route.fullPath == "/checkout" && !user.value) {
     //navigateTo("/login");
     window.location.href = "/login";
 
-  } else if (route.fullPath == "/checkout" && userStore.checkout.length === 0) {
-    //navigateTo("/shoppingcart");
-    window.location.href = "/shoppingcart";
-
   }
+  // else if (route.fullPath == "/checkout" && userStore.checkout.length === 0) {
+  //   //navigateTo("/shoppingcart");
+  //   window.location.href = "/shoppingcart";
+
+  // }
 });
 
 
@@ -96,15 +99,27 @@ onMounted(() => {
   if (route.fullPath == "/checkout" && !user.value) {
     //navigateTo("/login");
     window.location.href = "/login";
-
-  } else if (route.fullPath == "/checkout" && userStore.checkout.length === 0) {
-    //navigateTo("/shoppingcart");
-    window.location.href = "/shoppingcart";
   }
+  // else if (route.fullPath == "/checkout" && userStore.checkout.length === 0) {
+  //   //navigateTo("/shoppingcart");
+  //   window.location.href = "/shoppingcart";
+  // }
+
+  userStore.cartItems.forEach((item) => {
+    if (item.checked === true) {
+      // Push checked items into userStore.checkout
+      userStore.checkout.push(item);
+    }
+  });
+  console.log(userStore.cartItems);
+  console.log("FLAGGGGGGGGGG");
+  console.log(userStore.checkout);
+
   userStore.checkout.forEach((item) => {
     // console.log(item); // Print the item to inspect its properties
     total.value += item.product.price * item.quantity;
   });
+
 });
 
 const removeOrderedItems = (checkout) => {

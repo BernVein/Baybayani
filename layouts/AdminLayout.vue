@@ -1,5 +1,8 @@
         <template>
           <div id="AdminLayout" class="w-full fixed z-50">
+            <Loading v-if="isLoading" />
+
+
             <div id="MainHeader"
               class="flex items-center w-full bg-[#fafafa] shadow-[0px_1px_5px_3px_rgba(0,_0,_0,_0.25)]">
               <div class="flex lg:justify-start justify-between gap-10 max-w-[1150px] w-full px-3 py-5 mx-auto">
@@ -247,6 +250,8 @@ const searchItem = ref("");
 const items = ref(null);
 const isSearchVisible = ref(false); // Track visibility of the search bar
 const searchBarRef = ref(null);  // Reference to the search bar element
+const isLoading = ref(true); // Loading state
+
 
 
 const toggleSearchBar = () => {
@@ -329,6 +334,10 @@ const handleProductClick = (product) => {
 
 // CometChat Docked Widget Integration
 onMounted(() => {
+  isLoading.value = true;
+  setTimeout(() => {
+    isLoading.value = false; // End loading after delay
+  }, 500); // 500ms delay
   document.addEventListener("click", closeSearchBar);
 
   const defaultUID = userStore.profile?.name
@@ -402,6 +411,8 @@ const navigateItem = (item) => {
     console.warn('Item or item.id is undefined');
   }
 };
+
+
 
 </script>
 <style scoped>

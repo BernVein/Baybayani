@@ -1,5 +1,9 @@
 <template>
   <AdminLayout>
+
+    <div v-if="orders === null" class="flex items-center justify-center">
+      Loading...
+    </div>
     <div id="OrdersPage" class="mt-4 max-w-[1200px] mx-auto px-2 min-h-[50vh]">
       <div class="bg-white w-full p-6 min-h-[150px]">
         <div class="flex items-center text-xl">
@@ -44,11 +48,6 @@
               </li>
             </ul>
           </div>
-        </div>
-
-        <!-- Loading state -->
-        <div v-if="orders === null" class="flex items-center justify-center">
-          Loading...
         </div>
 
         <!-- Check if there are orders -->
@@ -146,6 +145,8 @@ let dropdownOpen = ref(false);  // Track dropdown visibility
 let showModal = ref(false);  // Track modal visibility
 let orderIdToCancel = ref(null);  // Track which order to cancel
 
+
+
 // Watch effect to check if the user is logged in
 const route = useRoute();
 const role = userStore.profile?.role;
@@ -158,6 +159,7 @@ watchEffect(() => {
   else if (route.fullPath == "/orders" && !user.value) {
     navigateTo("/login");
   }
+
 });
 
 // Handle clicks outside the dropdown to close it
@@ -188,6 +190,8 @@ onBeforeUnmount(() => {
 });
 
 onBeforeMount(async () => {
+
+
   try {
     //await userStore.fetchOrders();
 
@@ -206,6 +210,7 @@ onBeforeMount(async () => {
   } catch (error) {
     console.error("Error fetching orders:", error);
   }
+
 });
 
 const filterOrders = (status) => {

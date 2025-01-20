@@ -1,6 +1,9 @@
 <!-- shoppingcart.vue -->
 <template>
   <AdminLayout>
+
+
+
     <div id="ShoppingCartPage" class="mt-4 max-w-[1200px] mx-auto px-2">
 
       <div v-if="!filteredCartItems.length" class="h-[500px] flex items-center justify-center">
@@ -214,6 +217,10 @@ watchEffect(() => {
   else if (route.fullPath == "/shoppingcart" && !user.value) {
     navigateTo("/login");
   }
+  if (!userStore.isLoading) {
+    // The loading state is now false, the page is done loading.
+    console.log('Data loaded successfully!');
+  }
 });
 
 
@@ -256,16 +263,17 @@ const goToCheckout = () => {
     return;
   }
 
-  const ids = selectedArray.value.map((item) => item.id);
+  //const ids = selectedArray.value.map((item) => item.id);
 
-  userStore.checkout = [];
-  const filteredItems = filteredCartItems.value.filter((item) =>
-    ids.includes(item.productId)
-  );
+  // userStore.checkout = [];
+  // const filteredItems = filteredCartItems.value.filter((item) =>
+  //   ids.includes(item.productId)
+  // );
 
-  userStore.checkout.push(...filteredItems);
+  // userStore.checkout.push(...filteredItems);
+  //navigateTo("/checkout"); // Ensure navigation works correctly
+  window.location.href = `/checkout`;
 
-  navigateTo("/checkout"); // Ensure navigation works correctly
 };
 
 const navigateLogin = () => {

@@ -110,6 +110,10 @@ const initializeCometChatWidget = (defaultUID) => {
       console.error("Widget initialization failed:", error);
     });
 };
+
+console.log("LOADING FLAGGGG");
+console.log(userStore.isLoading);
+
 </script>
 
 <style>
