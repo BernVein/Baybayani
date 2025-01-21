@@ -62,7 +62,7 @@ export default defineEventHandler(async (event) => {
         },
       });
 
-      return { success: 1 }; // Return 1 for success
+      return { success: 2 }; // Return 2 for existing success
     }
   } catch (error) {
     console.error("Error adding product to cart:", error);

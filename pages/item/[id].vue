@@ -1,5 +1,6 @@
   <template>
     <AdminLayout>
+      <Loading v-if="isLoading" />
       <div id="ItemPage" class="mt-4 max-w-[1200px] mx-auto px-2">
 
 
@@ -61,7 +62,6 @@
 
 
 
-
               <div class="flex gap-4 mt-8">
                 <button @click="addToCart"
                   class="px-6 py-3 rounded-lg text-white text-sm lg:text-lg font-semibold bg-green-600 hover:bg-green-700 transition-all duration-300 ease-in-out hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center">
@@ -96,6 +96,11 @@
         <!-- Rectangle Animation -->
         <div v-if="showGuidedLine" class="rectangle-animation"></div>
       </div>
+      <div v-if="show" class="toast-notification fixed top-24 right-5 bg-green-600 text-white p-4 rounded-lg shadow-lg"
+        :style="{ animation: 'fadeInOut 3s forwards' }">
+        {{ message }}
+      </div>
+
     </AdminLayout>
   </template>
 
@@ -117,6 +122,23 @@ let showChatModal = ref(false);
 let showGuidedLine = ref(false);
 let isFadingOut = ref(false);
 const role = userStore.profile?.role;
+
+const isLoading = ref(false); // Loading state
+
+const show = ref(false);
+const message = ref("");
+
+const showToast = (msg) => {
+  message.value = msg;
+  show.value = true;
+  setTimeout(() => {
+    show.value = false;
+  }, 3000); // Hide after 3 seconds
+};
+
+defineExpose({
+  showToast,
+});
 
 let inputQuantity = ref(1.0); // Initialize with 1 as the default
 
@@ -188,6 +210,8 @@ const decreaseQuantity = () => {
 };
 
 const addToCart = async () => {
+  isLoading.value = true;
+
   if (!product.value || !userStore.user) return;
 
   const productData = product.value.data;
@@ -195,13 +219,6 @@ const addToCart = async () => {
 
   userStore.isLoading = true;
 
-  userStore.cartItems.push({
-    productId: productData.id,
-    quantity: 1,
-    productTitle: productData.title,
-    productPrice: productData.price,
-    productUrl: productData.url,
-  });
 
   try {
     const quantity = parseFloat(inputQuantity.value);
@@ -217,12 +234,29 @@ const addToCart = async () => {
       }
     );
 
+    if (addtocartResponse.value.data.success === 1) {
+      userStore.cartItems.push({
+        productId: productData.id,
+        quantity: inputQuantity.value,
+        productTitle: productData.title,
+        productPrice: productData.price,
+        productUrl: productData.url,
+      });
+    }
+    else if (addtocartResponse.value.data.success === 2) {
+      const existingProduct = userStore.cartItems.find(item => item.productId === productData.id);
+      existingProduct.quantity += inputQuantity.value;
+    }
+
+
     userStore.refreshFlag = 1;
+    showToast("Item successfully added to cart!");
     //await userStore.fetchCartItems();
   } catch (error) {
     console.error("Error adding product to cart:", error);
   } finally {
     userStore.isLoading = false;
+    isLoading.value = false;
   }
 };
 
@@ -244,6 +278,23 @@ const closeChatModal = () => {
 </script>
 
 <style scoped>
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+
+  50% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+}
+
 .modal-overlay {
   position: fixed;
   top: 0;
