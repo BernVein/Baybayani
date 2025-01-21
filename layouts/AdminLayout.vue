@@ -372,7 +372,7 @@ const initializeCometChatWidget = (defaultUID) => {
           CometChatWidget.launch({
             widgetID: "ce919709-5388-4331-a9c4-64c5ced133f5",
             docked: "true",
-            alignment: "left",
+            alignment: "right",
             roundedCorners: "true",
             height: "450px",
             width: "400px",

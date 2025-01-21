@@ -3,7 +3,6 @@
       <Loading v-if="isLoading" />
       <div id="ItemPage" class="mt-4 max-w-[1200px] mx-auto px-2">
 
-
         <div class="flex flex-col lg:flex-row gap-10 justify-between mx-auto w-full">
           <!-- Left Section: Images -->
           <div class="w-full lg:w-[40%]">
@@ -33,38 +32,40 @@
                   ₱{{ product.data.price }} / kg
                 </div>
               </div>
-              <p class="mt-6 text-sm lg:text-lg font-light text-gray-600">Product Details:</p>
+              <p class="mt-6 text-lg lg:text-lg font-light text-gray-600">Product Details:</p>
               <p
-                class="text-xs lg:text-md text-gray-700 mb-4 transition-colors duration-300 ease-in-out hover:text-gray-900">
+                class="mt-2 text-md lg:text-md text-gray-700 mb-4 transition-colors duration-300 ease-in-out hover:text-gray-900">
                 {{ product.data.description }}
               </p>
 
               <!-- QUANTITY BOX -->
 
-              <div class="flex items-center justify-start mt-3">
+              <div class="flex items-center justify-start mt-10">
+                <div class="flex items-center justify-start mr-2 font-semibold text-gray-700">
+                  Quantity:
+                </div>
                 <!-- Decrease Button -->
                 <button @click="decreaseQuantity"
-                  class="w-[34px] h-[34px] bg-gray-200 hover:bg-gray-300 border border-gray-300 rounded-l-md flex items-center justify-center">
+                  class="w-[29px] h-[35px] lg:w-[34px] lg:h-[40px] bg-gray-200 hover:bg-gray-300 border border-gray-300 rounded-l-md flex items-center justify-center font-semibold text-gray-700 text-lg">
                   -
                 </button>
 
                 <!-- Quantity Input -->
-                <input type="text" class="w-[45px] h-[34px] text-center border-t border-b border-gray-300 mx-0"
+                <input type="text"
+                  class="w-[50px] h-[35px] lg:w-[55px] lg:h-[40px] text-md lg:text-lg text-center border-t border-b border-gray-300 mx-0"
                   v-model="inputQuantity" @input="validateInput" @blur="validateAndUpdateQuantity" />
 
                 <!-- Increase Button -->
                 <button @click="increaseQuantity"
-                  class="w-[34px] h-[34px] bg-gray-200 hover:bg-gray-300 border border-gray-300 rounded-r-md flex items-center justify-center">
+                  class="w-[29px] h-[35px] lg:w-[34px] lg:h-[40px] bg-gray-200 hover:bg-gray-300 border border-gray-300 rounded-r-md flex items-center justify-center font-semibold text-gray-700 text-lg">
                   +
                 </button>
               </div>
 
 
-
-
-              <div class="flex gap-4 mt-8">
+              <div class="flex gap-8 mt-8">
                 <button @click="addToCart"
-                  class="px-6 py-3 rounded-lg text-white text-sm lg:text-lg font-semibold bg-green-600 hover:bg-green-700 transition-all duration-300 ease-in-out hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center">
+                  class="px-11 lg:px-8 py-3 rounded-lg text-white text-sm lg:text-lg font-semibold bg-green-600 hover:bg-green-700 transition-all duration-300 ease-in-out hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center">
 
                   <!-- Text when item is not in cart -->
                   <span class="transition-opacity duration-300 ease-in-out">Add to Cart</span>
@@ -75,7 +76,7 @@
                 </button>
 
                 <button @click="openChatModal"
-                  class="px-6 py-3 rounded-lg text-blue-600 border border-blue-600 text-sm lg:text-lg font-semibold hover:bg-blue-50 transition-transform duration-300 ease-in-out hover:scale-105 flex items-center">
+                  class="px-8 py-3 rounded-lg text-blue-600 border border-blue-600 text-sm lg:text-lg font-semibold hover:bg-blue-50 transition-transform duration-300 ease-in-out hover:scale-105 flex items-center hidden md:block">
                   <span class="mr-2">Chat Seller</span>
                   <Icon name="mynaui:message" size="25" />
                 </button>
