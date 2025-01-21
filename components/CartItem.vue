@@ -244,7 +244,7 @@ const updateQuantity = () => {
 // };
 
 const increaseQuantity = async () => {
-  product.value.quantity++;
+  product.value.quantity = parseFloat(product.value.quantity) + 0.25;
   await updateQuantityInDatabase();
   updateQuantity();
 };
@@ -253,39 +253,72 @@ const increaseQuantity = async () => {
 const decreaseQuantity = async () => {
   if (props.product.quantity > 1) {
     // Prevent decreasing quantity below 1
-    product.value.quantity--; // Decrement quantity
+    product.value.quantity = parseFloat(product.value.quantity) - .25; // Decrement quantity
     await updateQuantityInDatabase();
     updateQuantity(); // Update the quantity in the store
   }
 };
 
+// const validateInput = () => {
+//   // Only sanitize non-numeric characters but allow partial input
+//   product.value.quantity = product.value.quantity.replace(/\D/g, '');
+// };
+
 const validateInput = () => {
-  // Only sanitize non-numeric characters but allow partial input
-  product.value.quantity = product.value.quantity.replace(/\D/g, '');
+  // Allow numeric input with one decimal point
+  product.value.quantity = product.value.quantity.replace(/[^0-9.]/g, ''); // Remove any non-numeric and non-dot characters
+  // Ensure there's only one decimal point
+  if ((product.value.quantity.match(/\./g) || []).length > 1) {
+    product.value.quantity = product.value.quantity.replace(/\.+$/, ''); // Remove extra decimal points
+  }
 };
 
-const validateAndUpdateQuantity = () => {
-  // Ensure the quantity is a valid number and within the expected range when the input loses focus
-  let quantity = parseInt(product.value.quantity);
 
-  console.log("CLLLLLLLLLLLLLLED");
+// const validateAndUpdateQuantity = () => {
+//   // Ensure the quantity is a valid number and within the expected range when the input loses focus
+//   let quantity = parseFloat(product.value.quantity);
 
-  console.log("quanitty", quantity);
-  console.log("Data type of quantity:", typeof quantity);
+//   console.log("CLLLLLLLLLLLLLLED");
+
+//   console.log("quanitty", quantity);
+//   console.log("Data type of quantity:", typeof quantity);
 
 
-  // If invalid, default to 1
+//   // If invalid, default to 1
+//   if (isNaN(quantity) || quantity < 1) {
+//     product.value.quantity = '1'; // Default to 1 if invalid or less than 1
+//   } else if (quantity > 100) {
+//     product.value.quantity = '1000'; // Optional: enforce a max quantity of 100
+//   } else {
+//     product.value.quantity = quantity;
+//   }
+
+//   // Update quantity in the store after validation
+//   updateQuantity();
+// };
+
+const validateAndUpdateQuantity = async () => {
+
+  // Parse the value as a float to allow decimals
+  let quantity = parseFloat(product.value.quantity);
+
+  // If the input is invalid or below 1, set it to 1
   if (isNaN(quantity) || quantity < 1) {
-    product.value.quantity = '1'; // Default to 1 if invalid or less than 1
+    product.value.quantity = '1';
   } else if (quantity > 100) {
-    product.value.quantity = '100'; // Optional: enforce a max quantity of 100
+    product.value.quantity = '100'; // Optional: enforce a max quantity
   } else {
-    product.value.quantity = quantity;
+    // Round the quantity to the nearest 0.25 increment
+    quantity = Math.round(quantity * 4) / 4; // This rounds to the nearest 0.25
+    product.value.quantity = quantity.toFixed(2); // Convert back to string with 2 decimals
   }
+
+  await updateQuantityInDatabase();
 
   // Update quantity in the store after validation
   updateQuantity();
 };
+
 
 const updateQuantityInDatabase = async () => {
   // console.log("Falag1");
@@ -295,13 +328,14 @@ const updateQuantityInDatabase = async () => {
   // console.log(product.value.quantity);
 
   try {
+    const quantity = parseFloat(product.value.quantity);
     // Sending the request to update the quantity
     const response = await $fetch('/api/prisma/update-quantity', {
       method: 'POST',
       body: {
         cartId: userStore.cart.id, // User's ID
         productId: product.value.id, // Product's ID
-        quantity: product.value.quantity, // Updated quantity
+        quantity: quantity, // Updated quantity
       },
     });
 
