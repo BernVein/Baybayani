@@ -3,8 +3,8 @@ const prisma = new PrismaClient();
 
 export default defineEventHandler(async (event) => {
   const { userId, productId } = event.context.params; // Get userId and productId from the request params
-  console.log("productIDDDDDD", productId);
-  console.log("userIDDDDDD", userId);
+  // console.log("productIDDDDDD", productId);
+  // console.log("userIDDDDDD", userId);
 
   try {
     const cartItem = await prisma.cartItem.findFirst({

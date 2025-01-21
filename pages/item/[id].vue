@@ -1,82 +1,103 @@
-<template>
-  <AdminLayout>
-    <div id="ItemPage" class="mt-4 max-w-[1200px] mx-auto px-2">
+  <template>
+    <AdminLayout>
+      <div id="ItemPage" class="mt-4 max-w-[1200px] mx-auto px-2">
 
 
-      <div class="flex flex-col lg:flex-row gap-10 justify-between mx-auto w-full">
-        <!-- Left Section: Images -->
-        <div class="w-full lg:w-[40%]">
-          <div class="flex flex-col">
-            <img v-if="currentImage"
-              class="rounded-lg object-cover w-full h-[400px] transition-transform duration-500 ease-in-out hover:scale-105 hover:shadow-2xl"
-              :src="currentImage" alt="Product Image" />
-            <div class="flex mt-4 gap-4">
-              <img v-for="(image, index) in images" :key="index" :src="image"
-                class="h-20 w-20 object-cover rounded-lg border cursor-pointer transition-transform duration-300 ease-in-out hover:scale-110 hover:border-green-500"
-                @click="currentImage = image" alt="Thumbnail" />
-            </div>
-          </div>
-        </div>
-
-        <!-- Right Section: Product Details -->
-        <div class="w-full lg:w-[50%] bg-white p-6 rounded-lg shadow-md transition-all duration-500 ease-in-out hover:shadow-lg">
-          <div v-if="product && product.data">
-            <div class="flex items-center justify-between">
-              <h1
-                class="text-2xl lg:text-4xl font-semibold text-gray-800 transition-colors duration-300 ease-in-out hover:text-green-600">
-                {{ product.data.title }}
-              </h1>
-              <div
-                class="text-lg lg:text-3xl font-bold p-2 text-red-500 transition-colors duration-300 ease-in-out hover:text-red-600">
-                ₱{{ product.data.price }} / kg
+        <div class="flex flex-col lg:flex-row gap-10 justify-between mx-auto w-full">
+          <!-- Left Section: Images -->
+          <div class="w-full lg:w-[40%]">
+            <div class="flex flex-col">
+              <img v-if="currentImage"
+                class="rounded-lg object-cover w-full h-[400px] transition-transform duration-500 ease-in-out hover:scale-105 hover:shadow-2xl"
+                :src="currentImage" alt="Product Image" />
+              <div class="flex mt-4 gap-4">
+                <img v-for="(image, index) in images" :key="index" :src="image"
+                  class="h-20 w-20 object-cover rounded-lg border cursor-pointer transition-transform duration-300 ease-in-out hover:scale-110 hover:border-green-500"
+                  @click="currentImage = image" alt="Thumbnail" />
               </div>
             </div>
-            <p class="mt-6 text-sm lg:text-lg font-light text-gray-600">Product Details:</p>
-            <p class="text-xs lg:text-md text-gray-700 mb-4 transition-colors duration-300 ease-in-out hover:text-gray-900">
-              {{ product.data.description }}
-            </p>
-            <div class="flex gap-4 mt-8">
-              <button @click="addToCart" :disabled="isInCart"
-                class="px-6 py-3 rounded-lg text-white text-sm lg:text-lg font-semibold bg-green-600 hover:bg-green-700 transition-all duration-300 ease-in-out hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center">
+          </div>
 
-                <!-- Text when item is in cart -->
-                <span v-if="isInCart" class="transition-opacity duration-300 ease-in-out">Added to Cart</span>
+          <!-- Right Section: Product Details -->
+          <div
+            class="w-full lg:w-[50%] bg-white p-6 rounded-lg shadow-md transition-all duration-500 ease-in-out hover:shadow-lg">
+            <div v-if="product && product.data">
+              <div class="flex items-center justify-between">
+                <h1
+                  class="text-2xl lg:text-4xl font-semibold text-gray-800 transition-colors duration-300 ease-in-out hover:text-green-600">
+                  {{ product.data.title }}
+                </h1>
+                <div
+                  class="text-lg lg:text-3xl font-bold p-2 text-red-500 transition-colors duration-300 ease-in-out hover:text-red-600">
+                  ₱{{ product.data.price }} / kg
+                </div>
+              </div>
+              <p class="mt-6 text-sm lg:text-lg font-light text-gray-600">Product Details:</p>
+              <p
+                class="text-xs lg:text-md text-gray-700 mb-4 transition-colors duration-300 ease-in-out hover:text-gray-900">
+                {{ product.data.description }}
+              </p>
 
-                <!-- Text when item is not in cart -->
-                <span v-else class="transition-opacity duration-300 ease-in-out">Add to Cart</span>
+              <!-- QUANTITY BOX -->
 
-                <!-- Icon when item is in cart -->
-                <Icon v-if="isInCart" name="mynaui:cart-check" size="30"
-                  class="ml-2 transition-all duration-300 ease-in-out transform scale-110" />
+              <div class="flex items-center justify-start mt-3">
+                <!-- Decrease Button -->
+                <button @click="decreaseQuantity"
+                  class="w-[34px] h-[34px] bg-gray-200 hover:bg-gray-300 border border-gray-300 rounded-l-md flex items-center justify-center">
+                  -
+                </button>
 
-                <!-- Icon when item is not in cart -->
-                <Icon v-else name="mynaui:cart-plus" size="30"
-                  class="ml-2 transition-all duration-300 ease-in-out transform scale-110" />
-              </button>
+                <!-- Quantity Input -->
+                <input type="text" class="w-[45px] h-[34px] text-center border-t border-b border-gray-300 mx-0"
+                  v-model="inputQuantity" @input="validateInput" @blur="validateAndUpdateQuantity" />
 
-              <button @click="openChatModal"
-                class="px-6 py-3 rounded-lg text-blue-600 border border-blue-600 text-sm lg:text-lg font-semibold hover:bg-blue-50 transition-transform duration-300 ease-in-out hover:scale-105 flex items-center">
-                <span class="mr-2">Chat Seller</span>
-                <Icon name="mynaui:message" size="25" />
-              </button>
+                <!-- Increase Button -->
+                <button @click="increaseQuantity"
+                  class="w-[34px] h-[34px] bg-gray-200 hover:bg-gray-300 border border-gray-300 rounded-r-md flex items-center justify-center">
+                  +
+                </button>
+              </div>
+
+
+
+
+
+              <div class="flex gap-4 mt-8">
+                <button @click="addToCart"
+                  class="px-6 py-3 rounded-lg text-white text-sm lg:text-lg font-semibold bg-green-600 hover:bg-green-700 transition-all duration-300 ease-in-out hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center">
+
+                  <!-- Text when item is not in cart -->
+                  <span class="transition-opacity duration-300 ease-in-out">Add to Cart</span>
+
+                  <!-- Icon when item is not in cart -->
+                  <Icon name="mynaui:cart-plus" size="30"
+                    class="ml-2 transition-all duration-300 ease-in-out transform scale-110" />
+                </button>
+
+                <button @click="openChatModal"
+                  class="px-6 py-3 rounded-lg text-blue-600 border border-blue-600 text-sm lg:text-lg font-semibold hover:bg-blue-50 transition-transform duration-300 ease-in-out hover:scale-105 flex items-center">
+                  <span class="mr-2">Chat Seller</span>
+                  <Icon name="mynaui:message" size="25" />
+                </button>
+              </div>
+
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Modal Pop-up -->
-      <div v-if="showChatModal" :class="['modal-overlay', { 'fade-out': isFadingOut }]">
-        <div class="modal-content" :class="{ 'fade-out': isFadingOut }">
-          <p>The chat bubble can be seen at the bottom left of the screen.</p>
-          <button @click="closeChatModal" class="close-modal-button">Got it!</button>
+        <!-- Modal Pop-up -->
+        <div v-if="showChatModal" :class="['modal-overlay', { 'fade-out': isFadingOut }]">
+          <div class="modal-content" :class="{ 'fade-out': isFadingOut }">
+            <p>The chat bubble can be seen at the bottom left of the screen.</p>
+            <button @click="closeChatModal" class="close-modal-button">Got it!</button>
+          </div>
         </div>
-      </div>
 
-      <!-- Rectangle Animation -->
-      <div v-if="showGuidedLine" class="rectangle-animation"></div>
-    </div>
-  </AdminLayout>
-</template>
+        <!-- Rectangle Animation -->
+        <div v-if="showGuidedLine" class="rectangle-animation"></div>
+      </div>
+    </AdminLayout>
+  </template>
 
 <script setup>
 import AdminLayout from "~/layouts/AdminLayout.vue";
@@ -97,6 +118,9 @@ let showGuidedLine = ref(false);
 let isFadingOut = ref(false);
 const role = userStore.profile?.role;
 
+let inputQuantity = ref(1.0); // Initialize with 1 as the default
+
+
 onBeforeMount(async () => {
   product.value = await useFetch(`/api/prisma/get-product-by-id/${route.params.id}`);
 });
@@ -114,26 +138,60 @@ watchEffect(() => {
 });
 
 
+const validateInput = () => {
+  // Regular expression to allow only digits and one decimal point.
+  const regex = /^[0-9]*\.?[0-9]*$/;
+
+  // If the input doesn't match the regex, reset it to the previous value
+  if (!regex.test(inputQuantity.value)) {
+    inputQuantity.value = inputQuantity.value.slice(0, -1); // Remove last character
+  }
+};
 
 
-const isInCart = computed(() => {
-  const currentProductId = route.params.id;
-  return userStore.cartItems.some((prod) => {
-    return String(prod.productId) === String(currentProductId);
-  });
-});
+const validateAndUpdateQuantity = async () => {
+  // Parse the value as a float to allow decimals
+  let quantity = parseFloat(inputQuantity.value);
+
+  // If the input is invalid or below 1, set it to 1
+  if (isNaN(quantity) || quantity < 1) {
+    inputQuantity.value = '1';
+  } else if (quantity > 100) {
+    inputQuantity.value = '100'; // Optional: enforce a max quantity
+  } else {
+    // Round the quantity to the nearest 0.25 increment
+    quantity = Math.round(quantity * 4) / 4; // This rounds to the nearest 0.25
+
+    // If the quantity is a whole number, don't display decimals
+    if (Number.isInteger(quantity)) {
+      inputQuantity.value = quantity.toString(); // Remove decimals
+    } else {
+      inputQuantity.value = quantity.toFixed(2); // Keep 2 decimal places
+    }
+  }
+
+  // Update quantity in the store after validation
+  updateQuantity();
+};
+
+
+
+const increaseQuantity = () => {
+  inputQuantity.value = (parseFloat(inputQuantity.value) + 0.25).toFixed(2);
+};
+
+// Function to decrease quantity
+const decreaseQuantity = () => {
+  if (parseFloat(inputQuantity.value) > 1) {
+    inputQuantity.value = (parseFloat(inputQuantity.value) - 0.25).toFixed(2);
+  }
+};
 
 const addToCart = async () => {
   if (!product.value || !userStore.user) return;
 
   const productData = product.value.data;
   const userId = userStore.user.id;
-
-  const productInCart = userStore.cartItems.some(
-    (item) => String(item.productId) === String(productData.id)
-  );
-
-  if (productInCart) return;
 
   userStore.isLoading = true;
 
@@ -146,6 +204,7 @@ const addToCart = async () => {
   });
 
   try {
+    const quantity = parseFloat(inputQuantity.value);
     addtocartResponse.value = await useFetch(
       `/api/prisma/add-product-to-cart/${userId}`,
       {
@@ -153,7 +212,7 @@ const addToCart = async () => {
         body: {
           userId,
           productId: productData.id,
-          quantity: 1,
+          quantity: quantity,
         },
       }
     );
@@ -270,6 +329,7 @@ const closeChatModal = () => {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -279,6 +339,7 @@ const closeChatModal = () => {
   from {
     opacity: 1;
   }
+
   to {
     opacity: 0;
   }
@@ -287,7 +348,8 @@ const closeChatModal = () => {
 /* Add responsive styles if needed */
 @media (max-width: 768px) {
   #ItemPage {
-    flex-direction: column; /* Stack elements vertically on mobile */
+    flex-direction: column;
+    /* Stack elements vertically on mobile */
   }
 }
 </style>

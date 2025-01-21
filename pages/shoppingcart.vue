@@ -2,8 +2,6 @@
 <template>
   <AdminLayout>
 
-
-
     <div id="ShoppingCartPage" class="mt-4 max-w-[1200px] mx-auto px-2">
 
       <div v-if="!filteredCartItems.length" class="h-[500px] flex items-center justify-center">
@@ -18,7 +16,6 @@
               class=" bg-[#FD374F] w-full text-white text-[21px] font-semibold p-1.5 rounded-full mt-4">
               Sign in
             </div>
-
           </div>
         </div>
       </div>
@@ -108,6 +105,8 @@ import { ref, computed, watchEffect, onBeforeMount } from "vue";
 const selectAll = ref(false);  // Manage the "Select All" checkbox state
 const isHover = ref(false);    // Track hover state for styling
 
+console.log("plog")
+console.log(useUserStore.cartItems)
 
 // const toggleSelectAll = () => {
 //   selectAll.value = !selectAll.value;
@@ -219,7 +218,7 @@ watchEffect(() => {
   }
   if (!userStore.isLoading) {
     // The loading state is now false, the page is done loading.
-    console.log('Data loaded successfully!');
+    //console.log('Data loaded successfully!');
   }
 });
 
@@ -257,7 +256,7 @@ const totalPriceComputed = computed(() => {
 
 // Handle checkout process
 const goToCheckout = () => {
-  console.log("CLIKCEDDD")
+  // console.log("CLIKCEDDD")
   if (selectedArray.value.length === 0 || !filteredCartItems.value.length) {
     console.warn("No items selected or cart is empty");
     return;

@@ -15,6 +15,9 @@ export default defineEventHandler(async (event) => {
           include: {
             product: true, // Include the entire product details for each cart item
           },
+          orderBy: {
+            created_at: "desc", // Order by the creation date in descending order (most recent first)
+          },
         },
       },
     });

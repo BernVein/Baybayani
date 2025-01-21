@@ -19,7 +19,7 @@
             ₱
             <span class="font-bold">{{
               product.product.price * product.quantity
-              }}</span>
+            }}</span>
           </div>
           <div class="text-sm font-semibold mt-1">
             x<span class="font-bold text-[#FD374F]">{{ product.quantity }} kg</span>
@@ -41,9 +41,9 @@ const props = defineProps(["product"]);
 const { product } = toRefs(props);
 
 const productPrice = product.value.price
-console.log('priceeeeeeeeeeeee');
-console.log(product.value.price);
-console.log(product.value.price);
+// console.log('priceeeeeeeeeeeee');
+// console.log(product.value.price);
+// console.log(product.value.price);
 
 
 

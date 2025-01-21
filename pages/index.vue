@@ -111,8 +111,8 @@ const initializeCometChatWidget = (defaultUID) => {
     });
 };
 
-console.log("LOADING FLAGGGG");
-console.log(userStore.isLoading);
+// console.log("LOADING FLAGGGG");
+// console.log(userStore.isLoading);
 
 </script>
 

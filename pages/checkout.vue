@@ -111,9 +111,9 @@ onMounted(() => {
       userStore.checkout.push(item);
     }
   });
-  console.log(userStore.cartItems);
-  console.log("FLAGGGGGGGGGG");
-  console.log(userStore.checkout);
+  // console.log(userStore.cartItems);
+  // console.log("FLAGGGGGGGGGG");
+  // console.log(userStore.checkout);
 
   userStore.checkout.forEach((item) => {
     // console.log(item); // Print the item to inspect its properties
@@ -163,7 +163,7 @@ const placeOrder = async () => {
 
 const createOrder = async () => {
   try {
-    console.log("Creating order with the following data:");
+    //console.log("Creating order with the following data:");
     //
     const checkoutData = userStore.checkout.map((item) => ({
       productId: item.product.id,
@@ -189,7 +189,7 @@ const createOrder = async () => {
     });
 
     // Log the response from the API
-    console.log("Order response:", response);
+    //console.log("Order response:", response);
   } catch (error) {
     console.error("Error creating the order:", error);
   }

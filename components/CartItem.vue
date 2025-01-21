@@ -228,7 +228,7 @@ const updateQuantity = () => {
   if (cartIndex !== -1) {
     // Update the quantity in the store
     userStore.cartItems[cartIndex].quantity = product.value.quantity;
-    console.log("current quantity", userStore.cartItems[cartIndex].quantity);
+    //console.log("current quantity", userStore.cartItems[cartIndex].quantity);
     emitSelectionUpdate();
   } else {
     //console.log("Product not found in cart");
