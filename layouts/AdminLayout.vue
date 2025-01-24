@@ -49,7 +49,7 @@
                     <div v-for="item in items.data" :key="item.id" @click="navigateItem(item)"
                       class="flex items-center justify-between w-full cursor-pointer hover:bg-gray-100">
                       <div class="flex items-center">
-                        <img class="rounded-md" width="40" :src="item.url" />
+                        <img class="rounded-md" width="40" :src="item.url" loading="lazy" />
                         <div class="truncate ml-2">{{ item.title }}</div>
                       </div>
                       <div class="truncate">₱{{ item.price }}</div>
@@ -170,7 +170,7 @@
                       <div v-for="item in items.data" :key="item.id" class="p-2 hover:bg-gray-100">
                         <NuxtLink :to="`/item/${item.id}`" class="flex items-center justify-between cursor-pointer">
                           <div class="flex items-center">
-                            <img class="rounded-md" width="40" :src="item.url" />
+                            <img class="rounded-md" width="40" :src="item.url" loading="lazy" />
                             <div class="truncate ml-2">{{ item.title }}</div>
                           </div>
                           <div class="truncate">₱{{ item.price }}</div>

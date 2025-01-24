@@ -3,7 +3,7 @@
     <!-- Left Section: Product Details -->
     <div class="flex items-center w-full">
       <!-- Product Image -->
-      <img class="rounded-md md:w-[150px] w-[90px]" :src="product.product.url" />
+      <img class="rounded-md md:w-[150px] w-[90px]" :src="product.product.url" loading="lazy" />
 
       <div class="overflow-hidden pl-2 w-full">
         <!-- Category and Product Title -->
