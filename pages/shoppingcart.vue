@@ -30,29 +30,6 @@
             </div>
           </div>
 
-          <div class="bg-[#FEEEEF] rounded-lg p-4 mt-4 flex justify-end items-center">
-            <!-- Label for 'Select All' aligned to the right -->
-            <span class="text-md mr-2">Select All</span>
-
-            <!-- Select All Checkbox Section on the right -->
-            <div @mouseenter="isHover = true" @mouseleave="isHover = false"
-              class="flex items-center justify-start p-0.5 cursor-pointer">
-              <!-- Custom Checkbox -->
-              <div @click="toggleSelectAll"
-                class="flex items-center justify-center h-[20px] w-[20px] rounded border mr-5 ml-2" :class="{
-                  'border-[#0C6539] border-2': selectAll,  // Green border when selected
-                  'border-gray-500': !selectAll,  // Default gray border when not selected
-                }">
-                <input type="checkbox" class="hidden" v-model="selectAll" />
-
-                <!-- Show checkmark when selected -->
-                <div v-if="selectAll" class="h-[16px] w-[16px] flex items-center justify-center">
-                  <Icon name="mingcute:check-fill" size="80" class="text-[#0C6539]" />
-                </div>
-              </div>
-            </div>
-          </div>
-
 
           <!-- The code dynamically renders a list of CartItem components from the user's cart, passing each product's data and selection state, and listens for selection changes to handle updates in the parent component. -->
 
