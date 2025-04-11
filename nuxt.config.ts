@@ -1,4 +1,3 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
 import { defineNuxtConfig } from "nuxt/config";
 
 export default defineNuxtConfig({
@@ -11,14 +10,13 @@ export default defineNuxtConfig({
     "@pinia/nuxt",
     "@pinia-plugin-persistedstate/nuxt",
     "@nuxtjs/tailwindcss",
-    "@nuxtjs/supabase",
+    "@nuxtjs/supabase", // Supabase module
   ],
 
   runtimeConfig: {
     public: {
       stripePk: process.env.STRIPE_PK_KEY,
       apiUrl: process.env.API_URL || "http://localhost:3000",
-      // Add Supabase Variables Here
       SUPABASE_URL: process.env.SUPABASE_URL,
       SUPABASE_ANON_KEY: process.env.SUPABASE_KEY,
     },
@@ -43,4 +41,11 @@ export default defineNuxtConfig({
   },
 
   compatibilityDate: "2024-11-18",
+
+  // ✅ Fix for cookie module export issue with Supabase SSR
+  vite: {
+    ssr: {
+      noExternal: ['cookie', '@supabase/ssr', '@nuxtjs/supabase']
+    }
+  }
 });

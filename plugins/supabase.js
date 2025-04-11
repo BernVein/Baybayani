@@ -12,6 +12,12 @@ export default defineNuxtPlugin((nuxtApp) => {
     return;
   }
 
+  // Check if $supabase is already provided
+  if (nuxtApp.$supabase) {
+    console.warn('Supabase client is already injected.');
+    return;
+  }
+
   const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
       persistSession: true, // Save session to localStorage
@@ -23,7 +29,8 @@ export default defineNuxtPlugin((nuxtApp) => {
     if (error) {
       console.error("Error fetching session:", error);
     } else {
-      //   console.log('Session data:', data.session);
+      // Optionally log session data
+      // console.log('Session data:', data.session);
     }
   });
 
