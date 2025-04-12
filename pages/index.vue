@@ -2,17 +2,24 @@
   <AdminLayout>
     <div id="IndexPage" class="max-w-[1200px] mx-auto px-2">
       <div class="grid xl:grid-cols-6 lg:grid-cols-5 md:grid-cols-4 sm:grid-cols-3 grid-cols-2 gap-4">
-        <div v-if="filteredProducts" v-for="product in filteredProducts" :key="product.id"
-          class="transition-all duration-500 ease-in-out transform hover:scale-105 group rounded-md overflow-hidden"
-          @click="handleProductClick(product)">
-          <div
-            class="transition-all duration-500 ease-in-out group-hover:saturate-150 group-hover:shadow-lg group-hover:bg-white group-hover:-translate-y-1 rounded-md">
+        <div v-if="filteredProducts" v-for="product in filteredProducts" :key="product.id" :class="[
+          'transition-all duration-500 ease-in-out transform rounded-md overflow-hidden'
+        ]" @click="product.stock > 0 ? handleProductClick(product) : null">
+          <div :class="[
+            'transition-all duration-500 ease-in-out rounded-md',
+            product.stock > 0 ? 'group-hover:saturate-150 group-hover:shadow-lg group-hover:bg-white group-hover:-translate-y-1' : ''
+          ]">
             <ProductComponent :product="product" />
+
+            <!-- Stock Status Badge -->
+            <div v-if="product.stock <= 0"
+              class="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+              SOLD OUT
+            </div>
           </div>
         </div>
       </div>
     </div>
-    <!-- CometChat Docked Widget -->
   </AdminLayout>
 </template>
 
@@ -41,30 +48,30 @@ const isStoreClosed = () => {
   const now = new Date();
   const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
   const phTime = new Date(utcTime + (3600000 * 8)); // UTC+8 for Philippines
-  
+
   const currentHour = phTime.getHours();
   const currentMinute = phTime.getMinutes();
-  
+
   // Check if current time is outside operating hours
-  const isBeforeOpening = 
-    currentHour < userStore.openingHour || 
+  const isBeforeOpening =
+    currentHour < userStore.openingHour ||
     (currentHour === userStore.openingHour && currentMinute < userStore.openingMinute);
-    
-  const isAfterClosing = 
-    currentHour > userStore.closingHour || 
+
+  const isAfterClosing =
+    currentHour > userStore.closingHour ||
     (currentHour === userStore.closingHour && currentMinute >= userStore.closingMinute);
-    
+
   return isBeforeOpening || isAfterClosing;
 };
 
 // Initialize time settings
 onMounted(() => {
-  userStore.initializeTimeSettings();
-  
-  // Check if store is closed and redirect if needed
-  if (isStoreClosed() && role !== "Admin") {
-    navigateTo("/closed");
-  }
+  // userStore.initializeTimeSettings();
+
+  // // Check if store is closed and redirect if needed
+  // if (isStoreClosed() && role !== "Admin") {
+  //   navigateTo("/closed");
+  // }
 });
 
 watchEffect(() => {
@@ -76,9 +83,9 @@ watchEffect(() => {
     navigateTo("/login");
   }
   // Also check for store closing time when user is on the homepage
-  else if (route.fullPath == "/" && isStoreClosed() && role !== "Admin") {
-    navigateTo("/closed");
-  }
+  // else if (route.fullPath == "/" && isStoreClosed() && role !== "Admin") {
+  //   navigateTo("/closed");
+  // }
 });
 
 onBeforeMount(async () => {

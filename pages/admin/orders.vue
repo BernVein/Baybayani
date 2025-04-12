@@ -295,7 +295,7 @@ const selectedProduct = ref(null);
 const isConfirmModalVisible = ref(false);
 const selectedProductId = ref(null);
 
-const role = userStore.profile?.role;
+const role = userStore?.profile?.role;
 watchEffect(() => {
   if (
     route.fullPath == "/admin/orders" &&
@@ -431,16 +431,23 @@ const updateOrderStatusByUser = async (orderId, newStatus) => {
     });
 
     if (response.success) {
-      // console.log(`Order ${orderId} status updated to ${newStatus}`);
-      const updatedOrder = orders.value.find((order) => order.id === orderId);
-      if (updatedOrder) {
-        updatedOrder.orderStatus = newStatus;
+      // Find and update the order in your local state
+      const orderIndex = orders.value.findIndex(order => order.id === orderId);
+      if (orderIndex !== -1) {
+        orders.value[orderIndex].orderStatus = newStatus;
       }
+
+      // Optional: Refresh your products data if needed
+      // await refreshProducts();
+
+      return true;
     } else {
       console.error("Update failed:", response.message);
+      return false;
     }
   } catch (error) {
     console.error("Error updating order status:", error);
+    return false;
   } finally {
     isLoading.value = false;
   }

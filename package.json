@@ -18,7 +18,7 @@
     "@types/node": "^18.19.64",
     "nuxt": "^3.14.159",
     "nuxt-icon": "^0.3.3",
-    "prisma": "^5.22.0",
+    "prisma": "^6.6.0",
     "sass": "^1.81.0",
     "ts-node": "^10.9.1",
     "typescript": "^5.6.3",
@@ -27,7 +27,7 @@
   "dependencies": {
     "@pinia-plugin-persistedstate/nuxt": "^1.1.1",
     "@pinia/nuxt": "^0.5.5",
-    "@prisma/client": "^6.0.0",
+    "@prisma/client": "^6.6.0",
     "@stripe/stripe-js": "^1.52.0",
     "@supabase/supabase-js": "^2.46.1",
     "@tawk.to/tawk-messenger-vue-3": "^1.0.3",

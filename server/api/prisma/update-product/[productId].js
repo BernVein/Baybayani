@@ -1,4 +1,4 @@
-import prisma from '../../../utils/prisma'
+import prisma from "../../../utils/prisma";
 
 export default defineEventHandler(async (event) => {
   try {
@@ -15,10 +15,21 @@ export default defineEventHandler(async (event) => {
         data: {
           title: requestBody.title || undefined,
           description: requestBody.description || undefined,
-          price: requestBody.price !== undefined ? parseInt(requestBody.price) : undefined,
+          price:
+            requestBody.price !== undefined
+              ? parseInt(requestBody.price)
+              : undefined,
           url: requestBody.url || undefined,
-          hidden: requestBody.hidden !== undefined ? requestBody.hidden : undefined,
-          isDeleted: requestBody.isDeleted !== undefined ? requestBody.isDeleted : undefined,
+          stock:
+            requestBody.stock !== undefined
+              ? parseInt(requestBody.stock)
+              : undefined,
+          hidden:
+            requestBody.hidden !== undefined ? requestBody.hidden : undefined,
+          isDeleted:
+            requestBody.isDeleted !== undefined
+              ? requestBody.isDeleted
+              : undefined,
         },
       });
 
@@ -27,7 +38,7 @@ export default defineEventHandler(async (event) => {
         body: {
           message: "Product updated successfully",
           product: updatedProduct,
-        }
+        },
       };
     }
   } catch (error) {
@@ -37,7 +48,7 @@ export default defineEventHandler(async (event) => {
       body: {
         message: "An error occurred",
         error: error.message,
-      }
+      },
     };
   }
 });

@@ -1,72 +1,65 @@
 generator client {
   provider = "prisma-client-js"
-} 
+}
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
-  // Connection pooling is handled automatically by Prisma
-  // when using url and directUrl
 }
 
 model User {
-  id         String    @id @unique @db.Uuid
   email      String?   @unique
-  contact    String?
   name       String?
-  role       String?
   created_at DateTime? @default(now()) @db.Timestamptz(6)
-  orders     Orders[]  // Corrected
-  cart       Cart?     // Corrected
+  id         String    @id @unique @db.Uuid
+  contact    String?
+  role       String?
+  cart       Cart?
+  orders     Orders[]
 }
 
-
-
 model Cart {
-  id         String    @id @default(uuid()) @db.Uuid // UUID for cart ID
-  userId     String    @unique @db.Uuid // Add @unique to make this a one-to-one relation
-  created_at DateTime? @default(now()) @db.Timestamptz(6)
-  updated_at DateTime? @updatedAt @db.Timestamptz(6) // Automatically update when cart is modified
-  user       User      @relation(fields: [userId], references: [id])
-  // CartItems relation (Products added to the cart)
-  cartItems CartItem[] // One-to-many relation to CartItem
+  id         String     @id @default(uuid()) @db.Uuid
+  userId     String     @unique @db.Uuid
+  created_at DateTime?  @default(now()) @db.Timestamptz(6)
+  updated_at DateTime?  @updatedAt @db.Timestamptz(6)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cartItems  CartItem[]
 }
 
 model CartItem {
   id         Int       @id @default(autoincrement())
-  cartId     String    @db.Uuid // Foreign key pointing to Cart's `id`
+  cartId     String    @db.Uuid
   productId  Int
-  quantity   Float       @default(1) // Quantity of the product in the cart
-  checked    Boolean   @default(false)  
+  quantity   Float     @default(1)
   created_at DateTime? @default(now()) @db.Timestamptz(6)
-  // Relations to Cart and Products models  
-  cart    Cart     @relation(fields: [cartId], references: [id])
-  product Products @relation(fields: [productId], references: [id])
+  checked    Boolean   @default(false)
+  cart       Cart      @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product    Products  @relation(fields: [productId], references: [id])
+
   @@unique([cartId, productId])
 }
 
 model Orders {
-  id         String      @id @default(uuid()) @db.Uuid // Use UUID for the order's primary key
-  userId     String      @db.Uuid // Foreign key pointing to User's `id`
-  created_at DateTime?   @default(now()) @db.Timestamptz(6)
+  userId      String      @db.Uuid
+  created_at  DateTime?   @default(now()) @db.Timestamptz(6)
+  id          String      @id @default(uuid()) @db.Uuid
+  totalPrice  Int?
   modified_at DateTime?   @default(now()) @db.Timestamptz(6)
-  orderItem  OrderItem[]
-  // Relation to User model
-  user User @relation(fields: [userId], references: [id])
-   totalPrice Int?
   orderStatus OrderStatus @default(PENDING)
+  orderItem   OrderItem[]
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model OrderItem {
   id         Int       @id @default(autoincrement())
-  orderId    String    @db.Uuid // Foreign key pointing to Orders' `id`
   productId  Int
-  quantity   Float       @default(1)
   created_at DateTime? @default(now()) @db.Timestamptz(6)
-  // Relations to Orders and Products models
-  order   Orders   @relation(fields: [orderId], references: [id])
-  product Products @relation(fields: [productId], references: [id])
+  orderId    String    @db.Uuid
+  quantity   Float     @default(1)
+  order      Orders    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product    Products  @relation(fields: [productId], references: [id])
 }
 
 model Products {
@@ -75,20 +68,21 @@ model Products {
   description String
   url         String
   price       Int
+  stock       Int         @default(0) 
   created_at  DateTime?   @default(now()) @db.Timestamptz(6)
-  orderItem   OrderItem[] // One-to-many relation to OrderItem
-  farmer     Farmer[]   @relation("FarmerProducts")
-  CartItem    CartItem[]
-  hidden      Boolean  @default(false)
+  hidden      Boolean     @default(false)
   isDeleted   Boolean     @default(false)
+  CartItem    CartItem[]
+  orderItem   OrderItem[]
+  farmer      Farmer[]    @relation("FarmerProducts")
 }
 
 model Farmer {
-  id          Int     @id @default(autoincrement())
-  name        String
-  contact     String?
-  products    Products[]  @relation("FarmerProducts")
-  created_at  DateTime?  @default(now()) @db.Timestamptz(6)
+  name       String
+  contact    String?
+  created_at DateTime?  @default(now()) @db.Timestamptz(6)
+  id         Int        @id @default(autoincrement())
+  products   Products[] @relation("FarmerProducts")
 }
 
 enum Status {
@@ -96,7 +90,6 @@ enum Status {
   INACTIVE
   SUSPENDED
 }
-
 
 enum OrderStatus {
   PENDING

@@ -3,19 +3,18 @@
   <div class="flex justify-start my-2">
     <!-- Check Button -->
     <div class="my-auto">
-
       <div @mouseenter="isHover = true" @mouseleave="isHover = false"
-        class="flex items-center justify-start p-0.5 cursor-pointer">
+        class="flex items-center justify-start p-0.5 cursor-pointer"
+        :class="{ 'cursor-not-allowed': product.stock <= 0 }">
 
         <!-- Checkbox to select/deselect product -->
-        <div @click="toggleSelection"
+        <div @click="!product.stock <= 0 && toggleSelection()"
           class="flex items-center border-[#0C6539] justify-center h-[20px] w-[20px] rounded border mr-5 ml-2" :class="{
-            'border-[#0C6539] border-2': isSelected,                   // Border when selected (Green)
-            // 'border-[#0C6539]': isHover && !isSelected,       // Border when hovered and not selected
-            // 'border-gray-300': !isSelected && !isHover        // Default border when not selected and not hovered
+            'border-[#0C6539] border-2': isSelected,
+            'border-gray-300 opacity-50': product.stock <= 0
           }">
 
-          <input type="checkbox" class="hidden" v-model="isSelected" />
+          <input type="checkbox" class="hidden" v-model="isSelected" :disabled="product.stock <= 0" />
 
           <!-- Show checkmark when selected -->
           <div v-if="isSelected" class="h-[16px] w-[16px] flex items-center justify-center">
@@ -23,64 +22,74 @@
           </div>
         </div>
       </div>
-
-
     </div>
 
     <!-- Product Image -->
-    <img class="rounded-md md:w-[150px] w-[90px]" :src="product.url" loading="lazy" />
+    <img class="rounded-md md:w-[150px] w-[90px]" :src="product.url" loading="lazy"
+      :class="{ 'opacity-50': product.stock <= 0 }" />
 
     <div class="overflow-hidden pl-2 w-full">
       <div class="flex items-center justify-between w-full">
         <div class="flex items-center justify-between truncate">
           <span
             class="sm:block hidden bg-[#0C6539] text-white text-[11px] font-semibold px-1.5 rounded-sm min-w-[60px] text-center">Vegetables</span>
-          <div class="truncate sm:pl-2">{{ product.title }}</div>
+          <div class="truncate sm:pl-2" :class="{ 'opacity-50': product.stock <= 0 }">{{ product.title }}</div>
         </div>
 
         <!-- Remove From Cart -->
-
         <button @click="deleteFromCart()" class="mx-3 sm:block hidden -mt-0.5 hover:text-red-500">
           <Icon name="material-symbols:delete-outline" size="20" />
         </button>
       </div>
 
       <!-- Other Text Elements -->
-
-      <div class="text-xl font-semibold text-[#FD374F]">
-        ₱
-        <span class="font-bold text-[#FD374F]">{{ product.price }}</span>
+      <div class="text-xl font-semibold text-[#FD374F]" :class="{ 'opacity-50': product.stock <= 0 }">
+        ₱<span class="font-bold text-[#FD374F]">{{ product.price }}</span>
       </div>
 
-      <div class="flex items-center justify-end">
-        <button @click="deleteFromCart()" class="sm:hidden block -mt-0.5 hover:text-red-500">
-          <Icon name="material-symbols:delete-outline" size="20" />
-        </button>
+      <!-- Stock Information -->
+      <div class="text-sm" :class="product.stock <= 0 ? 'text-red-500' : 'text-gray-500'">
+        {{ product.stock <= 0 ? 'Out of stock' : `Available: ${product.stock} kg` }} </div>
+
+          <div class="flex items-center justify-end">
+            <button @click="deleteFromCart()" class="sm:hidden block -mt-0.5 hover:text-red-500">
+              <Icon name="material-symbols:delete-outline" size="20" />
+            </button>
+          </div>
+
+          <!-- Quantity Selector -->
+          <div class="flex items-center justify-start mt-2" v-if="product.stock > 0">
+            <!-- Decrease Button -->
+            <button @click="decreaseQuantity"
+              class="w-[34px] h-[34px] bg-gray-200 hover:bg-gray-300 border border-gray-300 rounded-l-md flex items-center justify-center"
+              :disabled="product.quantity <= 1">
+              -
+            </button>
+
+            <!-- Quantity Input -->
+            <input type="text" class="w-[45px] h-[34px] text-center border-t border-b border-gray-300 mx-0"
+              v-model="product.quantity" @blur="validateAndUpdateQuantity" @input="validateInput"
+              :max="product.stock" />
+
+            <!-- Increase Button -->
+            <button @click="increaseQuantity"
+              class="w-[34px] h-[34px] bg-gray-200 hover:bg-gray-300 border border-gray-300 rounded-r-md flex items-center justify-center"
+              :disabled="product.quantity >= product.stock">
+              +
+            </button>
+          </div>
+
+          <!-- Out of stock message -->
+          <div v-if="product.stock <= 0" class="text-red-500 text-sm mt-1">
+            This product is currently out of stock
+          </div>
+          <div v-else-if="product.quantity > product.stock" class="text-red-500 text-sm mt-1">
+            Only {{ product.stock }} kg available
+          </div>
       </div>
-      <!-- Quantity Selector -->
-      <div class="flex items-center justify-start mt-3">
-        <!-- Decrease Button -->
-        <button @click="decreaseQuantity"
-          class="w-[34px] h-[34px] bg-gray-200 hover:bg-gray-300 border border-gray-300 rounded-l-md flex items-center justify-center">
-          -
-        </button>
-
-        <!-- Quantity Input -->
-        <input type="text" class="w-[45px] h-[34px] text-center border-t border-b border-gray-300 mx-0"
-          v-model="product.quantity" @blur="validateAndUpdateQuantity" @input="validateInput" />
-
-        <!-- Increase Button -->
-        <button @click="increaseQuantity"
-          class="w-[34px] h-[34px] bg-gray-200 hover:bg-gray-300 border border-gray-300 rounded-r-md flex items-center justify-center">
-          +
-        </button>
-      </div>
-
-
-
     </div>
-  </div>
 </template>
+
 
 <script setup>
 import { onBeforeMount } from "vue";
@@ -95,41 +104,15 @@ const emit = defineEmits(["selectedRadio"]); // Define the event `selectedRadio`
 let isHover = ref(false);
 let isSelected = ref(false);
 
-// onMounted(() => {
-//   const cartIndex = userStore.cartItems.findIndex(
-//     (item) => item.productId === product.value.id
-//   );
-
-//   if (cartIndex !== -1) {
-//     product.value.quantity = userStore.cartItems[cartIndex].quantity;
-//   }
-
-//   updateQuantity();
-// });
-
-// onMounted(() => {
-//   console.log("tesy");
-//   console.log(userStore.cartItems);
-
-//   // Sort cart items by `created_at` (in descending order, most recent first)
-//   userStore.cartItems.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
-//   const cartIndex = userStore.cartItems.findIndex(
-//     (item) => item.productId === product.value.id
-//   );
-
-//   if (cartIndex !== -1) {
-//     // Set the default value from the database to the product's quantity
-//     isSelected.value = userStore.cartItems[cartIndex].checked;
-//     product.value.quantity = userStore.cartItems[cartIndex].quantity;
-//   } else {
-//     // If the product is not in the cart, set the default quantity to 1
-//     product.value.quantity = 1;
-//   }
-
-//   // This ensures the quantity is synced with the data and is displayed correctly
-//   updateQuantity();
-// });
+watch(
+  () => product.value.stock,
+  (newStock) => {
+    if (newStock <= 0 && isSelected.value) {
+      // Automatically uncheck if product goes out of stock
+      uncheckProduct();
+    }
+  }
+);
 
 onMounted(() => {
   const cartIndex = userStore.cartItems.findIndex(
@@ -139,10 +122,49 @@ onMounted(() => {
   if (cartIndex !== -1) {
     isSelected.value = userStore.cartItems[cartIndex].checked;
     product.value.quantity = userStore.cartItems[cartIndex].quantity;
-  } else {
-    product.value.quantity = 1;
+
+    // Uncheck if product is out of stock on mount
+    if (product.value.stock <= 0 && isSelected.value) {
+      uncheckProduct();
+    }
   }
 });
+
+const uncheckProduct = async () => {
+  isSelected.value = false;
+  await saveSelectionToDatabase();
+  emitSelectionUpdate();
+};
+
+
+
+// onMounted(() => {
+//   const cartIndex = userStore.cartItems.findIndex(
+//     (item) => item.productId === product.value.id
+//   );
+
+//   if (cartIndex !== -1) {
+//     isSelected.value = userStore.cartItems[cartIndex].checked;
+//     product.value.quantity = userStore.cartItems[cartIndex].quantity;
+//   } else {
+//     product.value.quantity = 1;
+//   }
+// });
+
+const toggleSelection = async () => {
+  if (product.value.stock <= 0) {
+    // Ensure it stays unchecked if out of stock
+    if (isSelected.value) {
+      await uncheckProduct();
+    }
+    return;
+  }
+
+  isSelected.value = !isSelected.value;
+  await saveSelectionToDatabase();
+  emitSelectionUpdate();
+};
+
 
 
 
@@ -195,12 +217,12 @@ const deleteFromCart = async () => {
 //   emitSelectionUpdate();
 // };
 
-const toggleSelection = async () => {
-  console.log("Toggle Clicked!");
-  isSelected.value = !isSelected.value;  // Toggle the selection state
-  await saveSelectionToDatabase();  // Save the updated selection to the database
-  emitSelectionUpdate();  // Notify parent component of the selection change
-};
+// const toggleSelection = async () => {
+//   console.log("Toggle Clicked!");
+//   isSelected.value = !isSelected.value;  // Toggle the selection state
+//   await saveSelectionToDatabase();  // Save the updated selection to the database
+//   emitSelectionUpdate();  // Notify parent component of the selection change
+// };
 
 
 const emitSelectionUpdate = () => {

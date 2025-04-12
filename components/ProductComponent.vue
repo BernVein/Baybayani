@@ -4,16 +4,27 @@
     <NuxtLink :to="`/item/${product.id}`">
       <img class="rounded-t" :src="product.url" loading="lazy" />
 
-      <div id="ProductDetails">
-        <span class="flex items-center justify-start gap-3 px-1 pt-1 pb-1">
+      <div id="ProductDetails" class="p-2">
+        <div class="flex flex-col">
+          <!-- Price -->
           <span class="text-[#FF6674] font-semibold text-lg">₱{{ priceComputed }} / kilo</span>
-        </span>
 
-        <div class="flex items-center gap-1 px-1 relative -top-1">
+          <!-- Stock Information -->
+          <div class="flex items-center gap-1 mt-1">
+            <span v-if="product.stock > 0" class="text-xs text-gray-500">
+              Available: {{ product.stock }} kg
+            </span>
+            <span v-else class="text-xs text-gray-500">
+              (Currently out of stock)
+            </span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-1 mt-1">
           <span class="bg-[#0C6539] text-white text-[10px] font-semibold px-1.5 rounded-sm">Vegetables</span>
         </div>
 
-        <p class="px-1 pt-0.5 text-md text-[#252525] font-semibold">
+        <p class="pt-1 text-md text-[#252525] font-semibold">
           {{ product.title.substring(0, 60) }}
         </p>
       </div>

@@ -63,11 +63,15 @@
                 <th class="py-3 px-4 text-left font-semibold text-gray-700">
                   Price per kg
                 </th>
+                <th class="py-3 px-4 text-left font-semibold text-gray-700">Stock</th>
+
                 <th class="py-3 px-4 text-center font-semibold text-gray-700">
                   Action
                 </th>
               </tr>
             </thead>
+
+            <!-- table content -->
             <tbody>
               <tr v-for="product in paginatedProducts" :key="product.id"
                 class="hover:bg-gray-200 transition duration-150 ease-in-out product-row">
@@ -81,18 +85,45 @@
                 <td class="py-4 px-4 cursor-pointer" @click="showProductDetails(product)">
                   ₱{{ formatNumber(parseFloat(product.price).toFixed(2)) }}
                 </td>
+
+
+                <td class="py-4 px-4 cursor-pointer" @click="showProductDetails(product)">
+                  <span :class="{
+                    'text-green-600 font-medium': product.stock > 10,
+                    'text-orange-500 font-medium': product.stock > 0 && product.stock <= 20,
+                    'text-red-600 font-medium': product.stock <= 0
+                  }">
+                    {{ product.stock }}
+                    <span v-if="product.stock <= 0" class="text-xs text-red-600 block">
+                      (Out of stock)
+                    </span>
+                    <span v-else-if="product.stock <= 20" class="text-xs text-orange-500 block">
+                      (Low stock)
+                    </span>
+                  </span>
+                </td>
+
+
                 <td class="py-4 px-4 text-center flex items-center justify-center space-x-4">
                   <button @click.stop="toggleProductVisibility(product)" :disabled="isProductInOrderItem(product.id)"
                     class="text-gray-600 hover:text-blue-600 disabled:opacity-50">
                     <Icon :name="product.hidden ? 'ph:eye-slash-bold' : 'ph:eye-bold'" size="20" />
                   </button>
+
+                  <button @click.stop="openAddStockModal(product)" class="text-gray-600 hover:text-green-600"
+                    title="Add Stock">
+                    <Icon name="ph:plus-circle-bold" size="20" />
+                  </button>
+
                   <button @click.stop="openEditModal(product)" class="text-gray-600 hover:text-gray-800">
                     <Icon name="ph:pencil-simple-bold" size="20" />
                   </button>
+
                   <button @click.stop="markProductAsDeleted(product.id)" :disabled="isProductInOrderItem(product.id)"
                     class="text-gray-600 hover:text-red-800 disabled:opacity-50">
                     <Icon name="ph:trash-bold" size="20" />
                   </button>
+
                   <span v-if="isProductInOrderItem(product.id)" class="text-red-600 text-sm">
                     Cannot delete, product exists in cart items.
                   </span>
@@ -179,6 +210,12 @@
                 required />
             </div>
 
+            <!-- Stock field (only shown when adding new product) -->
+            <div v-if="!editMode">
+              <label for="stock" class="block text-sm font-medium text-gray-700">Stock Quantity</label>
+              <input id="stock" type="number" v-model="product.stock" min="0"
+                class="w-full mt-1 p-2 border border-gray-300 rounded-md" placeholder="Enter stock quantity" required />
+            </div>
 
             <!-- Image Upload -->
             <div>
@@ -192,7 +229,6 @@
                 <img :src="imagePreview" alt="Image Preview" class="w-48 h-48 object-cover mt-2" />
               </div>
             </div>
-
 
             <div class="flex justify-end space-x-4">
               <button type="button" @click="closeModal"
@@ -208,6 +244,68 @@
       </div>
     </div>
 
+    <!-- Add Stock Modal -->
+    <div v-if="isAddStockModalVisible"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white w-full max-w-md p-6 rounded-md shadow-lg">
+        <!-- Modal Header -->
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-xl font-semibold">
+            Adjust Stock for {{ selectedProduct?.title }}
+          </h2>
+          <button @click="closeAddStockModal" class="text-gray-500 hover:text-gray-800">
+            ✕
+          </button>
+        </div>
+
+        <!-- Modal Content -->
+        <form @submit.prevent="updateStock">
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Current Stock</label>
+              <input type="number" :value="selectedProduct?.stock"
+                class="w-full mt-1 p-2 border border-gray-300 rounded-md bg-gray-100" disabled />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Adjust Stock</label>
+              <div class="flex items-center">
+                <button type="button" @click="adjustStock(-1)"
+                  class="p-2 border border-gray-300 rounded-l-md bg-gray-100 hover:bg-gray-200">
+                  <Icon name="ph:minus-bold" size="16" />
+                </button>
+
+                <input type="number" v-model.number="stockAdjustment" min="-1000" max="1000" step="1"
+                  class="flex-1 p-2 border-t border-b border-gray-300 text-center" @input="validateStockAdjustment" />
+
+                <button type="button" @click="adjustStock(1)"
+                  class="p-2 border border-gray-300 rounded-r-md bg-gray-100 hover:bg-gray-200">
+                  <Icon name="ph:plus-bold" size="16" />
+                </button>
+              </div>
+
+              <p class="mt-2 text-sm" :class="{
+                'text-green-600': stockAdjustment > 0,
+                'text-red-600': stockAdjustment < 0,
+                'text-gray-500': stockAdjustment === 0
+              }">
+                New stock will be: {{ (selectedProduct?.stock || 0) + stockAdjustment }}
+              </p>
+            </div>
+
+            <div class="flex justify-end space-x-4">
+              <button type="button" @click="closeAddStockModal"
+                class="px-4 py-2 border border-gray-300 rounded-md text-gray-500 hover:bg-gray-100">
+                Cancel
+              </button>
+              <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+                Update Stock
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
     <!-- Success or Error Notification -->
     <transition name="fade">
       <div v-if="notification.show" :class="[
@@ -436,6 +534,7 @@ const addProduct = async () => {
         title: product.value.title,
         description: product.value.description,
         price: parseInt(product.value.price),
+        stock: parseInt(product.value.stock) || 0,
         url: imageUrl, // Save image URL
       },
     });
@@ -443,8 +542,9 @@ const addProduct = async () => {
     // Check for response structure
     if (response.body?.product) {
       await fetchProducts();
-      closeModal();
+
       showToast("Product added successfully! 🎉", "success");
+      closeModal();
 
       // Reset form after submission
       product.value = {
@@ -466,38 +566,6 @@ const addProduct = async () => {
 };
 
 
-// const addProduct = async () => {
-//   isLoading.value = true;
-//   try {
-//     // Send as JSON object instead of FormData
-//     const response = await $fetch("/api/prisma/add-product", {
-//       method: "POST",
-//       body: {
-//         title: product.value.title,
-//         description: product.value.description,
-//         price: parseInt(product.value.price),
-//         url: product.value.url
-//       },
-//     });
-
-//     // Check for response structure
-//     if (response.body?.product) {
-//       await fetchProducts();
-//       closeModal();
-//       showToast("Product added successfully! 🎉", "success");
-//     } else {
-//       throw new Error("Failed to add product");
-//     }
-//   } catch (error) {
-//     console.error("Error adding product:", error);
-//     showToast("Failed to add product. Please try again.", "error");
-//   } finally {
-//     isLoading.value = false;
-//   }
-// };
-
-
-
 const config = useRuntimeConfig();
 const apiUrl =
   process.env.NODE_ENV === "development"
@@ -512,6 +580,7 @@ const product = ref({
   id: null,
   title: "",
   description: "",
+  stock: 0,
   price: null,
   url: "",
   hidden: false,
@@ -589,60 +658,48 @@ const isProductInOrderItem = (productId) => {
 };
 
 const updateProduct = async () => {
-  let imageUrl = product.value.url;  // Start with the existing image URL
+  let imageUrl = product.value.url;
 
   try {
-    //  console.log("UPDATE product running");
     isLoading.value = true;
 
-    // If there's a new image to upload, validate it
     if (compressedImage.value) {
       const fileName = `products/images/${Date.now()}_${Math.random().toString(36).substring(2, 15)}.jpg`;
-
       const { data, error } = await supabase.storage
-        .from("product-images") // Your Supabase bucket name
+        .from("product-images")
         .upload(fileName, compressedImage.value);
-
-      // console.log("Upload response (update):", data); // Log upload response
 
       if (error) {
         console.error("Image upload failed (update)", error);
         return;
       }
-
-      // If image upload is successful, get the new image URL
-      imageUrl = getPublicUrl("product-images", data.path); // Use the path from the upload response
+      imageUrl = getPublicUrl("product-images", data.path);
     }
 
-    // Send update request to update product info
     const response = await $fetch(`/api/prisma/update-product/${product.value.id}`, {
       method: "PUT",
       body: {
         title: product.value.title,
         description: product.value.description,
         price: parseInt(product.value.price),
-        url: imageUrl, // Use the new or existing image URL
+        stock: parseInt(product.value.stock) || 0,  // Add this line
+        url: imageUrl,
       },
     });
 
-    // Log the response to inspect its structure
-    //  console.log("Response body:", response.body);
-
-    // Check for successful update
     if (response.body?.product) {
       await fetchProducts();
       closeModal();
       showToast("Product updated successfully! ✨", "success");
-
-      // Reset form after successful update
       product.value = {
-        title: product.value.title, // Keep the updated title
-        description: product.value.description, // Keep the updated description
-        price: product.value.price, // Keep the updated price
-        url: imageUrl, // Keep the updated image URL (or the existing one)
-        image: null, // Reset the image field
+        title: product.value.title,
+        description: product.value.description,
+        price: product.value.price,
+        stock: product.value.stock,  // Add this line
+        url: imageUrl,
+        image: null,
       };
-      imagePreview.value = imageUrl; // Update preview with the new image URL (or existing one)
+      imagePreview.value = imageUrl;
     } else {
       throw new Error("Failed to update product");
     }
@@ -654,48 +711,6 @@ const updateProduct = async () => {
   }
 };
 
-
-
-// const updateProduct = async () => {
-//   isLoading.value = true;
-//   try {
-//     const formData = new FormData();
-
-//     // Add all product fields to formData
-//     formData.append("title", product.value.title);
-//     formData.append("description", product.value.description);
-//     formData.append("price", product.value.price);
-
-//     // Only append image if a new one is selected
-//     if (product.value.image) {
-//       formData.append("image", product.value.image);
-//     }
-
-//     const response = await $fetch(`/api/prisma/update-product/${product.value.id}`, {
-//       method: "PUT",
-//       body: {
-//         title: product.value.title,
-//         description: product.value.description,
-//         price: parseInt(product.value.price),
-//         url: product.value.url, // Keep existing URL if no new image
-//       }
-//     });
-
-//     // Check for response.body since that's where the data is nested
-//     if (response.body?.product) {
-//       await fetchProducts();
-//       closeModal();
-//       showToast("Product updated successfully! ✨", "success");
-//     } else {
-//       throw new Error("Failed to update product");
-//     }
-//   } catch (error) {
-//     console.error("Error updating product:", error);
-//     showToast("Failed to update product. Please try again.", "error");
-//   } finally {
-//     isLoading.value = false;
-//   }
-// };
 
 const toggleProductVisibility = async (product) => {
   if (isProductInOrderItem(product.id)) {
@@ -828,9 +843,77 @@ onMounted(async () => {
   }
 });
 
-// Add these refs
 const isViewModalVisible = ref(false);
+const isAddStockModalVisible = ref(false);
 const selectedProduct = ref(null);
+const stockAdjustment = ref(0);
+
+
+const openAddStockModal = (product) => {
+  selectedProduct.value = product;
+  stockAdjustment.value = 0;
+  isAddStockModalVisible.value = true;
+};
+
+const closeAddStockModal = () => {
+  isAddStockModalVisible.value = false;
+  selectedProduct.value = null;
+  stockAdjustment.value = 0;
+};
+
+
+const adjustStock = (amount) => {
+  stockAdjustment.value += amount;
+  validateStockAdjustment();
+};
+
+const updateStock = async () => {
+  if (!selectedProduct.value) return;
+
+  try {
+    isLoading.value = true;
+
+    const newStock = selectedProduct.value.stock + stockAdjustment.value;
+
+    const response = await $fetch(`/api/prisma/update-product/${selectedProduct.value.id}`, {
+      method: "PUT",
+      body: {
+        stock: newStock
+      }
+    });
+
+    if (response) {
+      await fetchProducts();
+
+      showToast(
+        stockAdjustment.value >= 0
+          ? `Added ${stockAdjustment.value} to stock successfully!`
+          : `Removed ${Math.abs(stockAdjustment.value)} from stock successfully!`,
+        "success"
+      );
+      closeAddStockModal();
+    }
+  } catch (error) {
+    console.error("Error updating stock:", error);
+    showToast("Failed to update stock. Please try again.", "error");
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const validateStockAdjustment = () => {
+  // Ensure stock doesn't go negative (unless you want to allow negative adjustments)
+  const maxReduction = selectedProduct.value?.stock || 0;
+  if (stockAdjustment.value < -maxReduction) {
+    stockAdjustment.value = -maxReduction;
+  }
+
+  // Optional: Set upper limit if needed
+  if (stockAdjustment.value > 1000) {
+    stockAdjustment.value = 1000;
+  }
+};
+
 
 // Add these methods
 const showProductDetails = (product) => {

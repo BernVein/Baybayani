@@ -32,6 +32,18 @@
                   ₱{{ product.data.price }} / kg
                 </div>
               </div>
+
+              <!-- Stock Information -->
+              <div class="mt-4 flex items-center gap-2">
+                <span class="font-medium">Availability:</span>
+                <span v-if="product.data.stock > 0" class="text-green-600 font-semibold">
+                  In Stock ({{ product.data.stock }} kg available)
+                </span>
+                <span v-else class="text-red-500 font-semibold">
+                  Out of Stock
+                </span>
+              </div>
+
               <p class="mt-6 text-lg lg:text-lg font-light text-gray-600">Product Details:</p>
               <p
                 class="mt-2 text-md lg:text-md text-gray-700 mb-4 transition-colors duration-300 ease-in-out hover:text-gray-900">
@@ -267,13 +279,13 @@ const openChatModal = () => {
     try {
       // First make sure the widget is open
       window.CometChatWidget.openOrCloseChat(true);
-      
+
       // Then start a chat with the specific user "Baybayani Admin"
       // Note: the parameter should be the UID of the admin user in CometChat
       window.CometChatWidget.chatWithUser("baybayaniadmin");
     } catch (error) {
       console.error("Error opening chat with admin:", error);
-      
+
       // Fallback to showing the modal if widget can't be opened
       showChatModal.value = true;
       showGuidedLine.value = true;
