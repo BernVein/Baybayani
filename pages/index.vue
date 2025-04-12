@@ -101,56 +101,8 @@ const handleProductClick = (product) => {
   window.location.href = `/item/${product.id}`
 };
 
-// CometChat Docked Widget Integration
-onMounted(() => {
-  const defaultUID = userStore.profile?.name
-    ? userStore.profile.name.replace(/\s+/g, "").toLowerCase()
-    : "defaultuid";
-
-  const script = document.createElement("script");
-  script.src = "https://widget-js.cometchat.io/v3/cometchatwidget.js";
-  script.defer = true;
-
-  script.onload = () => {
-    initializeCometChatWidget(defaultUID);
-  };
-  document.body.appendChild(script);
-});
-
-const initializeCometChatWidget = (defaultUID) => {
-  CometChatWidget.init({
-    appID: "267505e7582e8c70",
-    appRegion: "us",
-    authKey: "aab766213fba5c11e11ede09f1f0d0d0735dd6f9",
-  })
-    .then(() => {
-      //  console.log("Initialization completed successfully");
-
-      CometChatWidget.login({
-        uid: defaultUID,
-      })
-        .then(() => {
-          //  console.log("User login successful");
-
-          CometChatWidget.launch({
-            widgetID: "ce919709-5388-4331-a9c4-64c5ced133f5",
-            docked: "true",
-            alignment: "left",
-            roundedCorners: "true",
-            height: "450px",
-            width: "400px",
-            defaultID: defaultUID,
-            defaultType: "user",
-          });
-        })
-        .catch((error) => {
-          console.error("User login failed:", error);
-        });
-    })
-    .catch((error) => {
-      console.error("Widget initialization failed:", error);
-    });
-};
+// CometChat is already initialized in AdminLayout.vue
+// No need to initialize it again here
 
 // console.log("LOADING FLAGGGG");
 // console.log(userStore.isLoading);
