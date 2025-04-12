@@ -24,22 +24,66 @@ export const useUserStore = defineStore("user", {
   }),
 
   actions: {
-    // Update closing time
-    updateClosingTime(hour, minute) {
-      this.closingHour = parseInt(hour);
-      this.closingMinute = parseInt(minute);
-      // Save to localStorage for persistence
-      localStorage.setItem('closingHour', hour);
-      localStorage.setItem('closingMinute', minute);
+    // Update closing time with promise
+    async updateClosingTime(hour, minute) {
+      this.isLoading = true;
+      try {
+        this.closingHour = parseInt(hour);
+        this.closingMinute = parseInt(minute);
+        
+        // Use promises to ensure localStorage operations complete
+        await Promise.all([
+          new Promise(resolve => {
+            localStorage.setItem('closingHour', hour);
+            resolve();
+          }),
+          new Promise(resolve => {
+            localStorage.setItem('closingMinute', minute);
+            resolve();
+          })
+        ]);
+        
+        // Add a small delay to ensure data is properly saved
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        return true;
+      } catch (error) {
+        console.error("Error saving closing time:", error);
+        return false;
+      } finally {
+        this.isLoading = false;
+      }
     },
 
-    // Update opening time
-    updateOpeningTime(hour, minute) {
-      this.openingHour = parseInt(hour);
-      this.openingMinute = parseInt(minute);
-      // Save to localStorage for persistence
-      localStorage.setItem('openingHour', hour);
-      localStorage.setItem('openingMinute', minute);
+    // Update opening time with promise
+    async updateOpeningTime(hour, minute) {
+      this.isLoading = true;
+      try {
+        this.openingHour = parseInt(hour);
+        this.openingMinute = parseInt(minute);
+        
+        // Use promises to ensure localStorage operations complete
+        await Promise.all([
+          new Promise(resolve => {
+            localStorage.setItem('openingHour', hour);
+            resolve();
+          }),
+          new Promise(resolve => {
+            localStorage.setItem('openingMinute', minute);
+            resolve();
+          })
+        ]);
+        
+        // Add a small delay to ensure data is properly saved
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        return true;
+      } catch (error) {
+        console.error("Error saving opening time:", error);
+        return false;
+      } finally {
+        this.isLoading = false;
+      }
     },
 
     // Format closing time for display

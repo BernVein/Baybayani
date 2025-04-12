@@ -8,6 +8,9 @@
     <!-- Admin Layout -->
     <LayoutAdmin class="admin-layout">
       <div class="main-content flex-1 overflow-y-auto p-6">
+        <!-- Loading Component -->
+        <Loading v-if="isLoading" />
+        
         <!-- Title and Refresh Section -->
         <div class="flex justify-between items-center mb-8">
           <h1 class="text-3xl font-semibold">Dashboard</h1>
@@ -211,7 +214,7 @@
   </div>
 
   <!-- Toast Notifications -->
-  <div class="fixed top-4 right-4 z-50">
+  <div class="fixed top-24 right-4 z-50">
     <div v-for="toast in toasts" :key="toast.id"
       class="mb-2 p-4 rounded-lg shadow-lg transform transition-all duration-300 animate-slide-in" 
       :class="{
@@ -228,6 +231,7 @@ import { ref, onMounted, computed, onUnmounted } from "vue";
 import LayoutAdmin from "~/layouts/LayoutAdmin.vue";
 import SideBarLayout from "~/layouts/SideBarLayout.vue";
 import Chart from "chart.js/auto";
+import Loading from "~/components/Loading.vue";
 
 import { useUserStore } from "~/stores/user";
 const userStore = useUserStore();
@@ -235,6 +239,9 @@ const user = useSupabaseUser();
 const route = useRoute();
 
 const role = userStore.profile?.role;
+
+// Loading state
+const isLoading = ref(false);
 
 // Toast notifications
 const toasts = ref([]);
@@ -260,15 +267,37 @@ const formatHour = (hour) => {
 };
 
 // Save store hours
-const saveStoreHours = () => {
+const saveStoreHours = async () => {
   try {
-    userStore.updateOpeningTime(openingHour.value, openingMinute.value);
-    userStore.updateClosingTime(closingHour.value, closingMinute.value);
+    // Show loading screen
+    isLoading.value = true;
     
-    // Show success notification
-    showToast(`Store hours updated to ${userStore.formattedOpeningTime()} - ${userStore.formattedClosingTime()} PHT`, "success");
+    // Use the async versions of the time update functions
+    const openingResult = await userStore.updateOpeningTime(openingHour.value, openingMinute.value);
+    const closingResult = await userStore.updateClosingTime(closingHour.value, closingMinute.value);
+    
+    if (openingResult && closingResult) {
+      // Double-check that localStorage values were saved correctly
+      const checkOpeningHour = localStorage.getItem('openingHour');
+      const checkOpeningMinute = localStorage.getItem('openingMinute');
+      const checkClosingHour = localStorage.getItem('closingHour');
+      const checkClosingMinute = localStorage.getItem('closingMinute');
+      
+      if (checkOpeningHour && checkOpeningMinute && checkClosingHour && checkClosingMinute) {
+        // Show success notification
+        showToast(`Store hours updated to ${userStore.formattedOpeningTime()} - ${userStore.formattedClosingTime()} PHT`, "success");
+      } else {
+        throw new Error("Failed to verify saved settings");
+      }
+    } else {
+      throw new Error("Failed to save settings");
+    }
   } catch (error) {
+    console.error("Store hours update error:", error);
     showToast("Failed to update store hours. Please try again.", "error");
+  } finally {
+    // Hide loading screen
+    isLoading.value = false;
   }
 };
 
