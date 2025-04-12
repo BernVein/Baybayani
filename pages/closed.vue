@@ -22,7 +22,7 @@
       <div class="border-t pt-4 mt-4">
         <p class="text-sm text-gray-500">Thank you for your understanding.</p>
         <button v-if="user" @click="logout" class="inline-block mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm">
-          Logout
+          Logout ({{ countdown }})
         </button>
       </div>
     </div>
@@ -30,13 +30,17 @@
 </template>
 
 <script setup>
+import { ref, onMounted, onUnmounted } from 'vue';
 import { useUserStore } from '~/stores/user';
 const userStore = useUserStore();
-const user = useSupabaseUser(); // This is globally available in Nuxt without import
+const user = useSupabaseUser();
 const currentTime = ref('');
+const countdown = ref(10);
+let countdownInterval = null;
 
 // Logout function
 const logout = async () => {
+  clearInterval(countdownInterval);
   await userStore.logout();
   window.location.href = "/login";
 };
@@ -62,5 +66,22 @@ onMounted(() => {
   
   // Initialize time settings if not already done
   userStore.initializeTimeSettings();
+
+  // Start the logout countdown only if the user is logged in
+  if (user.value) {
+    countdownInterval = setInterval(() => {
+      if (countdown.value > 0) {
+        countdown.value--;
+      } else {
+        clearInterval(countdownInterval);
+        logout(); // Auto-logout when countdown reaches 0
+      }
+    }, 1000);
+  }
+});
+
+// Clear interval when the component is unmounted
+onUnmounted(() => {
+  clearInterval(countdownInterval);
 });
 </script> 
