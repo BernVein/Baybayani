@@ -19,7 +19,7 @@
 <script setup>
 import AdminLayout from "~/layouts/AdminLayout.vue";
 import { useUserStore } from "~/stores/user";
-import { ref, onBeforeMount, computed } from "vue";
+import { ref, onBeforeMount, computed, onMounted, watchEffect } from "vue";
 import { useRoute } from "vue-router";
 const user = useSupabaseUser();
 
@@ -30,6 +30,43 @@ let products = ref(null);
 const route = useRoute();
 const role = userStore.profile?.role;
 
+// Middleware to check if the store is open
+definePageMeta({
+  middleware: ["auth"]
+});
+
+// Function to check if store is closed
+const isStoreClosed = () => {
+  // Check if website is closed based on Philippines time (UTC+8)
+  const now = new Date();
+  const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
+  const phTime = new Date(utcTime + (3600000 * 8)); // UTC+8 for Philippines
+  
+  const currentHour = phTime.getHours();
+  const currentMinute = phTime.getMinutes();
+  
+  // Check if current time is outside operating hours
+  const isBeforeOpening = 
+    currentHour < userStore.openingHour || 
+    (currentHour === userStore.openingHour && currentMinute < userStore.openingMinute);
+    
+  const isAfterClosing = 
+    currentHour > userStore.closingHour || 
+    (currentHour === userStore.closingHour && currentMinute >= userStore.closingMinute);
+    
+  return isBeforeOpening || isAfterClosing;
+};
+
+// Initialize time settings
+onMounted(() => {
+  userStore.initializeTimeSettings();
+  
+  // Check if store is closed and redirect if needed
+  if (isStoreClosed() && role !== "Admin") {
+    navigateTo("/closed");
+  }
+});
+
 watchEffect(() => {
   if (route.fullPath == "/" &&
     (!user.value || role === "Admin")) {
@@ -37,6 +74,10 @@ watchEffect(() => {
   }
   else if (route.fullPath == "/" && !user.value) {
     navigateTo("/login");
+  }
+  // Also check for store closing time when user is on the homepage
+  else if (route.fullPath == "/" && isStoreClosed() && role !== "Admin") {
+    navigateTo("/closed");
   }
 });
 

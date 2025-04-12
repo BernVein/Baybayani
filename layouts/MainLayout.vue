@@ -56,6 +56,17 @@
           </div>
         </div>
 
+        <!-- Store Hours Display -->
+        <div class="hidden md:flex items-center space-x-1 text-sm mr-2">
+          <div class="flex flex-col items-center text-[#0C6539]">
+            <div class="flex items-center">
+              <Icon name="mdi:clock-outline" size="18" class="mr-1" />
+              <span>{{ currentTime }}</span>
+            </div>
+            <div class="text-xs">Open until 10:00 PM</div>
+          </div>
+        </div>
+
         <NuxtLink to="/shoppingcart" class="flex items-center pt-2">
           <button
             class="relative md:block hidden"
@@ -165,6 +176,18 @@ let isCartHover = ref(false);
 let isSearching = ref(false);
 let searchItem = ref("");
 let items = ref(null);
+let currentTime = ref('');
+
+// Update current time every second
+const updateTime = () => {
+  const now = new Date();
+  currentTime.value = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+};
+
+onMounted(() => {
+  updateTime();
+  setInterval(updateTime, 30000); // Update every 30 seconds
+});
 
 const searchByName = useDebounce(async () => {
   isSearching.value = true;

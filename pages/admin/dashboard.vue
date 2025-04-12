@@ -151,8 +151,75 @@
             <canvas id="productSalesTrendChart"></canvas>
           </div>
         </div>
+
+        <!-- Store Hours Settings -->
+        <div class="bg-white p-6 rounded-lg shadow mt-8">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-semibold">
+              <Icon name="mdi:clock-outline" size="24" class="inline-block mr-2" />Store Hours
+            </h2>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Opening Time -->
+            <div class="border p-4 rounded-lg">
+              <h3 class="text-lg font-medium mb-3">Opening Time</h3>
+              <div class="flex items-center gap-2">
+                <select v-model="openingHour" class="border p-2 rounded-md w-24">
+                  <option v-for="h in 24" :key="`open-h-${h-1}`" :value="h-1">{{ formatHour(h-1) }}</option>
+                </select>
+                <span>:</span>
+                <select v-model="openingMinute" class="border p-2 rounded-md w-24">
+                  <option value="0">00</option>
+                  <option value="15">15</option>
+                  <option value="30">30</option>
+                  <option value="45">45</option>
+                </select>
+                <span class="ml-2">{{ openingHour >= 12 ? 'PM' : 'AM' }}</span>
+              </div>
+              <p class="text-gray-600 mt-2">Current: {{ userStore.formattedOpeningTime() }}</p>
+            </div>
+            
+            <!-- Closing Time -->
+            <div class="border p-4 rounded-lg">
+              <h3 class="text-lg font-medium mb-3">Closing Time</h3>
+              <div class="flex items-center gap-2">
+                <select v-model="closingHour" class="border p-2 rounded-md w-24">
+                  <option v-for="h in 24" :key="`close-h-${h-1}`" :value="h-1">{{ formatHour(h-1) }}</option>
+                </select>
+                <span>:</span>
+                <select v-model="closingMinute" class="border p-2 rounded-md w-24">
+                  <option value="0">00</option>
+                  <option value="15">15</option>
+                  <option value="30">30</option>
+                  <option value="45">45</option>
+                </select>
+                <span class="ml-2">{{ closingHour >= 12 ? 'PM' : 'AM' }}</span>
+              </div>
+              <p class="text-gray-600 mt-2">Current: {{ userStore.formattedClosingTime() }}</p>
+            </div>
+          </div>
+          
+          <div class="mt-4 flex justify-end">
+            <button @click="saveStoreHours" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+              Save Store Hours
+            </button>
+          </div>
+        </div>
       </div>
     </LayoutAdmin>
+  </div>
+
+  <!-- Toast Notifications -->
+  <div class="fixed top-4 right-4 z-50">
+    <div v-for="toast in toasts" :key="toast.id"
+      class="mb-2 p-4 rounded-lg shadow-lg transform transition-all duration-300 animate-slide-in" 
+      :class="{
+        'bg-green-500 text-white': toast.type === 'success',
+        'bg-red-500 text-white': toast.type === 'error'
+      }">
+      {{ toast.message }}
+    </div>
   </div>
 </template>
 
@@ -169,6 +236,41 @@ const route = useRoute();
 
 const role = userStore.profile?.role;
 
+// Toast notifications
+const toasts = ref([]);
+
+// Add toast function
+const showToast = (message, type = 'success') => {
+  const id = Date.now();
+  toasts.value.push({ id, message, type });
+  setTimeout(() => {
+    toasts.value = toasts.value.filter(t => t.id !== id);
+  }, 3000);
+};
+
+// Store hours settings
+const openingHour = ref(userStore.openingHour);
+const openingMinute = ref(userStore.openingMinute);
+const closingHour = ref(userStore.closingHour);
+const closingMinute = ref(userStore.closingMinute);
+
+// Format hour for display in dropdowns
+const formatHour = (hour) => {
+  return hour % 12 || 12;
+};
+
+// Save store hours
+const saveStoreHours = () => {
+  try {
+    userStore.updateOpeningTime(openingHour.value, openingMinute.value);
+    userStore.updateClosingTime(closingHour.value, closingMinute.value);
+    
+    // Show success notification
+    showToast(`Store hours updated to ${userStore.formattedOpeningTime()} - ${userStore.formattedClosingTime()} PHT`, "success");
+  } catch (error) {
+    showToast("Failed to update store hours. Please try again.", "error");
+  }
+};
 
 const isSidebarOpen = ref(false);
 
@@ -641,5 +743,21 @@ onUnmounted(() => {
 
 .group:hover {
   @apply transform scale-105;
+}
+
+/* Toast animation styles */
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s ease-out;
 }
 </style>

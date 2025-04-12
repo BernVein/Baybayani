@@ -16,9 +16,97 @@ export const useUserStore = defineStore("user", {
     user: null, // auth info
     profile: null, // profile info
     isAdmin: false,
+    // Store closing time settings
+    closingHour: 22, // Default: 10 PM in 24-hour format
+    closingMinute: 0,
+    openingHour: 6, // Default: 6 AM in 24-hour format
+    openingMinute: 0,
   }),
 
   actions: {
+    // Update closing time
+    updateClosingTime(hour, minute) {
+      this.closingHour = parseInt(hour);
+      this.closingMinute = parseInt(minute);
+      // Save to localStorage for persistence
+      localStorage.setItem('closingHour', hour);
+      localStorage.setItem('closingMinute', minute);
+    },
+
+    // Update opening time
+    updateOpeningTime(hour, minute) {
+      this.openingHour = parseInt(hour);
+      this.openingMinute = parseInt(minute);
+      // Save to localStorage for persistence
+      localStorage.setItem('openingHour', hour);
+      localStorage.setItem('openingMinute', minute);
+    },
+
+    // Format closing time for display
+    formattedClosingTime() {
+      return this.formatTime(this.closingHour, this.closingMinute);
+    },
+
+    // Format opening time for display
+    formattedOpeningTime() {
+      return this.formatTime(this.openingHour, this.openingMinute);
+    },
+
+    // Helper to format time
+    formatTime(hour, minute) {
+      const period = hour >= 12 ? 'PM' : 'AM';
+      const displayHour = hour % 12 || 12; // Convert 0 to 12 for 12 AM
+      const displayMinute = minute.toString().padStart(2, '0');
+      return `${displayHour}:${displayMinute} ${period}`;
+    },
+
+    // Initialize time settings from localStorage
+    initializeTimeSettings() {
+      const storedClosingHour = localStorage.getItem('closingHour');
+      const storedClosingMinute = localStorage.getItem('closingMinute');
+      const storedOpeningHour = localStorage.getItem('openingHour');
+      const storedOpeningMinute = localStorage.getItem('openingMinute');
+      
+      if (storedClosingHour) this.closingHour = parseInt(storedClosingHour);
+      if (storedClosingMinute) this.closingMinute = parseInt(storedClosingMinute);
+      if (storedOpeningHour) this.openingHour = parseInt(storedOpeningHour);
+      if (storedOpeningMinute) this.openingMinute = parseInt(storedOpeningMinute);
+    },
+
+    // Check and restore session if needed
+    async checkAndRestoreSession() {
+      try {
+        const client = useSupabaseClient();
+        const { data: { session }, error } = await client.auth.getSession();
+        
+        if (error) {
+          console.error("Error checking session:", error);
+          return false;
+        }
+        
+        if (!session) {
+          console.warn("No active session found");
+          return false;
+        }
+        
+        // If we have a session but user state is not set, restore it
+        if (session && !this.user) {
+          this.user = session.user;
+          const profileData = await fetchUserProfile(this.user.id);
+          this.profile = profileData;
+          if (!this.isAdmin()) {
+            await this.fetchCartItems();
+          }
+          return true;
+        }
+        
+        return !!session;
+      } catch (err) {
+        console.error("Error in checkAndRestoreSession:", err);
+        return false;
+      }
+    },
+
     // Fetch user profile and cart items
     async fetchUser() {
       //    console.log("FETCHING!");
@@ -42,6 +130,9 @@ export const useUserStore = defineStore("user", {
           if (!this.isAdmin()) {
             await this.fetchCartItems();
           }
+          
+          // Initialize time settings
+          this.initializeTimeSettings();
 
           // // Clear storage and cookies on successful login
           // localStorage.clear();

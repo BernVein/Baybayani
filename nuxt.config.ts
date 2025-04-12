@@ -10,7 +10,7 @@ export default defineNuxtConfig({
     "@pinia/nuxt",
     "@pinia-plugin-persistedstate/nuxt",
     "@nuxtjs/tailwindcss",
-    "@nuxtjs/supabase", // Supabase module
+    "@nuxtjs/supabase",
   ],
 
   runtimeConfig: {
@@ -42,7 +42,6 @@ export default defineNuxtConfig({
 
   compatibilityDate: "2024-11-18",
 
-  // ✅ Fix for cookie module export issue with Supabase SSR
   vite: {
     ssr: {
       noExternal: ['cookie', '@supabase/ssr', '@nuxtjs/supabase']

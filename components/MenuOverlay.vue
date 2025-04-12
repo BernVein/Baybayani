@@ -10,6 +10,17 @@
       </button>
     </div>
 
+    <!-- Store Hours Display -->
+    <div class="flex items-center justify-center mb-4 bg-gray-100 py-2 rounded-md">
+      <div class="flex flex-col items-center text-[#0C6539]">
+        <div class="flex items-center">
+          <Icon name="mdi:clock-outline" size="18" class="mr-1" />
+          <span>{{ currentTime }}</span>
+        </div>
+        <div class="text-xs">Open until 10:00 PM</div>
+      </div>
+    </div>
+
     <div class="flex items-center justify-between pt-5">
       <ul class="w-full">
         <li @click="goTo('orders')"
@@ -54,6 +65,18 @@ const userStore = useUserStore();
 
 const client = useSupabaseClient();
 const user = useSupabaseUser();
+let currentTime = ref('');
+
+// Update current time every 30 seconds
+const updateTime = () => {
+  const now = new Date();
+  currentTime.value = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+};
+
+onMounted(() => {
+  updateTime();
+  setInterval(updateTime, 30000);
+});
 
 const goTo = (url) => {
   userStore.isMenuOverlay = false;

@@ -77,7 +77,7 @@
 <script setup>
 import AdminLayout from "~/layouts/AdminLayout.vue";
 import { useUserStore } from "~/stores/user";
-import { ref, computed, watchEffect, onBeforeMount } from "vue";
+import { ref, computed, watchEffect, onBeforeMount, onMounted } from "vue";
 
 const selectAll = ref(false);  // Manage the "Select All" checkbox state
 const isHover = ref(false);    // Track hover state for styling
@@ -184,6 +184,43 @@ const user = useSupabaseUser();
 const route = useRoute();
 const role = userStore.profile?.role;
 
+// Middleware to check if the store is open
+definePageMeta({
+  middleware: ["auth"]
+});
+
+// Function to check if store is closed
+const isStoreClosed = () => {
+  // Check if website is closed based on Philippines time (UTC+8)
+  const now = new Date();
+  const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
+  const phTime = new Date(utcTime + (3600000 * 8)); // UTC+8 for Philippines
+  
+  const currentHour = phTime.getHours();
+  const currentMinute = phTime.getMinutes();
+  
+  // Check if current time is outside operating hours
+  const isBeforeOpening = 
+    currentHour < userStore.openingHour || 
+    (currentHour === userStore.openingHour && currentMinute < userStore.openingMinute);
+    
+  const isAfterClosing = 
+    currentHour > userStore.closingHour || 
+    (currentHour === userStore.closingHour && currentMinute >= userStore.closingMinute);
+    
+  return isBeforeOpening || isAfterClosing;
+};
+
+// Initialize time settings and check if store is closed
+onMounted(() => {
+  userStore.initializeTimeSettings();
+  
+  // Check if store is closed and redirect if needed
+  if (isStoreClosed() && role !== "Admin") {
+    navigateTo("/closed");
+  }
+});
+
 // Redirect to the login page if the user is not logged in
 watchEffect(() => {
   if (route.fullPath == "/shoppingcart" &&
@@ -192,6 +229,10 @@ watchEffect(() => {
   }
   else if (route.fullPath == "/shoppingcart" && !user.value) {
     navigateTo("/login");
+  }
+  // Check if store is closed
+  else if (route.fullPath == "/shoppingcart" && isStoreClosed() && role !== "Admin") {
+    navigateTo("/closed");
   }
   if (!userStore.isLoading) {
     // The loading state is now false, the page is done loading.
