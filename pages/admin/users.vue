@@ -209,7 +209,6 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
-import { useNuxtApp } from "#app";
 import AdminLayout from "~/layouts/AdminLayout.vue";
 import SideBarLayout from "~/layouts/SideBarLayout.vue";
 
@@ -300,10 +299,10 @@ const register = async () => {
     return;
   }
 
-  const { $supabase } = useNuxtApp();
+  const supabase = useSupabaseClient();
 
   try {
-    const { data, error } = await $supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email: email.value,
       password: password.value,
       options: {
@@ -317,14 +316,65 @@ const register = async () => {
 
     if (error) {
       console.error(`Registration failed: ${error.message}`);
-      errorMsg.value = error.message;
+      // Check if the error is due to the email already being registered
+      if (error.message.includes("User already registered")) {
+        // You could add logic here to check if the user exists in Prisma
+        // and create them if missing, but for now, let's just show a more specific error.
+        errorMsg.value = "This email is already registered in the authentication system. Cannot create duplicate.";
+      } else {
+        errorMsg.value = `Registration failed: ${error.message}`;
+      }
       return;
     }
 
-    console.log("Successfully registered!", data);
-    successMsg.value = "Successfully registered!";
-    fetchUsers(); // Fetch updated users after registration
-    closeRegisterModal();
+    // --- Start: Add user to Prisma database ---
+    if (data && data.user) {
+      try {
+        const prismaResponse = await fetch('/api/prisma/createUser', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            id: data.user.id, // Use the ID from Supabase Auth
+            email: data.user.email, // Use the email from Supabase Auth
+            name: name.value,
+            contactNumber: contact.value, // Ensure the API expects contactNumber
+            role: role.value,
+          }),
+        });
+
+        const prismaResult = await prismaResponse.json();
+
+        if (!prismaResponse.ok || !prismaResult.success) {
+          console.error("Failed to save user to Prisma database:", prismaResult.error || 'Unknown error');
+          // Show error, maybe inform the user that auth succeeded but profile creation failed.
+          errorMsg.value = `User registered with auth, but failed to save profile: ${prismaResult.error || 'Database error'}`;
+          // Consider deleting the Supabase user here if the Prisma save fails, requires admin privileges.
+          // await supabase.auth.admin.deleteUser(data.user.id); // Requires admin client
+          return; // Stop execution
+        }
+
+        // Prisma creation successful
+        console.log("Successfully registered with Supabase and saved to Prisma!", data.user, prismaResult.user);
+        successMsg.value = "User successfully registered!";
+        fetchUsers(); // Fetch updated users after registration
+        closeRegisterModal();
+
+      } catch (prismaError) {
+        console.error("Error calling /api/prisma/createUser:", prismaError);
+        errorMsg.value = `Error saving user profile: ${prismaError.message}`;
+        // Consider deleting the Supabase user here if the Prisma save fails
+        return; // Stop execution
+      }
+    } else {
+      // Handle case where Supabase data.user is null unexpectedly
+      console.error("Supabase signup succeeded but returned no user data.");
+      errorMsg.value = "Registration partially failed: No user data returned from authentication.";
+      return;
+    }
+    // --- End: Add user to Prisma database ---
+
   } catch (err) {
     console.error(`An unexpected error occurred: ${err.message}`);
     errorMsg.value = err.message;
