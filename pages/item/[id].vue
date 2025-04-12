@@ -262,20 +262,17 @@ const addToCart = async () => {
 };
 
 const openChatModal = () => {
-  // Directly open the CometChat widget
+  // Directly open the CometChat widget and start chat with Baybayani Admin
   if (window.CometChatWidget) {
-    // First check if widget is already initialized
     try {
-      // Check if widget is initialized and open it
+      // First make sure the widget is open
       window.CometChatWidget.openOrCloseChat(true);
       
-      // If we need to focus on a specific user (e.g., the seller)
-      // window.CometChatWidget.chatWithUser("seller-id"); // Replace with actual seller ID
-      
-      // Alternatively, you can try to call expand method
-      // window.CometChatWidget.expand();
+      // Then start a chat with the specific user "Baybayani Admin"
+      // Note: the parameter should be the UID of the admin user in CometChat
+      window.CometChatWidget.chatWithUser("baybayaniadmin");
     } catch (error) {
-      console.error("Error opening chat widget:", error);
+      console.error("Error opening chat with admin:", error);
       
       // Fallback to showing the modal if widget can't be opened
       showChatModal.value = true;
