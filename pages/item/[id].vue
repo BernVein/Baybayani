@@ -262,11 +262,36 @@ const addToCart = async () => {
 };
 
 const openChatModal = () => {
-  showChatModal.value = true;
-  showGuidedLine.value = true; // Start the animation when the chat modal is opened
-  setTimeout(() => {
-    showGuidedLine.value = false;
-  }, 3000); // Show the rectangle for 3 seconds
+  // Directly open the CometChat widget
+  if (window.CometChatWidget) {
+    // First check if widget is already initialized
+    try {
+      // Check if widget is initialized and open it
+      window.CometChatWidget.openOrCloseChat(true);
+      
+      // If we need to focus on a specific user (e.g., the seller)
+      // window.CometChatWidget.chatWithUser("seller-id"); // Replace with actual seller ID
+      
+      // Alternatively, you can try to call expand method
+      // window.CometChatWidget.expand();
+    } catch (error) {
+      console.error("Error opening chat widget:", error);
+      
+      // Fallback to showing the modal if widget can't be opened
+      showChatModal.value = true;
+      showGuidedLine.value = true;
+      setTimeout(() => {
+        showGuidedLine.value = false;
+      }, 3000);
+    }
+  } else {
+    // Fallback to showing the modal if widget isn't available
+    showChatModal.value = true;
+    showGuidedLine.value = true;
+    setTimeout(() => {
+      showGuidedLine.value = false;
+    }, 3000);
+  }
 };
 
 const closeChatModal = () => {
