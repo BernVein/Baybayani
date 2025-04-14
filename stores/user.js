@@ -28,25 +28,34 @@ export const useUserStore = defineStore("user", {
     async updateClosingTime(hour, minute) {
       this.isLoading = true;
       try {
-        this.closingHour = parseInt(hour);
-        this.closingMinute = parseInt(minute);
+        // Parse input values
+        const parsedHour = parseInt(hour);
+        const parsedMinute = parseInt(minute);
         
-        // Use promises to ensure localStorage operations complete
-        await Promise.all([
-          new Promise(resolve => {
-            localStorage.setItem('closingHour', hour);
-            resolve();
-          }),
-          new Promise(resolve => {
-            localStorage.setItem('closingMinute', minute);
-            resolve();
-          })
-        ]);
+        // Update the database
+        const response = await $fetch('/api/prisma/update-store-config', {
+          method: 'POST',
+          body: {
+            openingHour: this.openingHour,
+            openingMinute: this.openingMinute,
+            closingHour: parsedHour,
+            closingMinute: parsedMinute
+          }
+        });
         
-        // Add a small delay to ensure data is properly saved
-        await new Promise(resolve => setTimeout(resolve, 300));
-        
-        return true;
+        if (response.success) {
+          // Update local state
+          this.closingHour = parsedHour;
+          this.closingMinute = parsedMinute;
+          
+          // Also update localStorage as fallback
+          localStorage.setItem('closingHour', parsedHour.toString());
+          localStorage.setItem('closingMinute', parsedMinute.toString());
+          
+          return true;
+        } else {
+          throw new Error("Failed to update store hours in database");
+        }
       } catch (error) {
         console.error("Error saving closing time:", error);
         return false;
@@ -59,25 +68,34 @@ export const useUserStore = defineStore("user", {
     async updateOpeningTime(hour, minute) {
       this.isLoading = true;
       try {
-        this.openingHour = parseInt(hour);
-        this.openingMinute = parseInt(minute);
+        // Parse input values
+        const parsedHour = parseInt(hour);
+        const parsedMinute = parseInt(minute);
         
-        // Use promises to ensure localStorage operations complete
-        await Promise.all([
-          new Promise(resolve => {
-            localStorage.setItem('openingHour', hour);
-            resolve();
-          }),
-          new Promise(resolve => {
-            localStorage.setItem('openingMinute', minute);
-            resolve();
-          })
-        ]);
+        // Update the database
+        const response = await $fetch('/api/prisma/update-store-config', {
+          method: 'POST',
+          body: {
+            openingHour: parsedHour,
+            openingMinute: parsedMinute,
+            closingHour: this.closingHour,
+            closingMinute: this.closingMinute
+          }
+        });
         
-        // Add a small delay to ensure data is properly saved
-        await new Promise(resolve => setTimeout(resolve, 300));
-        
-        return true;
+        if (response.success) {
+          // Update local state
+          this.openingHour = parsedHour;
+          this.openingMinute = parsedMinute;
+          
+          // Also update localStorage as fallback
+          localStorage.setItem('openingHour', parsedHour.toString());
+          localStorage.setItem('openingMinute', parsedMinute.toString());
+          
+          return true;
+        } else {
+          throw new Error("Failed to update store hours in database");
+        }
       } catch (error) {
         console.error("Error saving opening time:", error);
         return false;
@@ -104,17 +122,41 @@ export const useUserStore = defineStore("user", {
       return `${displayHour}:${displayMinute} ${period}`;
     },
 
-    // Initialize time settings from localStorage
-    initializeTimeSettings() {
-      const storedClosingHour = localStorage.getItem('closingHour');
-      const storedClosingMinute = localStorage.getItem('closingMinute');
-      const storedOpeningHour = localStorage.getItem('openingHour');
-      const storedOpeningMinute = localStorage.getItem('openingMinute');
-      
-      if (storedClosingHour) this.closingHour = parseInt(storedClosingHour);
-      if (storedClosingMinute) this.closingMinute = parseInt(storedClosingMinute);
-      if (storedOpeningHour) this.openingHour = parseInt(storedOpeningHour);
-      if (storedOpeningMinute) this.openingMinute = parseInt(storedOpeningMinute);
+    // Initialize time settings from database
+    async initializeTimeSettings() {
+      try {
+        // Try to get from database first
+        const storeConfig = await $fetch('/api/prisma/get-store-config');
+        
+        if (storeConfig) {
+          // Update state with values from database
+          this.openingHour = storeConfig.openingHour;
+          this.openingMinute = storeConfig.openingMinute;
+          this.closingHour = storeConfig.closingHour;
+          this.closingMinute = storeConfig.closingMinute;
+          
+          // Also update localStorage as fallback
+          localStorage.setItem('openingHour', storeConfig.openingHour.toString());
+          localStorage.setItem('openingMinute', storeConfig.openingMinute.toString());
+          localStorage.setItem('closingHour', storeConfig.closingHour.toString());
+          localStorage.setItem('closingMinute', storeConfig.closingMinute.toString());
+          
+          return true;
+        }
+      } catch (error) {
+        console.error("Error fetching store hours from database:", error);
+        
+        // Fallback to localStorage if database fetch fails
+        const storedClosingHour = localStorage.getItem('closingHour');
+        const storedClosingMinute = localStorage.getItem('closingMinute');
+        const storedOpeningHour = localStorage.getItem('openingHour');
+        const storedOpeningMinute = localStorage.getItem('openingMinute');
+        
+        if (storedClosingHour) this.closingHour = parseInt(storedClosingHour);
+        if (storedClosingMinute) this.closingMinute = parseInt(storedClosingMinute);
+        if (storedOpeningHour) this.openingHour = parseInt(storedOpeningHour);
+        if (storedOpeningMinute) this.openingMinute = parseInt(storedOpeningMinute);
+      }
     },
 
     // Check and restore session if needed
@@ -176,7 +218,7 @@ export const useUserStore = defineStore("user", {
           }
           
           // Initialize time settings
-          this.initializeTimeSettings();
+          await this.initializeTimeSettings();
 
           // // Clear storage and cookies on successful login
           // localStorage.clear();

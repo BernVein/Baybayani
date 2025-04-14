@@ -85,6 +85,18 @@ model Farmer {
   products   Products[] @relation("FarmerProducts")
 }
 
+// Store configuration for global settings
+model StoreConfig {
+  id            Int       @id @default(autoincrement())
+  key           String    @unique // e.g., "store_hours"
+  openingHour   Int       @default(6) // Default: 6 AM
+  openingMinute Int       @default(0)
+  closingHour   Int       @default(22) // Default: 10 PM
+  closingMinute Int       @default(0)
+  created_at    DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime? @updatedAt @db.Timestamptz(6)
+}
+
 enum Status {
   ACTIVE
   INACTIVE
