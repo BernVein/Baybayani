@@ -82,8 +82,14 @@ export default defineEventHandler(async (event) => {
       },
     });
 
-    // 2. Create the user in CometChat
-    const cometChatResult = await createCometChatUser(name);
+    // 2. Create the user in CometChat only if not an Admin
+    let cometChatResult = { success: true, skipped: true, reason: "Admin user - CometChat creation skipped" };
+    
+    if (role.toLowerCase() !== "admin") {
+      cometChatResult = await createCometChatUser(name);
+    } else {
+      console.log(`Skipping CometChat creation for admin user: ${name}`);
+    }
     
     return {
       success: true,
