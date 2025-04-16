@@ -1,76 +1,142 @@
 <!-- shoppingcart.vue -->
 <template>
   <AdminLayout>
-
     <div id="ShoppingCartPage" class="mt-4 max-w-[1200px] mx-auto px-2">
-
-      <div v-if="!filteredCartItems.length" class="h-[500px] flex items-center justify-center">
-        <div class="pt-20">
-          <img class="mx-auto" width="250" src="/baybayani-logo.png" />
-
-          <div class="text-xl text-center mt-4">There is no product in your cart yet.</div>
+      <!-- Empty Cart State -->
+      <div v-if="!filteredCartItems.length" 
+           class="h-[500px] flex items-center justify-center">
+        <div class="pt-20 transform transition-all duration-500 hover:scale-105">
+          <img class="mx-auto drop-shadow-lg" width="250" src="/baybayani-logo.png" />
+          <div class="text-xl text-center mt-6 text-gray-700 font-medium">
+            Your shopping cart is empty
+          </div>
+          <div class="text-center text-gray-500 mt-2">
+            Add some products to get started!
+          </div>
+          
+          <!-- Browse Products Button -->
+          <div class="flex justify-center mt-6">
+            <NuxtLink to="/" 
+                      class="bg-[#0C6539] text-white text-lg font-semibold px-6 py-2.5 rounded-lg hover:bg-green-700 transition-colors duration-300 flex items-center">
+              <Icon name="ph:storefront" class="mr-2" size="22" />
+              Browse Products
+            </NuxtLink>
+          </div>
 
           <!-- If not logged, goto login page -->
-          <div v-if="!user" class="flex text-center">
+          <div v-if="!user" class="flex text-center mt-4">
             <div @click="navigateLogin"
-              class=" bg-[#FD374F] w-full text-white text-[21px] font-semibold p-1.5 rounded-full mt-4">
+              class="bg-[#FD374F] w-full text-white text-lg font-semibold p-2.5 rounded-lg hover:bg-red-600 transition-colors duration-300 flex items-center justify-center">
+              <Icon name="ph:sign-in" class="mr-2" size="22" />
               Sign in
             </div>
           </div>
         </div>
       </div>
 
-      <div v-else class="md:flex gap-4 justify-between mx-auto w-full">
-        <div class="md:w-[65%]">
-          <div class="bg-white rounded-lg p-4">
-            <div class="flex items-center text-2xl font-semibold mb-2">
-              <!-- Icon before the text -->
-              <Icon name="ph:shopping-cart-simple" size="33" class="mr-4" />
-              Shopping Cart ({{ filteredCartItems.length }})
-            </div>
-          </div>
-
-
-          <!-- The code dynamically renders a list of CartItem components from the user's cart, passing each product's data and selection state, and listens for selection changes to handle updates in the parent component. -->
-
-          <div id="Items" class="bg-white rounded-lg p-4 mt-4">
-            <div v-for="(cartItem, index) in filteredCartItems" :key="cartItem.id">
-              <CartItem :product="filteredCartItems[index].product" :selectedArray="selectedArray"
-                @selectedRadio="selectedRadioFunc" />
-            </div>
-          </div>
+      <!-- Cart with Items -->
+      <div v-else>
+        <div class="mb-6">
+          <h1 class="text-3xl font-bold text-gray-800 flex items-center">
+            <Icon name="ph:shopping-cart-simple" size="40" class="mr-3 text-[#0C6539]" />
+            Your Shopping Cart
+          </h1>
+          <p class="text-gray-600 mt-1">Review your items and proceed to checkout</p>
         </div>
-
-        <div class="md:hidden block my-4" />
-        <div class="md:w-[35%]">
-          <div id="Summary" class="bg-white rounded-lg p-4">
-            <div class="text-2xl font-extrabold mb-2">Summary</div>
-            <div class="flex items-center justify-between my-4">
-              <div class="font-semibold">Total</div>
-              <div class="text-2xl font-semibold text-[#FD374F]">
-                ₱
-                <span class="font-extrabold text-[#FD374F]">{{
-                  totalPriceComputed
-                }}</span>
+        
+        <div class="md:flex gap-6 justify-between mx-auto w-full">
+          <!-- Left Column - Cart Items -->
+          <div class="md:w-[65%]">
+            <div class="bg-white rounded-lg p-5 shadow-sm border border-gray-100">
+              <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center text-xl font-semibold">
+                  <span>Items ({{ filteredCartItems.length }})</span>
+                </div>
+                
+                <!-- Select All Feature -->
+                <div class="flex items-center cursor-pointer group" @click="toggleAllItems">
+                  <div class="w-5 h-5 border-2 rounded flex items-center justify-center mr-2"
+                      :class="allSelected ? 'border-[#0C6539] bg-[#0C6539]' : 'border-gray-300'">
+                    <Icon v-if="allSelected" name="ph:check" class="text-white" />
+                  </div>
+                  <span class="text-gray-600 group-hover:text-[#0C6539] transition-colors duration-200">
+                    {{ allSelected ? 'Deselect All' : 'Select All' }}
+                  </span>
+                </div>
+              </div>
+              
+              <!-- Items List with Animation -->
+              <div class="divide-y">
+                <TransitionGroup name="cart-item">
+                  <div v-for="(cartItem, index) in filteredCartItems" :key="cartItem.id"
+                      class="py-4 transform transition-all duration-300 hover:bg-gray-50">
+                    <CartItem :product="filteredCartItems[index].product" :selectedArray="selectedArray"
+                      @selectedRadio="selectedRadioFunc" />
+                  </div>
+                </TransitionGroup>
               </div>
             </div>
-            <button @click="goToCheckout"
-              class="flex items-center justify-center bg-[#0C6539] w-full text-white text-[21px] font-semibold p-1.5 rounded-full mt-4">
-              Checkout
-            </button>
           </div>
 
-          <div id="OrderDetails" class="bg-white rounded-lg p-4 mt-4">
-            <div class="text-lg font-semibold mb-2">Order Details</div>
+          <!-- Right Column - Summary -->
+          <div class="md:w-[35%] mt-6 md:mt-0">
+            <div class="sticky top-24">
+              <!-- Order Summary -->
+              <div id="Summary" class="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+                <div class="text-2xl font-bold mb-5 text-gray-800">Order Summary</div>
+                
+                <div class="space-y-3 mb-5">
+                  <div class="flex items-center justify-between text-gray-600">
+                    <div>Selected Items:</div>
+                    <div>{{ totalItemsCount }}</div>
+                  </div>
+                  <div class="flex items-center justify-between text-gray-600">
+                    <div>Total Weight:</div>
+                    <div>{{ totalSelectedWeight }} kg</div>
+                  </div>
+                </div>
 
-            <div class="border-b my-5" />
-            <p class="my-2">Total Items: {{ totalItemsCount }}</p>
-            <p class="my-2">Total Unit: {{ totalSelectedWeight }} kg</p>
+                <div class="border-t border-gray-200 my-4 pt-4"></div>
+                
+                <div class="flex items-center justify-between my-2">
+                  <div class="font-semibold text-lg text-gray-800">Total</div>
+                  <div class="text-2xl font-bold text-[#FD374F]">
+                    ₱{{ totalPriceComputed.toLocaleString() }}
+                  </div>
+                </div>
+                
+                <!-- Checkout Button with Animation -->
+                <button @click="goToCheckout" :disabled="totalItemsCount === 0"
+                  class="flex items-center justify-center bg-[#0C6539] w-full text-white text-xl font-semibold p-3 rounded-lg mt-5 hover:bg-green-700 transition-all duration-300 transform hover:scale-[1.02]"
+                  :class="{'opacity-50 cursor-not-allowed': totalItemsCount === 0}">
+                  <Icon name="ph:check-circle" size="24" class="mr-2" />
+                  Checkout
+                </button>
+
+                <!-- Empty selection warning -->
+                <div v-if="totalItemsCount === 0" class="mt-3 text-center text-amber-600 text-sm">
+                  <Icon name="ph:warning-circle" class="inline mr-1" />
+                  Select items to checkout
+                </div>
+              </div>
+              
+              <!-- Shopping Help Card -->
+              <div class="bg-blue-50 rounded-lg p-5 mt-4 border border-blue-100">
+                <div class="flex items-start">
+                  <Icon name="ph:info-fill" class="text-blue-500 mr-3 mt-1" size="20" />
+                  <div>
+                    <h3 class="font-semibold text-blue-800 mb-1">Pickup Information</h3>
+                    <p class="text-sm text-blue-700">
+                      Items will be available for pickup at Baybay City Public Market.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
-
   </AdminLayout>
 </template>
 
@@ -79,77 +145,49 @@ import AdminLayout from "~/layouts/AdminLayout.vue";
 import { useUserStore } from "~/stores/user";
 import { ref, computed, watchEffect, onBeforeMount, onMounted } from "vue";
 
-const selectAll = ref(false);  // Manage the "Select All" checkbox state
-const isHover = ref(false);    // Track hover state for styling
+// Store and user refs
+const userStore = useUserStore();
+const user = useSupabaseUser();
+const route = useRoute();
+const role = userStore.profile?.role;
 
-console.log("plog")
-console.log(useUserStore.cartItems)
+// Selected items tracking
+let selectedArray = ref([]);
+let allSelected = ref(false);
 
-// const toggleSelectAll = () => {
-//   selectAll.value = !selectAll.value;
-
-//   // If selecting all, mark each item in the filtered cart as selected.
-//   if (selectAll.value) {
-//     filteredCartItems.value.forEach(item => {
-//       const existingIndex = selectedArray.value.findIndex(selectedItem => selectedItem.id === item.product.id);
-//       if (existingIndex === -1) {
-//         selectedArray.value.push({ id: item.product.id, val: true, quantity: item.quantity });
-//       }
-//     });
-//   } else {
-//     // If deselecting all, clear the selectedArray.
-//     selectedArray.value = [];
-//   }
-// };
-
-const handleItemSelection = (cartItem) => {
-  const index = selectedArray.value.findIndex(item => item.id === cartItem.product.id);
-
-  if (cartItem.checked) {
-    // Item selected
-    if (index === -1) {
-      selectedArray.value.push({
-        id: cartItem.product.id,
-        val: true,
-        quantity: cartItem.quantity
-      });
-    }
+// Toggle all items selection
+const toggleAllItems = () => {
+  allSelected.value = !allSelected.value;
+  
+  if (allSelected.value) {
+    // Select all items
+    filteredCartItems.value.forEach(item => {
+      if (item.product.stock > 0) { // Only select items in stock
+        const existingIndex = selectedArray.value.findIndex(selectedItem => 
+          selectedItem.id === item.product.id);
+          
+        if (existingIndex === -1) {
+          selectedArray.value.push({ 
+            id: item.product.id, 
+            val: true, 
+            quantity: item.quantity,
+            price: item.product.price
+          });
+        } else {
+          selectedArray.value[existingIndex].val = true;
+        }
+      }
+    });
   } else {
-    // Item deselected
-    if (index !== -1) {
-      selectedArray.value.splice(index, 1);
-    }
+    // Deselect all items
+    selectedArray.value.forEach(item => {
+      item.val = false;
+    });
+    selectedArray.value = [];
   }
-
-  updateSelectAllState();
 };
 
-
-
-const toggleSelectAll = () => {
-  const newState = selectAll.value;
-  cartItems.value.forEach((item) => {
-    item.isSelected = newState;
-  });
-  updateSelections();
-};
-
-const handleSelectionChange = ({ id, val }) => {
-  const item = cartItems.value.find((item) => item.id === id);
-  if (item) item.isSelected = val;
-
-  updateSelections();
-};
-const updateSelections = async () => {
-  const selectedItems = cartItems.value.filter(item => item.isSelected);
-  await userStore.updateSelectedItems(selectedItems);
-};
-
-const isIndeterminate = computed(() => {
-  const selectedCount = cartItems.value.filter(item => item.isSelected).length;
-  return selectedCount > 0 && selectedCount < cartItems.value.length;
-});
-
+// Handle individual item selection
 const selectedRadioFunc = (e) => {
   const existingIndex = selectedArray.value.findIndex(item => item.id === e.id);
 
@@ -167,81 +205,18 @@ const selectedRadioFunc = (e) => {
     }
   }
 
-  // After manual selection, update the selectAll checkbox state
+  // Update allSelected state
   updateSelectAllState();
 };
 
 const updateSelectAllState = () => {
-  // The selectAll checkbox should be checked only if every item in the cart is selected.
-  selectAll.value = filteredCartItems.value.every(item => {
-    return selectedArray.value.some(selectedItem => selectedItem.id === item.product.id && selectedItem.val);
+  // Check if all available items are selected
+  const availableItems = filteredCartItems.value.filter(item => item.product.stock > 0);
+  allSelected.value = availableItems.length > 0 && availableItems.every(item => {
+    return selectedArray.value.some(selectedItem => 
+      selectedItem.id === item.product.id && selectedItem.val);
   });
 };
-
-
-const userStore = useUserStore();
-const user = useSupabaseUser();
-const route = useRoute();
-const role = userStore.profile?.role;
-
-// Middleware to check if the store is open
-definePageMeta({
-  middleware: ["auth"]
-});
-
-// Function to check if store is closed
-const isStoreClosed = () => {
-  // Check if website is closed based on Philippines time (UTC+8)
-  const now = new Date();
-  const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
-  const phTime = new Date(utcTime + (3600000 * 8)); // UTC+8 for Philippines
-
-  const currentHour = phTime.getHours();
-  const currentMinute = phTime.getMinutes();
-
-  // Check if current time is outside operating hours
-  const isBeforeOpening =
-    currentHour < userStore.openingHour ||
-    (currentHour === userStore.openingHour && currentMinute < userStore.openingMinute);
-
-  const isAfterClosing =
-    currentHour > userStore.closingHour ||
-    (currentHour === userStore.closingHour && currentMinute >= userStore.closingMinute);
-
-  return isBeforeOpening || isAfterClosing;
-};
-
-// Initialize time settings and check if store is closed
-onMounted(() => {
-  userStore.initializeTimeSettings();
-
-  // Check if store is closed and redirect if needed
-  if (isStoreClosed() && role !== "Admin") {
-    navigateTo("/closed");
-  }
-});
-
-// Redirect to the login page if the user is not logged in
-watchEffect(() => {
-  if (route.fullPath == "/shoppingcart" &&
-    (!user.value || role === "Admin")) {
-    navigateTo("/admin/dashboard");
-  }
-  else if (route.fullPath == "/shoppingcart" && !user.value) {
-    navigateTo("/login");
-  }
-  // Check if store is closed
-  else if (route.fullPath == "/shoppingcart" && isStoreClosed() && role !== "Admin") {
-    navigateTo("/closed");
-  }
-  if (!userStore.isLoading) {
-    // The loading state is now false, the page is done loading.
-    //console.log('Data loaded successfully!');
-  }
-});
-
-
-let selectedArray = ref([]);
 
 // Filter out products that are hidden or deleted
 const filteredCartItems = computed(() => {
@@ -271,31 +246,106 @@ const totalPriceComputed = computed(() => {
   );
 });
 
+// Update selection state when cart items change
+watchEffect(() => {
+  if (userStore.cartItems && userStore.cartItems.length > 0) {
+    updateSelectAllState();
+  }
+});
+
+// Function to check if store is closed
+const isStoreClosed = () => {
+  // Check if website is closed based on Philippines time (UTC+8)
+  const now = new Date();
+  const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
+  const phTime = new Date(utcTime + (3600000 * 8)); // UTC+8 for Philippines
+
+  const currentHour = phTime.getHours();
+  const currentMinute = phTime.getMinutes();
+
+  // Check if current time is outside operating hours
+  const isBeforeOpening =
+    currentHour < userStore.openingHour ||
+    (currentHour === userStore.openingHour && currentMinute < userStore.openingMinute);
+
+  const isAfterClosing =
+    currentHour > userStore.closingHour ||
+    (currentHour === userStore.closingHour && currentMinute >= userStore.closingMinute);
+
+  return isBeforeOpening || isAfterClosing;
+};
 
 // Handle checkout process
 const goToCheckout = () => {
-  // console.log("CLIKCEDDD")
   if (selectedArray.value.length === 0 || !filteredCartItems.value.length) {
-    console.warn("No items selected or cart is empty");
-    return;
+    return; // Do nothing if no items selected or cart is empty
   }
-
-  //const ids = selectedArray.value.map((item) => item.id);
-
-  // userStore.checkout = [];
-  // const filteredItems = filteredCartItems.value.filter((item) =>
-  //   ids.includes(item.productId)
-  // );
-
-  // userStore.checkout.push(...filteredItems);
-  //navigateTo("/checkout"); // Ensure navigation works correctly
   window.location.href = `/checkout`;
-
 };
 
 const navigateLogin = () => {
   window.location.href = `/login`;
 };
 
+// Initialize time settings and check if store is closed
+onMounted(() => {
+  userStore.initializeTimeSettings();
 
+  // Check if store is closed and redirect if needed
+  if (isStoreClosed() && role !== "Admin") {
+    navigateTo("/closed");
+  }
+});
+
+// Redirect to the login page if the user is not logged in
+watchEffect(() => {
+  if (route.fullPath == "/shoppingcart" &&
+    (!user.value || role === "Admin")) {
+    navigateTo("/admin/dashboard");
+  }
+  else if (route.fullPath == "/shoppingcart" && !user.value) {
+    navigateTo("/login");
+  }
+  // Check if store is closed
+  else if (route.fullPath == "/shoppingcart" && isStoreClosed() && role !== "Admin") {
+    navigateTo("/closed");
+  }
+});
 </script>
+
+<style scoped>
+/* Cart item transition animations */
+.cart-item-enter-active,
+.cart-item-leave-active {
+  transition: all 0.5s ease;
+}
+
+.cart-item-enter-from,
+.cart-item-leave-to {
+  opacity: 0;
+  transform: translateX(-30px);
+}
+
+.cart-item-move {
+  transition: transform 0.5s ease;
+}
+
+/* Custom scrollbar for browsers that support it */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #0C6539;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #094a2a;
+}
+</style>

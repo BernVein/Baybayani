@@ -7,8 +7,27 @@ export default defineEventHandler(async (event) => {
   // console.log(orderID);
 
   try {
+    // First, check the current order status
+    const orderToCancel = await prisma.orders.findUnique({
+      where: {
+        id: orderID,
+      },
+    });
+
+    if (!orderToCancel) {
+      return { success: false, message: "Order not found." };
+    }
+
+    // Only allow cancellation if order is in PENDING status
+    if (orderToCancel.orderStatus !== OrderStatus.PENDING) {
+      return { 
+        success: false, 
+        message: "Only orders with PENDING status can be cancelled." 
+      };
+    }
+
     // Update the order status to CANCELED
-    const updatedOrder = await prisma.orders.updateMany({
+    const updatedOrder = await prisma.orders.update({
       where: {
         id: orderID, // Update the order by orderID
       },
@@ -20,9 +39,15 @@ export default defineEventHandler(async (event) => {
     // console.log("UPDATED SUCCESSFULLY");
 
     // Return a success message
-    return { message: "Order status updated to CANCELED successfully." };
+    return { 
+      success: true,
+      message: "Order status updated to CANCELED successfully." 
+    };
   } catch (error) {
     console.error("Error updating order status:", error);
-    return { message: "Failed to update order status." };
+    return { 
+      success: false,
+      message: "Failed to update order status." 
+    };
   }
 });

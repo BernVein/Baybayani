@@ -92,13 +92,17 @@
             <!-- Total Price and Cancel Button -->
             <div class="flex justify-between items-center mt-4">
 
-
               <!-- Cancel Order button, only visible for PENDING orders -->
               <div v-if="order.orderStatus === 'PENDING'">
                 <button @click="showCancelModal(order.id)"
-                  class=" text-red-500 font-semibold underline px-4 py-2 rounded-md hover:bg-red-600 hover:text-white transition-colors">
+                  class="text-red-500 font-semibold underline px-4 py-2 rounded-md hover:bg-red-600 hover:text-white transition-colors">
                   Cancel Order
                 </button>
+              </div>
+
+              <!-- Add a message if order is not in PENDING status -->
+              <div v-else-if="order.orderStatus !== 'CANCELED'" class="text-gray-500 italic text-sm">
+                This order cannot be canceled.
               </div>
 
               <!-- Display Total Price -->
