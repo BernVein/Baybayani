@@ -122,6 +122,49 @@ export const useUserStore = defineStore("user", {
       return `${displayHour}:${displayMinute} ${period}`;
     },
 
+    // Check if store is closed and redirect if needed
+    checkStoreHours() {
+      // Get current time in Philippines
+      const now = new Date();
+      const utcTime = now.getTime() + now.getTimezoneOffset() * 60000;
+      const phTime = new Date(utcTime + 3600000 * 8); // UTC+8 for Philippines
+      
+      const currentHour = phTime.getHours();
+      const currentMinute = phTime.getMinutes();
+      
+      // Check if current time is outside operating hours
+      const isBeforeOpening =
+        currentHour < this.openingHour ||
+        (currentHour === this.openingHour &&
+          currentMinute < this.openingMinute);
+      
+      const isAfterClosing =
+        currentHour > this.closingHour ||
+        (currentHour === this.closingHour &&
+          currentMinute >= this.closingMinute);
+      
+      // Store is closed if before opening or after closing
+      const isStoreClosed = isBeforeOpening || isAfterClosing;
+      
+      // Get current route
+      const route = useRoute();
+      
+      // Skip the check for admin routes, login page and closed page
+      const isAdminRoute = route.fullPath.startsWith("/admin");
+      const isLoginPage = route.fullPath === "/login";
+      const isClosedPage = route.fullPath === "/closed";
+      
+      // If store is closed and user is not on admin/login/closed page, redirect to closed
+      if (isStoreClosed && !isAdminRoute && !isLoginPage && !isClosedPage) {
+        if (!this.isAdmin) {
+          navigateTo('/closed');
+          return true; // Store is closed
+        }
+      }
+      
+      return false; // Store is open
+    },
+
     // Initialize time settings from database
     async initializeTimeSettings() {
       try {

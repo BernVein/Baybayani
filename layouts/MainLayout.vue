@@ -197,6 +197,20 @@ const searchByName = useDebounce(async () => {
   isSearching.value = false;
 }, 100);
 
+// Check store hours when component mounts and at regular intervals
+onMounted(async () => {
+  // Initialize time settings
+  await userStore.initializeTimeSettings();
+  
+  // Check immediately
+  userStore.checkStoreHours();
+  
+  // Then check every minute for store closing
+  setInterval(() => {
+    userStore.checkStoreHours();
+  }, 60000); // Check every minute
+});
+
 watch(
   () => searchItem.value,
   async () => {

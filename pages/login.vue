@@ -191,6 +191,37 @@
                 toastMessage.value = "Successfully logged in!";
                 toastClass.value = "bg-green-500 text-white";
 
+                // Check store hours immediately after login
+                // Initialize time settings first
+                await userStore.initializeTimeSettings();
+                
+                // Check if store is closed using Philippines time
+                const now = new Date();
+                const utcTime = now.getTime() + now.getTimezoneOffset() * 60000;
+                const phTime = new Date(utcTime + 3600000 * 8); // UTC+8 for Philippines
+                
+                const currentHour = phTime.getHours();
+                const currentMinute = phTime.getMinutes();
+                
+                // Check if current time is outside operating hours
+                const isBeforeOpening =
+                    currentHour < userStore.openingHour ||
+                    (currentHour === userStore.openingHour &&
+                    currentMinute < userStore.openingMinute);
+                
+                const isAfterClosing =
+                    currentHour > userStore.closingHour ||
+                    (currentHour === userStore.closingHour &&
+                    currentMinute >= userStore.closingMinute);
+                
+                const isStoreClosed = isBeforeOpening || isAfterClosing;
+                
+                // Redirect to closed page if store is closed (for non-admin users)
+                if (isStoreClosed && !userStore.isAdmin) {
+                    return navigateTo("/closed");
+                }
+
+                // Otherwise redirect based on role
                 if (userStore.isAdmin) {
                     router.push("/admin/dashboard").then(() => {
                         location.reload();

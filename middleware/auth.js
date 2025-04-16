@@ -1,16 +1,11 @@
 import { useUserStore } from "~/stores/user";
 
-export default defineNuxtRouteMiddleware((from, to) => {
+export default defineNuxtRouteMiddleware(async (from, to) => {
   const user = useSupabaseUser();
   const userStore = useUserStore();
 
-  // Initialize time settings if needed
-  if (userStore.initializeTimeSettings) {
-    userStore.initializeTimeSettings();
-  }
-
-  // Check if website is closed based on Philippines time (UTC+8)
-  // Get current time in Philippines
+  // Quick check with default values before async operation
+  // Get current time in Philippines immediately
   const now = new Date();
   const utcTime = now.getTime() + now.getTimezoneOffset() * 60000;
   const phTime = new Date(utcTime + 3600000 * 8); // UTC+8 for Philippines
@@ -18,34 +13,65 @@ export default defineNuxtRouteMiddleware((from, to) => {
   const currentHour = phTime.getHours();
   const currentMinute = phTime.getMinutes();
 
-  // For testing: Set to true to force closed page
-  const forceClosedPage = false;
+  // Default opening/closing hours in case DB call is slow
+  const defaultOpeningHour = userStore.openingHour;
+  const defaultOpeningMinute = userStore.openingMinute;
+  const defaultClosingHour = userStore.closingHour;
+  const defaultClosingMinute = userStore.closingMinute;
 
-  // Check if current time is outside operating hours
+  // Check if current time is outside operating hours using default values
   const isBeforeOpening =
-    currentHour < userStore.openingHour ||
-    (currentHour === userStore.openingHour &&
-      currentMinute < userStore.openingMinute);
+    currentHour < defaultOpeningHour ||
+    (currentHour === defaultOpeningHour &&
+      currentMinute < defaultOpeningMinute);
 
   const isAfterClosing =
-    currentHour > userStore.closingHour ||
-    (currentHour === userStore.closingHour &&
-      currentMinute >= userStore.closingMinute);
+    currentHour > defaultClosingHour ||
+    (currentHour === defaultClosingHour &&
+      currentMinute >= defaultClosingMinute);
 
+  // For testing: Set to true to force closed page
+  const forceClosedPage = false;
   const isStoreClosed = isBeforeOpening || isAfterClosing || forceClosedPage;
 
   // Skip the check for admin routes and login page
   const isAdminRoute = to.fullPath.startsWith("/admin");
   const isLoginPage = to.fullPath === "/login";
 
+  // Fast path: If store is closed and this is not an admin or login page, redirect immediately
+  if (
+    isStoreClosed &&
+    to.fullPath !== "/closed" &&
+    !isAdminRoute &&
+    !isLoginPage
+  ) {
+    return navigateTo("/closed");
+  }
+
+  // Then load the actual settings (will be used on next navigation)
+  await userStore.initializeTimeSettings();
+
+  // Recheck with potentially updated values from database
+  const updatedIsBeforeOpening =
+    currentHour < userStore.openingHour ||
+    (currentHour === userStore.openingHour &&
+      currentMinute < userStore.openingMinute);
+
+  const updatedIsAfterClosing =
+    currentHour > userStore.closingHour ||
+    (currentHour === userStore.closingHour &&
+      currentMinute >= userStore.closingMinute);
+
+  const updatedIsStoreClosed = updatedIsBeforeOpening || updatedIsAfterClosing || forceClosedPage;
+
   // If someone tries to directly access /closed when the store is OPEN, redirect to home
-  if (to.fullPath === "/closed" && !isStoreClosed && !isAdminRoute) {
+  if (to.fullPath === "/closed" && !updatedIsStoreClosed && !isAdminRoute) {
     return navigateTo("/");
   }
 
-  // If the store is closed and user is trying to access a normal page, redirect to closed
+  // Double-check with updated values
   if (
-    isStoreClosed &&
+    updatedIsStoreClosed &&
     to.fullPath !== "/closed" &&
     !isAdminRoute &&
     !isLoginPage
