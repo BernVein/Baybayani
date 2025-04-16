@@ -17,6 +17,7 @@ model User {
   role       String?
   cart       Cart?
   orders     Orders[]
+  status	 Status    @default(ACTIVE)
 }
 
 model Cart {
