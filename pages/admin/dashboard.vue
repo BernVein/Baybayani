@@ -277,18 +277,8 @@ const saveStoreHours = async () => {
     const closingResult = await userStore.updateClosingTime(closingHour.value, closingMinute.value);
     
     if (openingResult && closingResult) {
-      // Double-check that localStorage values were saved correctly
-      const checkOpeningHour = localStorage.getItem('openingHour');
-      const checkOpeningMinute = localStorage.getItem('openingMinute');
-      const checkClosingHour = localStorage.getItem('closingHour');
-      const checkClosingMinute = localStorage.getItem('closingMinute');
-      
-      if (checkOpeningHour && checkOpeningMinute && checkClosingHour && checkClosingMinute) {
-        // Show success notification
-        showToast(`Store hours updated to ${userStore.formattedOpeningTime()} - ${userStore.formattedClosingTime()} PHT`, "success");
-      } else {
-        throw new Error("Failed to verify saved settings");
-      }
+      // Show success notification
+      showToast(`Store hours updated to ${userStore.formattedOpeningTime()} - ${userStore.formattedClosingTime()} PHT`, "success");
     } else {
       throw new Error("Failed to save settings");
     }

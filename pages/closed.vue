@@ -47,10 +47,9 @@ const logout = async () => {
 
 // Update current time every second
 const updateTime = () => {
-  // Get current time in Philippines (UTC+8)
   const now = new Date();
   const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
-  const phTime = new Date(utcTime + (3600000 * 8)); // UTC+8 for Philippines
+  const phTime = new Date(utcTime + (3600000 * 8));
   
   currentTime.value = phTime.toLocaleTimeString([], {
     hour: '2-digit',
@@ -60,12 +59,13 @@ const updateTime = () => {
   });
 };
 
-onMounted(() => {
+onMounted(async () => {
+  // Initialize time settings first (now async)
+  await userStore.initializeTimeSettings();
+  
+  // Then start timers
   updateTime();
   setInterval(updateTime, 1000);
-  
-  // Initialize time settings if not already done
-  userStore.initializeTimeSettings();
 
   // Start the logout countdown only if the user is logged in
   if (user.value) {
