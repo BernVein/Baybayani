@@ -1,119 +1,160 @@
   <template>
     <AdminLayout>
       <Loading v-if="isLoading" />
-      <div id="ItemPage" class="mt-4 max-w-[1200px] mx-auto px-2">
+      <div id="ItemPage" class="mt-0 max-w-[1200px] mx-auto px-4">
+        <!-- Breadcrumb -->
+        <nav class="mb-6 flex items-center text-sm text-gray-500">
+          <NuxtLink to="/" class="hover:text-green-600 transition-colors">Home</NuxtLink>
+          <span class="mx-2">›</span>
+          <span class="text-gray-800">{{ product?.data?.title || 'Product Details' }}</span>
+        </nav>
 
         <div class="flex flex-col lg:flex-row gap-10 justify-between mx-auto w-full">
           <!-- Left Section: Images -->
-          <div class="w-full lg:w-[40%]">
-            <div class="flex flex-col">
-              <img v-if="currentImage"
-                class="rounded-lg object-cover w-full h-[400px] transition-transform duration-500 ease-in-out hover:scale-105 hover:shadow-2xl"
-                :src="currentImage" alt="Product Image" />
-              <div class="flex mt-4 gap-4">
+          <div class="w-full lg:w-[45%]">
+            <div class="sticky top-24">
+              <div class="relative group">
+                <img v-if="currentImage"
+                  class="rounded-2xl object-cover w-full h-[500px] transition-all duration-500 ease-in-out shadow-lg group-hover:shadow-2xl"
+                  :src="currentImage" :alt="product?.data?.title" />
+                
+                <!-- Zoom overlay -->
+                <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-5 transition-all duration-300 rounded-2xl"></div>
+                
+                <!-- Stock badge -->
+                <div v-if="product?.data?.stock <= 0"
+                  class="absolute top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-full font-semibold shadow-lg">
+                  Out of Stock
+                </div>
+              </div>
+              
+              <div class="flex mt-6 gap-4 justify-center">
                 <img v-for="(image, index) in images" :key="index" :src="image"
-                  class="h-20 w-20 object-cover rounded-lg border cursor-pointer transition-transform duration-300 ease-in-out hover:scale-110 hover:border-green-500"
-                  @click="currentImage = image" alt="Thumbnail" />
+                  class="h-24 w-24 object-cover rounded-lg border-2 cursor-pointer transition-all duration-300 ease-in-out hover:scale-105"
+                  :class="currentImage === image ? 'border-green-500 shadow-lg' : 'border-transparent'"
+                  @click="currentImage = image" :alt="`${product?.data?.title} thumbnail ${index + 1}`" />
               </div>
             </div>
           </div>
 
           <!-- Right Section: Product Details -->
-          <div
-            class="w-full lg:w-[50%] bg-white p-6 rounded-lg shadow-md transition-all duration-500 ease-in-out hover:shadow-lg">
-            <div v-if="product && product.data">
-              <div class="flex items-center justify-between">
-                <h1
-                  class="text-2xl lg:text-4xl font-semibold text-gray-800 transition-colors duration-300 ease-in-out hover:text-green-600">
+          <div class="w-full lg:w-[55%]">
+            <div v-if="product && product.data" class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+              <!-- Title and Price -->
+              <div class="space-y-4">
+                <h1 class="text-3xl lg:text-4xl font-bold text-gray-800 leading-tight">
                   {{ product.data.title }}
                 </h1>
-                <div
-                  class="text-lg lg:text-3xl font-bold p-2 text-red-500 transition-colors duration-300 ease-in-out hover:text-red-600">
-                  ₱{{ product.data.price }} / kg
+                <div class="flex items-center justify-between">
+                  <div class="text-2xl lg:text-3xl font-bold text-green-600">
+                    ₱{{ product.data.price }} <span class="text-lg text-gray-500 font-normal">per kg</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <div class="h-3 w-3 rounded-full" 
+                      :class="product.data.stock > 0 ? 'bg-green-500' : 'bg-red-500'"></div>
+                    <span :class="product.data.stock > 0 ? 'text-green-600' : 'text-red-500'" class="font-medium">
+                      {{ product.data.stock > 0 ? `${product.data.stock} kg available` : 'Out of Stock' }}
+                    </span>
+                  </div>
                 </div>
               </div>
 
-              <!-- Stock Information -->
-              <div class="mt-4 flex items-center gap-2">
-                <span class="font-medium">Availability:</span>
-                <span v-if="product.data.stock > 0" class="text-green-600 font-semibold">
-                  In Stock ({{ product.data.stock }} kg available)
-                </span>
-                <span v-else class="text-red-500 font-semibold">
-                  Out of Stock
-                </span>
+              <!-- Description -->
+              <div class="mt-8">
+                <h2 class="text-lg font-semibold text-gray-800 mb-3">Product Details</h2>
+                <p class="text-gray-600 leading-relaxed">
+                  {{ product.data.description }}
+                </p>
               </div>
 
-              <p class="mt-6 text-lg lg:text-lg font-light text-gray-600">Product Details:</p>
-              <p
-                class="mt-2 text-md lg:text-md text-gray-700 mb-4 transition-colors duration-300 ease-in-out hover:text-gray-900">
-                {{ product.data.description }}
-              </p>
-
-              <!-- QUANTITY BOX -->
-
-              <div class="flex items-center justify-start mt-10">
-                <div class="flex items-center justify-start mr-2 font-semibold text-gray-700">
-                  Quantity:
+              <!-- Quantity Selector -->
+              <div class="mt-8 space-y-6">
+                <div class="flex items-center gap-4">
+                  <label class="font-medium text-gray-700">Quantity:</label>
+                  <div class="flex items-center bg-gray-50 rounded-lg border border-gray-200">
+                    <button @click="decreaseQuantity"
+                      class="w-12 h-12 flex items-center justify-center text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-l-lg transition-colors"
+                      :disabled="parseFloat(inputQuantity) <= 1">
+                      <Icon name="material-symbols:remove" size="20" />
+                    </button>
+                    <input type="text"
+                      class="w-20 h-12 text-center bg-transparent border-x border-gray-200 text-lg font-medium"
+                      v-model="inputQuantity" @input="validateInput" @blur="validateAndUpdateQuantity" />
+                    <button @click="increaseQuantity"
+                      class="w-12 h-12 flex items-center justify-center text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-r-lg transition-colors"
+                      :disabled="product.data.stock <= parseFloat(inputQuantity)">
+                      <Icon name="material-symbols:add" size="20" />
+                    </button>
+                  </div>
+                  <span class="text-sm text-gray-500">kg</span>
                 </div>
-                <!-- Decrease Button -->
-                <button @click="decreaseQuantity"
-                  class="w-[29px] h-[35px] lg:w-[34px] lg:h-[40px] bg-gray-200 hover:bg-gray-300 border border-gray-300 rounded-l-md flex items-center justify-center font-semibold text-gray-700 text-lg">
-                  -
-                </button>
 
-                <!-- Quantity Input -->
-                <input type="text"
-                  class="w-[50px] h-[35px] lg:w-[55px] lg:h-[40px] text-md lg:text-lg text-center border-t border-b border-gray-300 mx-0"
-                  v-model="inputQuantity" @input="validateInput" @blur="validateAndUpdateQuantity" />
+                <!-- Total Price -->
+                <div class="text-lg text-gray-600">
+                  Total: <span class="font-bold text-gray-800">₱{{ (product.data.price * parseFloat(inputQuantity)).toFixed(2) }}</span>
+                </div>
 
-                <!-- Increase Button -->
-                <button @click="increaseQuantity"
-                  class="w-[29px] h-[35px] lg:w-[34px] lg:h-[40px] bg-gray-200 hover:bg-gray-300 border border-gray-300 rounded-r-md flex items-center justify-center font-semibold text-gray-700 text-lg">
-                  +
-                </button>
+                <!-- Action Buttons -->
+                <div class="flex gap-4 pt-4">
+                  <button @click="addToCart"
+                    class="flex-1 h-14 rounded-xl text-white font-semibold bg-green-600 hover:bg-green-700 transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    :disabled="product.data.stock <= 0">
+                    <Icon name="material-symbols:shopping-cart" size="24" />
+                    Add to Cart
+                  </button>
+                  <button @click="openChatModal"
+                    class="w-14 h-14 rounded-xl text-blue-600 border border-blue-200 hover:bg-blue-50 transition-all duration-300 flex items-center justify-center">
+                    <Icon name="material-symbols:chat" size="24" />
+                  </button>
+                </div>
               </div>
 
-
-              <div class="flex gap-8 mt-8">
-                <button @click="addToCart"
-                  class="px-11 lg:px-8 py-3 rounded-lg text-white text-sm lg:text-lg font-semibold bg-green-600 hover:bg-green-700 transition-all duration-300 ease-in-out hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center">
-
-                  <!-- Text when item is not in cart -->
-                  <span class="transition-opacity duration-300 ease-in-out">Add to Cart</span>
-
-                  <!-- Icon when item is not in cart -->
-                  <Icon name="mynaui:cart-plus" size="30"
-                    class="ml-2 transition-all duration-300 ease-in-out transform scale-110" />
-                </button>
-
-                <button @click="openChatModal"
-                  class="px-8 py-3 rounded-lg text-blue-600 border border-blue-600 text-sm lg:text-lg font-semibold hover:bg-blue-50 transition-transform duration-300 ease-in-out hover:scale-105 flex items-center hidden md:block">
-                  <span class="mr-2">Chat Seller</span>
-                  <Icon name="mynaui:message" size="25" />
-                </button>
+              <!-- Additional Info -->
+              <div class="mt-8 pt-8 border-t border-gray-100">
+                <div class="flex items-center gap-6">
+                  <div class="flex items-center gap-2 text-gray-600">
+                    <Icon name="material-symbols:verified" size="20" class="text-green-500" />
+                    <span>Quality Guaranteed</span>
+                  </div>
+                  <div class="flex items-center gap-2 text-gray-600">
+                    <Icon name="material-symbols:local-shipping" size="20" class="text-green-500" />
+                    <span>Fast Delivery</span>
+                  </div>
+                </div>
               </div>
-
             </div>
           </div>
         </div>
 
-        <!-- Modal Pop-up -->
-        <div v-if="showChatModal" :class="['modal-overlay', { 'fade-out': isFadingOut }]">
-          <div class="modal-content" :class="{ 'fade-out': isFadingOut }">
-            <p>The chat bubble can be seen at the bottom left of the screen.</p>
-            <button @click="closeChatModal" class="close-modal-button">Got it!</button>
+        <!-- Chat Modal -->
+        <div v-if="showChatModal" 
+          class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fade-in">
+          <div class="bg-white rounded-2xl p-6 max-w-md w-full mx-4 transform transition-all duration-300"
+            :class="{ 'scale-95 opacity-0': isFadingOut }">
+            <div class="text-center space-y-4">
+              <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
+                <Icon name="material-symbols:chat" size="32" class="text-blue-600" />
+              </div>
+              <h3 class="text-xl font-semibold text-gray-800">Chat with Seller</h3>
+              <p class="text-gray-600">The chat bubble can be found at the bottom left of your screen.</p>
+              <button @click="closeChatModal"
+                class="w-full py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">
+                Got it!
+              </button>
+            </div>
           </div>
         </div>
 
-        <!-- Rectangle Animation -->
-        <div v-if="showGuidedLine" class="rectangle-animation"></div>
-      </div>
-      <div v-if="show" class="toast-notification fixed top-24 right-5 bg-green-600 text-white p-4 rounded-lg shadow-lg"
-        :style="{ animation: 'fadeInOut 3s forwards' }">
-        {{ message }}
-      </div>
+        <!-- Toast Notification -->
+        <div v-if="show" 
+          class="fixed top-24 right-5 max-w-md animate-slide-in">
+          <div class="bg-green-600 text-white p-4 rounded-lg shadow-lg flex items-center gap-3">
+            <Icon name="material-symbols:check-circle" size="24" />
+            <span>{{ message }}</span>
+          </div>
+        </div>
 
+      </div>
     </AdminLayout>
   </template>
 
@@ -313,129 +354,40 @@ const closeChatModal = () => {
 </script>
 
 <style scoped>
-@keyframes fadeInOut {
-  0% {
-    opacity: 0;
-    transform: translateX(10px);
-  }
-
-  50% {
-    opacity: 1;
-    transform: translateX(0);
-  }
-
-  100% {
-    opacity: 0;
-    transform: translateX(10px);
-  }
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
 }
 
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, .9);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  animation: fadeIn 0.5s forwards;
-}
-
-.modal-content {
-  background-color: #fff;
-  padding: 20px;
-  border-radius: 10px;
-  text-align: center;
-  color: #333;
-  max-width: 300px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  animation: fadeIn 0.5s forwards;
-}
-
-.fade-out {
-  animation: fadeOut 0.5s forwards;
-}
-
-.close-modal-button {
-  margin-top: 10px;
-  padding: 5px 10px;
-  background-color: #03A9F4;
-  color: #fff;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.close-modal-button:hover {
-  background-color: #0288D1;
-}
-
-.rectangle-animation {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 0;
-  height: 0;
-  border: 2px solid #03A9F4;
-  animation: drawAndFadeRectangle 3s forwards;
-  z-index: 1000;
-}
-
-@keyframes drawAndFadeRectangle {
-  0% {
-    width: 0;
-    height: 0;
-    opacity: 1;
-  }
-
-  50% {
-    width: 100px;
-    height: 0;
-    opacity: 1;
-  }
-
-  75% {
-    width: 100px;
-    height: 75px;
-    opacity: 1;
-  }
-
-  100% {
-    width: 0px;
-    height: 75px;
-    opacity: 0;
-  }
+.animate-slide-in {
+  animation: slideIn 0.3s ease-out;
 }
 
 @keyframes fadeIn {
   from {
     opacity: 0;
   }
-
   to {
     opacity: 1;
   }
 }
 
-@keyframes fadeOut {
+@keyframes slideIn {
   from {
-    opacity: 1;
-  }
-
-  to {
+    transform: translateX(100%);
     opacity: 0;
   }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
-/* Add responsive styles if needed */
-@media (max-width: 768px) {
-  #ItemPage {
-    flex-direction: column;
-    /* Stack elements vertically on mobile */
-  }
+/* Smooth transitions */
+.scale-95 {
+  transform: scale(0.95);
+}
+
+.opacity-0 {
+  opacity: 0;
 }
 </style>
