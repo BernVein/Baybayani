@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col items-center justify-center min-h-screen bg-gray-100 px-4 py-6">
-    <div class="bg-white p-5 sm:p-8 rounded-lg shadow-md w-full max-w-md text-center">
+    <div class="bg-white p-5 sm:p-8 rounded-lg shadow-md w-full max-w-2xl text-center">
       <!-- Store Logo -->
       <div class="mb-6 flex justify-center">
         <img width="170" src="/baybayani-logo.png" alt="Baybayani Logo" class="h-auto" />
@@ -17,6 +17,14 @@
       <div class="bg-gray-100 p-3 sm:p-4 rounded-md mb-5 sm:mb-6">
         <p class="text-gray-700 text-sm sm:text-base">Current time: <span class="font-medium">{{ currentTime }}</span> PHT</p>
         <p class="text-gray-700 text-sm sm:text-base">We will reopen at <span class="font-medium">{{ userStore.formattedOpeningTime() }}</span></p>
+      </div>
+
+      <!-- Cancelled Orders Section -->
+      <div v-if="user && cancelledOrders.length > 0" class="mt-6 mb-6">
+        <CancelledOrders 
+          :orders="cancelledOrders"
+          message="These orders were cancelled due to store closing time."
+        />
       </div>
       
       <div class="border-t pt-4 mt-4">
@@ -37,6 +45,26 @@ const user = useSupabaseUser();
 const currentTime = ref('');
 const countdown = ref(10);
 let countdownInterval = null;
+const cancelledOrders = ref([]);
+
+// Fetch cancelled orders for today
+const fetchCancelledOrders = async () => {
+  if (!user.value) return;
+  
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const response = await $fetch(`/api/prisma/get-cancelled-orders-by-date/${user.value.id}`, {
+      method: 'POST',
+      body: { date: today }
+    });
+    
+    if (response.success) {
+      cancelledOrders.value = response.orders;
+    }
+  } catch (error) {
+    console.error('Error fetching cancelled orders:', error);
+  }
+};
 
 // Logout function
 const logout = async () => {
@@ -66,6 +94,11 @@ onMounted(async () => {
   // Then start timers
   updateTime();
   setInterval(updateTime, 1000);
+
+  // Fetch cancelled orders if user is logged in
+  if (user.value) {
+    await fetchCancelledOrders();
+  }
 
   // Start the logout countdown only if the user is logged in
   if (user.value) {

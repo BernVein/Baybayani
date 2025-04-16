@@ -21,6 +21,10 @@ export const useUserStore = defineStore("user", {
     closingMinute: 0,
     openingHour: 6, // Default: 6 AM in 24-hour format
     openingMinute: 0,
+    // New state for cancelled orders
+    cancelledOrders: [],
+    showCancelledOrdersPopup: false,
+    hasSeenCancelledOrders: false
   }),
 
   actions: {
@@ -451,6 +455,64 @@ export const useUserStore = defineStore("user", {
         document.cookie =
           name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
       }
+    },
+
+    async checkAndCancelPendingOrders() {
+      try {
+        const now = new Date();
+        const utcTime = now.getTime() + now.getTimezoneOffset() * 60000;
+        const phTime = new Date(utcTime + 3600000 * 8); // UTC+8 for Philippines
+        
+        const currentHour = phTime.getHours();
+        const currentMinute = phTime.getMinutes();
+        
+        const isClosingTime = 
+          currentHour > this.closingHour ||
+          (currentHour === this.closingHour && currentMinute >= this.closingMinute);
+        
+        if (isClosingTime) {
+          const response = await $fetch('/api/prisma/cancel-pending-orders');
+          if (response.success && response.cancelledOrders.length > 0) {
+            this.cancelledOrders = response.cancelledOrders;
+            this.hasSeenCancelledOrders = false;
+            localStorage.removeItem('hasSeenCancelledOrders'); // Reset the flag
+          }
+        }
+      } catch (error) {
+        console.error('Error checking and cancelling pending orders:', error);
+      }
+    },
+
+    async fetchTodaysCancelledOrders() {
+      if (!this.user) return;
+      
+      try {
+        const today = new Date().toISOString().split('T')[0];
+        const response = await $fetch(`/api/prisma/get-cancelled-orders-by-date/${this.user.id}`, {
+          method: 'POST',
+          body: { date: today }
+        });
+        
+        if (response.success) {
+          this.cancelledOrders = response.orders;
+          
+          // Show popup if there are cancelled orders and user hasn't seen them
+          if (response.orders.length > 0 && !this.hasSeenCancelledOrders) {
+            const hasSeenCancelledOrders = localStorage.getItem('hasSeenCancelledOrders');
+            if (!hasSeenCancelledOrders) {
+              this.showCancelledOrdersPopup = true;
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching cancelled orders:', error);
+      }
+    },
+
+    markCancelledOrdersAsSeen() {
+      this.hasSeenCancelledOrders = true;
+      this.showCancelledOrdersPopup = false;
+      localStorage.setItem('hasSeenCancelledOrders', 'true');
     },
   },
   persist: {

@@ -20,6 +20,13 @@
         </div>
       </div>
     </div>
+
+    <!-- Cancelled Orders Popup -->
+    <CancelledOrdersPopup
+      :show="showCancelledOrders"
+      :orders="cancelledOrders"
+      @close="showCancelledOrders = false"
+    />
   </AdminLayout>
 </template>
 
@@ -28,14 +35,56 @@ import AdminLayout from "~/layouts/AdminLayout.vue";
 import { useUserStore } from "~/stores/user";
 import { ref, onBeforeMount, computed, onMounted, watchEffect } from "vue";
 import { useRoute } from "vue-router";
+import CancelledOrdersPopup from "~/components/CancelledOrdersPopup.vue";
+
 const user = useSupabaseUser();
-
 const userStore = useUserStore();
-
 let products = ref(null);
-
 const route = useRoute();
 const role = userStore.profile?.role;
+
+// Add state for cancelled orders popup
+const showCancelledOrders = ref(false);
+const cancelledOrders = ref([]);
+
+// Function to fetch cancelled orders
+const fetchCancelledOrders = async () => {
+  try {
+    const response = await fetch("/api/prisma/get-cancelled-orders");
+    const data = await response.json();
+    if (data && data.orders && data.orders.length > 0) {
+      cancelledOrders.value = data.orders;
+      showCancelledOrders.value = true;
+    }
+  } catch (error) {
+    console.error("Error fetching cancelled orders:", error);
+  }
+};
+
+// Initialize data and check for cancelled orders
+onMounted(async () => {
+  if (user.value && role === "Buyer") {
+    await fetchCancelledOrders();
+  }
+});
+
+watchEffect(async () => {
+  // First check if user is logged in and is a buyer
+  if (user.value && role === "Buyer") {
+    if (route.fullPath === "/") {
+      // Fetch products and check for cancelled orders
+      products.value = await useFetch("/api/prisma/get-all-products");
+      await fetchCancelledOrders();
+    }
+  } else if (route.fullPath === "/") {
+    // Handle redirects for non-buyers
+    if (!user.value) {
+      navigateTo("/login");
+    } else if (role === "Admin") {
+      navigateTo("/admin/dashboard");
+    }
+  }
+});
 
 // Middleware to check if the store is open
 definePageMeta({
@@ -72,25 +121,6 @@ onMounted(() => {
   // if (isStoreClosed() && role !== "Admin") {
   //   navigateTo("/closed");
   // }
-});
-
-watchEffect(() => {
-  if (route.fullPath == "/" &&
-    (!user.value || role === "Admin")) {
-    navigateTo("/admin/dashboard");
-  }
-  else if (route.fullPath == "/" && !user.value) {
-    navigateTo("/login");
-  }
-  // Also check for store closing time when user is on the homepage
-  // else if (route.fullPath == "/" && isStoreClosed() && role !== "Admin") {
-  //   navigateTo("/closed");
-  // }
-});
-
-onBeforeMount(async () => {
-  products.value = await useFetch("/api/prisma/get-all-products");
-  setTimeout(() => (userStore.isLoading = true), 1000);
 });
 
 // Compute filtered products to exclude hidden and deleted products

@@ -19,6 +19,13 @@
       {{ toast.message }}
     </div>
   </div>
+
+  <CancelledOrdersPopup
+    v-if="userStore.showCancelledOrdersPopup"
+    :show="userStore.showCancelledOrdersPopup"
+    :orders="userStore.cancelledOrders"
+    @close="userStore.markCancelledOrdersAsSeen()"
+  />
 </template>
 
 <script setup>
@@ -88,29 +95,36 @@ const checkStoreClosed = () => {
 };
 
 onMounted(() => {
-  userStore.isLoading = true
+  userStore.isLoading = true;
 
   // Check and restore session if needed
   userStore.checkAndRestoreSession().then(hasSession => {
     if (hasSession) {
-      // Session restored successfully
       console.log("Session restored successfully");
     }
   });
 
   // Initialize time settings
-  userStore.initializeTimeSettings();
+  userStore.initializeTimeSettings().then(() => {
+    // Initial check for store hours and pending orders
+    checkStoreClosed();
+    userStore.checkAndCancelPendingOrders();
+    
+    if (userStore.user) {
+      userStore.fetchTodaysCancelledOrders();
+    }
+  });
 
-  // Set up periodic check for store hours (every minute)
-  const intervalId = setInterval(checkStoreClosed, 60000);
+  // Set up periodic checks
+  const checkInterval = setInterval(() => {
+    checkStoreClosed();
+    userStore.checkAndCancelPendingOrders();
+  }, 60000); // Check every minute
 
   // Clean up interval on component unmount
   onUnmounted(() => {
-    clearInterval(intervalId);
+    clearInterval(checkInterval);
   });
-
-  // Initial check
-  checkStoreClosed();
 
   window.addEventListener('resize', function () {
     windowWidth.value = window.innerWidth;
