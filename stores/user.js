@@ -178,10 +178,43 @@ export const useUserStore = defineStore("user", {
         // If we have a session but user state is not set, restore it
         if (session && !this.user) {
           this.user = session.user;
-          const profileData = await fetchUserProfile(this.user.id);
-          this.profile = profileData;
-          if (!this.isAdmin()) {
-            await this.fetchCartItems();
+          try {
+            const profileData = await fetchUserProfile(this.user.id);
+            this.profile = profileData;
+            
+            // Check if user is unverified and log them out if so
+            if (this.profile && this.profile.status === 'UNVERIFIED') {
+              console.warn("Unverified user attempted to restore session");
+              await client.auth.signOut();
+              this.user = null;
+              this.profile = null;
+              return false;
+            }
+            
+            // Check if user is suspended and log them out if so
+            if (this.profile && this.profile.status === 'SUSPENDED') {
+              console.warn("Suspended user attempted to restore session");
+              await client.auth.signOut();
+              this.user = null;
+              this.profile = null;
+              return false;
+            }
+            
+            // Check if user is inactive and log them out if so
+            if (this.profile && this.profile.status === 'INACTIVE') {
+              console.warn("Inactive user attempted to restore session");
+              await client.auth.signOut();
+              this.user = null;
+              this.profile = null;
+              return false;
+            }
+            
+            // Only fetch cart items if profile exists and user is not an admin
+            if (this.profile && this.profile.role !== "Admin") {
+              await this.fetchCartItems();
+            }
+          } catch (err) {
+            console.error("Error fetching user profile:", err);
           }
           return true;
         }
@@ -234,7 +267,7 @@ export const useUserStore = defineStore("user", {
     },
 
     isAdmin() {
-      if (!this.user) return false;
+      if (!this.user || !this.profile) return false;
       //  console.log("ROLE", this.profile.role);
       if (this.profile.role === "Admin") {
         this.isAdmin = true;

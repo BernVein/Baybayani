@@ -102,6 +102,7 @@ enum Status {
   ACTIVE
   INACTIVE
   SUSPENDED
+  UNVERIFIED
 }
 
 enum OrderStatus {

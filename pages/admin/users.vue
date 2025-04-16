@@ -10,7 +10,7 @@
                 <h1 class="text-3xl font-semibold mb-8">User Management</h1>
 
                 <!-- User Stats Boxes -->
-                <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-3 gap-6 mb-8">
+                <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
                     <!-- Total Users -->
                     <div class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-red-600">
                         <p class="text-lg font-medium">Total Users</p>
@@ -27,6 +27,12 @@
                     <div class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-yellow-600">
                         <p class="text-lg font-medium">Suspended Users</p>
                         <p class="text-4xl font-bold">{{ suspendedUsers }}</p>
+                    </div>
+                    
+                    <!-- Unverified Users -->
+                    <div class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-orange-600">
+                        <p class="text-lg font-medium">Unverified Users</p>
+                        <p class="text-4xl font-bold">{{ unverifiedUsers }}</p>
                     </div>
                 </div>
 
@@ -63,13 +69,14 @@
                                 <th class="py-3 px-4 text-left font-semibold text-gray-700">Contact Number</th>
                                 <th class="py-3 px-4 text-left font-semibold text-gray-700">Email</th>
                                 <th class="py-3 px-4 text-left font-semibold text-gray-700">Role</th>
+                                <th class="py-3 px-4 text-left font-semibold text-gray-700">Status</th>
                                 <th class="py-3 px-4 text-center font-semibold text-gray-700">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             <!-- Loading Spinner -->
                             <tr v-if="loading" class="text-center">
-                                <td colspan="5" class="py-4">Loading users...</td>
+                                <td colspan="6" class="py-4">Loading users...</td>
                             </tr>
 
                             <!-- Users -->
@@ -80,8 +87,44 @@
                                 <td class="py-4 px-4 border-b text-left truncate">{{ user.contact }}</td>
                                 <td class="py-4 px-4 border-b text-left truncate">{{ user.email }}</td>
                                 <td class="py-4 px-4 border-b text-left">{{ (user.role.charAt(0).toUpperCase() + user.role.slice(1).toLowerCase()) }}</td>
+                                <td class="py-4 px-4 border-b text-left">
+                                    <span :class="{
+                                        'px-2 py-1 rounded-full text-xs font-semibold': true,
+                                        'bg-green-100 text-green-800': user.status === 'ACTIVE',
+                                        'bg-red-100 text-red-800': user.status === 'SUSPENDED',
+                                        'bg-yellow-100 text-yellow-800': user.status === 'UNVERIFIED',
+                                        'bg-gray-100 text-gray-800': user.status === 'INACTIVE'
+                                    }">
+                                        {{ user.status }}
+                                    </span>
+                                </td>
                                 <td class="py-4 px-4 border-b text-center">
-                                    <button @click="deleteUser(user.email)" class="text-red-600 hover:underline">Delete</button>
+                                    <div class="flex justify-center gap-2">
+                                        <button v-if="user.status === 'UNVERIFIED'" 
+                                                @click="verifyUser(user.email)" 
+                                                class="px-3 py-1.5 bg-green-100 text-green-700 rounded-md text-sm font-medium hover:bg-green-200 border border-green-300 transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-500">
+                                            <span class="flex items-center">
+                                                <Icon name="ph:check-circle" class="mr-1" size="16" />
+                                                Verify
+                                            </span>
+                                        </button>
+                                        <button v-if="user.status === 'ACTIVE'" 
+                                                @click="suspendUser(user.email)" 
+                                                class="px-3 py-1.5 bg-red-100 text-red-700 rounded-md text-sm font-medium hover:bg-red-200 border border-red-300 transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-red-500">
+                                            <span class="flex items-center">
+                                                <Icon name="ph:prohibit" class="mr-1" size="16" />
+                                                Suspend
+                                            </span>
+                                        </button>
+                                        <button v-if="user.status === 'SUSPENDED' || user.status === 'INACTIVE'" 
+                                                @click="reactivateUser(user.email)" 
+                                                class="px-3 py-1.5 bg-blue-100 text-blue-700 rounded-md text-sm font-medium hover:bg-blue-200 border border-blue-300 transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                            <span class="flex items-center">
+                                                <Icon name="ph:arrows-clockwise" class="mr-1" size="16" />
+                                                Reactivate
+                                            </span>
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         </tbody>
@@ -89,6 +132,44 @@
                 </div>
             </div>
         </AdminLayout>
+
+        <!-- Toast Notifications -->
+        <div class="fixed top-24 right-4 z-50">
+            <div v-for="toast in toasts" :key="toast.id"
+            class="mb-2 p-4 rounded-lg shadow-lg transform transition-all duration-300 animate-slide-in" 
+            :class="{
+                'bg-green-500 text-white': toast.type === 'success',
+                'bg-red-500 text-white': toast.type === 'error',
+                'bg-yellow-500 text-white': toast.type === 'warning',
+                'bg-blue-500 text-white': toast.type === 'info'
+            }">
+            {{ toast.message }}
+            </div>
+        </div>
+        
+        <!-- Confirmation Toast -->
+        <div v-if="confirmationToast.show" class="fixed top-24 right-4 z-50">
+            <div class="mb-2 p-4 rounded-lg shadow-lg transform transition-all duration-300 animate-slide-in bg-white border border-gray-300">
+                <div class="flex flex-col">
+                    <div class="mb-3 font-medium">{{ confirmationToast.message }}</div>
+                    <div class="flex justify-end gap-2">
+                        <button @click="confirmationToast.onCancel()" 
+                                class="px-3 py-1 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 border border-gray-300">
+                            Cancel
+                        </button>
+                        <button @click="confirmationToast.onConfirm()" 
+                                :class="{
+                                    'px-3 py-1 text-white rounded-md border': true,
+                                    'bg-green-500 hover:bg-green-600 border-green-600': confirmationToast.type === 'verify',
+                                    'bg-red-500 hover:bg-red-600 border-red-600': confirmationToast.type === 'suspend',
+                                    'bg-blue-500 hover:bg-blue-600 border-blue-600': confirmationToast.type === 'reactivate'
+                                }">
+                            Confirm
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- Register Modal -->
         <div v-if="isRegisterModalVisible"
@@ -202,12 +283,52 @@
     const errorMsg = ref(null);
     const successMsg = ref(null);
 
+    // Toast notification state
+    const toasts = ref([]);
+    
+    // Confirmation toast
+    const confirmationToast = ref({
+        show: false,
+        message: '',
+        type: '', // 'verify', 'suspend', 'reactivate'
+        onConfirm: () => {},
+        onCancel: () => {
+            confirmationToast.value.show = false;
+        }
+    });
+    
+    // Function to show confirmation toast
+    const showConfirmation = (message, type, onConfirm) => {
+        confirmationToast.value = {
+            show: true,
+            message,
+            type,
+            onConfirm: () => {
+                confirmationToast.value.show = false;
+                onConfirm();
+            },
+            onCancel: () => {
+                confirmationToast.value.show = false;
+            }
+        };
+    };
+    
+    // Function to show toast notification
+    const showToast = (message, type = 'success') => {
+        const id = Date.now();
+        toasts.value.push({ id, message, type });
+        setTimeout(() => {
+            toasts.value = toasts.value.filter(t => t.id !== id);
+        }, 3000);
+    };
+
     // State for users
     const users = ref([]);
 
-    // User statistics
+    // State for user statistics
     const buyers = ref(0);
     const suspendedUsers = ref(0);
+    const unverifiedUsers = ref(0);
 
     // Fetch users from Prisma API
     const fetchUsers = async () => {
@@ -237,7 +358,8 @@
     // Function to update statistics for user roles
     const updateStats = () => {
         buyers.value = users.value.filter((user) => user.role === "Buyer").length;
-        suspendedUsers.value = users.value.filter((user) => user.status === "Suspended").length;
+        suspendedUsers.value = users.value.filter((user) => user.status === "SUSPENDED").length;
+        unverifiedUsers.value = users.value.filter((user) => user.status === "UNVERIFIED").length;
     };
 
     // Lifecycle hook to load users when the component is mounted
@@ -272,13 +394,11 @@
     // Register method using Supabase from plugin
     const register = async () => {
         if (!email.value || !password.value || !name.value || !contact.value || !role.value) {
-            errorMsg.value = "All fields are required";
+            showToast("All fields are required", "error");
             return;
         }
 
         loading.value = true;
-        errorMsg.value = null;
-        successMsg.value = null;
         let authData = null;
 
         try {
@@ -330,13 +450,13 @@
                 throw new Error(result.message || "Failed to create user in database");
             }
 
-            successMsg.value = "User created successfully!";
+            showToast("User created successfully!", "success");
             fetchUsers(); // Refresh the user list
             closeRegisterModal();
 
         } catch (error) {
             console.error("Registration error:", error);
-            errorMsg.value = error.message || "Registration failed";
+            showToast(error.message || "Registration failed", "error");
 
             // If auth succeeded but Prisma failed, try to clean up
             if (authData?.user?.id) {
@@ -350,7 +470,7 @@
 
     // Delete User Function
     const deleteUser = async (userEmail) => {
-        if (confirm("Are you sure you want to delete this user?")) {
+        showConfirmation("Are you sure you want to delete this user?", "suspend", async () => {
             console.log("Deleting user with email:", userEmail);
 
             try {
@@ -366,20 +486,131 @@
 
                 if (!response.ok) {
                     console.error("Failed to delete user:", result.message);
-                    alert("Failed to delete user: " + result.message);
+                    showToast("Failed to delete user: " + result.message, "error");
                     return;
                 }
 
                 console.log("User deleted successfully");
-                alert("User deleted successfully");
+                showToast("User deleted successfully", "success");
 
                 // Fetch the users again to update the UI
                 fetchUsers();
             } catch (err) {
                 console.error("Unexpected error occurred while deleting user:", err);
-                alert("Unexpected error occurred: " + err.message);
+                showToast("Unexpected error occurred: " + err.message, "error");
             }
-        }
+        });
+    };
+
+    // Verify User Function
+    const verifyUser = async (userEmail) => {
+        showConfirmation("Are you sure you want to verify this user?", "verify", async () => {
+            console.log("Verifying user with email:", userEmail);
+
+            try {
+                const response = await fetch('/api/prisma/updateUserStatus', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        email: userEmail,
+                        status: 'ACTIVE'
+                    }),
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    console.error("Failed to verify user:", result.message);
+                    showToast("Failed to verify user: " + result.message, "error");
+                    return;
+                }
+
+                console.log("User verified successfully");
+                showToast("User verified successfully", "success");
+
+                // Fetch the users again to update the UI
+                fetchUsers();
+            } catch (err) {
+                console.error("Unexpected error occurred while verifying user:", err);
+                showToast("Unexpected error occurred: " + err.message, "error");
+            }
+        });
+    };
+
+    // Suspend User Function
+    const suspendUser = async (userEmail) => {
+        showConfirmation("Are you sure you want to suspend this user? They will not be able to log in.", "suspend", async () => {
+            console.log("Suspending user with email:", userEmail);
+
+            try {
+                const response = await fetch('/api/prisma/updateUserStatus', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        email: userEmail,
+                        status: 'SUSPENDED'
+                    }),
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    console.error("Failed to suspend user:", result.message);
+                    showToast("Failed to suspend user: " + result.message, "error");
+                    return;
+                }
+
+                console.log("User suspended successfully");
+                showToast("User suspended successfully", "warning");
+
+                // Fetch the users again to update the UI
+                fetchUsers();
+            } catch (err) {
+                console.error("Unexpected error occurred while suspending user:", err);
+                showToast("Unexpected error occurred: " + err.message, "error");
+            }
+        });
+    };
+
+    // Reactivate User Function
+    const reactivateUser = async (userEmail) => {
+        showConfirmation("Are you sure you want to reactivate this user?", "reactivate", async () => {
+            console.log("Reactivating user with email:", userEmail);
+
+            try {
+                const response = await fetch('/api/prisma/updateUserStatus', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        email: userEmail,
+                        status: 'ACTIVE'
+                    }),
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    console.error("Failed to reactivate user:", result.message);
+                    showToast("Failed to reactivate user: " + result.message, "error");
+                    return;
+                }
+
+                console.log("User reactivated successfully");
+                showToast("User reactivated successfully", "info");
+
+                // Fetch the users again to update the UI
+                fetchUsers();
+            } catch (err) {
+                console.error("Unexpected error occurred while reactivating user:", err);
+                showToast("Unexpected error occurred: " + err.message, "error");
+            }
+        });
     };
 
     // Computed property for filtered users
@@ -402,5 +633,20 @@
 
     button:hover .group-hover\:text-white {
         color: white;
+    }
+    
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    .animate-slide-in {
+        animation: slideIn 0.3s ease-out;
     }
 </style>

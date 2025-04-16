@@ -75,6 +75,15 @@
                 </div>
 
                 <div>
+                    <label for="role" class="block text-base md:text-lg pb-2 font-medium text-gray-700">Register as</label>
+                    <select id="role" v-model="registerRole"
+                           class="w-full p-3 border border-gray-400 rounded-md focus:ring-2 focus:ring-[#0C6539]" required>
+                        <option value="Buyer">Buyer</option>
+                        <option value="Admin">Admin</option>
+                    </select>
+                </div>
+
+                <div>
                     <button type="submit" :disabled="loading"
                             class="w-full py-3 bg-[#0C6539] text-white font-semibold rounded-md hover:bg-[#0A5230] focus:outline-none focus:ring-2 focus:ring-blue-400">
                         <span v-if="loading">Creating account...</span>
@@ -118,6 +127,7 @@
     const registerPassword = ref("");
     const registerName = ref("");
     const registerContact = ref("");
+    const registerRole = ref("Buyer"); // Default to Buyer
 
     // Login function (existing - kept exactly as is)
     const login = async () => {
@@ -134,12 +144,51 @@
                 toastMessage.value = "Login failed: " + response.error.message;
                 toastClass.value = "bg-red-500 text-white";
             } else if (response.data.user) {
-                const userData = response.data.user.user_metadata?.role || "User";
                 await userStore.fetchUser();
+                
+                // Check if user is verified
+                if (userStore.profile && userStore.profile.status === 'UNVERIFIED') {
+                    // Log the user out immediately
+                    await client.auth.signOut();
+                    toastMessage.value = "Your account is pending verification by an administrator. Please check back later.";
+                    toastClass.value = "bg-yellow-500 text-white";
+                    setTimeout(() => {
+                        toastMessage.value = null;
+                    }, 5000);
+                    loading.value = false;
+                    return;
+                }
+                
+                // Check if user is suspended
+                if (userStore.profile && userStore.profile.status === 'SUSPENDED') {
+                    // Log the user out immediately
+                    await client.auth.signOut();
+                    toastMessage.value = "Your account has been suspended. Please contact the administrator.";
+                    toastClass.value = "bg-red-500 text-white";
+                    setTimeout(() => {
+                        toastMessage.value = null;
+                    }, 5000);
+                    loading.value = false;
+                    return;
+                }
+                
+                // Check if user is inactive
+                if (userStore.profile && userStore.profile.status === 'INACTIVE') {
+                    // Log the user out immediately
+                    await client.auth.signOut();
+                    toastMessage.value = "Your account is inactive. Please contact the administrator.";
+                    toastClass.value = "bg-gray-500 text-white";
+                    setTimeout(() => {
+                        toastMessage.value = null;
+                    }, 5000);
+                    loading.value = false;
+                    return;
+                }
+                
                 userStore.isLoading = 1;
                 await userStore.fetchCartItems();
                 await userStore.fetchOrders();
-                toastMessage.value = "Successfully logged in as " + userData.toLowerCase() + "!";
+                toastMessage.value = "Successfully logged in!";
                 toastClass.value = "bg-green-500 text-white";
 
                 if (userStore.isAdmin) {
@@ -167,6 +216,7 @@
         toastMessage.value = null;
 
         try {
+            // 1. Create user in Supabase Auth
             const { data, error } = await client.auth.signUp({
                 email: registerEmail.value,
                 password: registerPassword.value,
@@ -174,14 +224,37 @@
                     data: {
                         name: registerName.value,
                         contact: registerContact.value,
-                        role: 'Buyer' // Default role for new registrations
+                        role: registerRole.value
                     }
                 }
             });
 
             if (error) throw error;
+            
+            // 2. Save user to Prisma database
+            if (data.user) {
+                const createUserResponse = await fetch('/api/prisma/createUser', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        id: data.user.id,
+                        email: registerEmail.value,
+                        name: registerName.value,
+                        contact: registerContact.value,
+                        role: registerRole.value,
+                        status: 'UNVERIFIED' // New users start as unverified
+                    }),
+                });
 
-            toastMessage.value = "Registration successful! Please check your email to verify your account.";
+                const createUserResult = await createUserResponse.json();
+                if (!createUserResponse.ok) {
+                    throw new Error(createUserResult.error || 'Failed to create user record');
+                }
+            }
+
+            toastMessage.value = "Registration successful! Your account requires admin verification before you can log in.";
             toastClass.value = "bg-green-500 text-white";
 
             // Reset form
@@ -189,6 +262,7 @@
             registerPassword.value = "";
             registerName.value = "";
             registerContact.value = "";
+            registerRole.value = "Buyer";
 
             // Switch back to login view
             isLogin.value = true;
@@ -200,7 +274,7 @@
             loading.value = false;
             setTimeout(() => {
                 toastMessage.value = null;
-            }, 3000);
+            }, 5000); // Increased to 5 seconds for the longer message
         }
     };
 

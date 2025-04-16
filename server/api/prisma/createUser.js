@@ -5,9 +5,9 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 export default defineEventHandler(async (event) => {
-  const body = await useBody(event);
+  const body = await readBody(event);
   
-  const { id, email, name, contactNumber, role } = body;
+  const { id, email, name, contact, role, status } = body;
 
   // Store the user data in Prisma
   try {
@@ -16,8 +16,9 @@ export default defineEventHandler(async (event) => {
         id,                 // Supabase Auth user ID
         email,              // User email from the request
         name,               // User name
-        contactNumber,      // User contact number (optional)
+        contact,            // User contact number
         role,               // User role (you can assign "USER" by default or make it dynamic)
+        status,             // User status (ACTIVE or SUSPENDED)
         created_at: new Date(), // Timestamp when the user is created
       },
     });

@@ -12,6 +12,7 @@ export default defineEventHandler(async (event) => {
 
     // If store config doesn't exist, create it with default values
     if (!storeConfig) {
+      console.log('Creating default store configuration...');
       storeConfig = await prisma.storeConfig.create({
         data: {
           key: 'store_hours',
@@ -23,12 +24,24 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    return storeConfig;
+    return {
+      openingHour: storeConfig.openingHour,
+      openingMinute: storeConfig.openingMinute,
+      closingHour: storeConfig.closingHour,
+      closingMinute: storeConfig.closingMinute,
+      key: storeConfig.key
+    };
   } catch (error) {
     console.error('Error fetching store config:', error);
-    throw createError({
-      statusCode: 500,
-      statusMessage: 'Error fetching store configuration',
-    });
+    
+    // Return default values if database access fails
+    return {
+      openingHour: 6,
+      openingMinute: 0,
+      closingHour: 22,
+      closingMinute: 0,
+      key: 'store_hours',
+      isDefault: true
+    };
   }
 }); 
