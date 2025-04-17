@@ -1,7 +1,7 @@
   <template>
     <AdminLayout>
       <Loading v-if="isLoading" />
-      <div id="ItemPage" class="mt-0 max-w-[1200px] mx-auto px-4">
+      <div id="ItemPage" class="mt-4 max-w-[1200px] mx-auto px-4">
         <!-- Breadcrumb -->
         <nav class="mb-6 flex items-center text-sm text-gray-500">
           <NuxtLink to="/" class="hover:text-green-600 transition-colors">Home</NuxtLink>
