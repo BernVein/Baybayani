@@ -24,7 +24,7 @@ export const useUserStore = defineStore("user", {
     // New state for cancelled orders
     cancelledOrders: [],
     showCancelledOrdersPopup: false,
-    hasSeenCancelledOrders: false
+    hasSeenCancelledOrders: false,
   }),
 
   actions: {
@@ -35,27 +35,27 @@ export const useUserStore = defineStore("user", {
         // Parse input values
         const parsedHour = parseInt(hour);
         const parsedMinute = parseInt(minute);
-        
+
         // Update the database
-        const response = await $fetch('/api/prisma/update-store-config', {
-          method: 'POST',
+        const response = await $fetch("/api/prisma/update-store-config", {
+          method: "POST",
           body: {
             openingHour: this.openingHour,
             openingMinute: this.openingMinute,
             closingHour: parsedHour,
-            closingMinute: parsedMinute
-          }
+            closingMinute: parsedMinute,
+          },
         });
-        
+
         if (response.success) {
           // Update local state
           this.closingHour = parsedHour;
           this.closingMinute = parsedMinute;
-          
+
           // Also update localStorage as fallback
-          localStorage.setItem('closingHour', parsedHour.toString());
-          localStorage.setItem('closingMinute', parsedMinute.toString());
-          
+          localStorage.setItem("closingHour", parsedHour.toString());
+          localStorage.setItem("closingMinute", parsedMinute.toString());
+
           return true;
         } else {
           throw new Error("Failed to update store hours in database");
@@ -75,27 +75,27 @@ export const useUserStore = defineStore("user", {
         // Parse input values
         const parsedHour = parseInt(hour);
         const parsedMinute = parseInt(minute);
-        
+
         // Update the database
-        const response = await $fetch('/api/prisma/update-store-config', {
-          method: 'POST',
+        const response = await $fetch("/api/prisma/update-store-config", {
+          method: "POST",
           body: {
             openingHour: parsedHour,
             openingMinute: parsedMinute,
             closingHour: this.closingHour,
-            closingMinute: this.closingMinute
-          }
+            closingMinute: this.closingMinute,
+          },
         });
-        
+
         if (response.success) {
           // Update local state
           this.openingHour = parsedHour;
           this.openingMinute = parsedMinute;
-          
+
           // Also update localStorage as fallback
-          localStorage.setItem('openingHour', parsedHour.toString());
-          localStorage.setItem('openingMinute', parsedMinute.toString());
-          
+          localStorage.setItem("openingHour", parsedHour.toString());
+          localStorage.setItem("openingMinute", parsedMinute.toString());
+
           return true;
         } else {
           throw new Error("Failed to update store hours in database");
@@ -120,9 +120,9 @@ export const useUserStore = defineStore("user", {
 
     // Helper to format time
     formatTime(hour, minute) {
-      const period = hour >= 12 ? 'PM' : 'AM';
+      const period = hour >= 12 ? "PM" : "AM";
       const displayHour = hour % 12 || 12; // Convert 0 to 12 for 12 AM
-      const displayMinute = minute.toString().padStart(2, '0');
+      const displayMinute = minute.toString().padStart(2, "0");
       return `${displayHour}:${displayMinute} ${period}`;
     },
 
@@ -132,40 +132,40 @@ export const useUserStore = defineStore("user", {
       const now = new Date();
       const utcTime = now.getTime() + now.getTimezoneOffset() * 60000;
       const phTime = new Date(utcTime + 3600000 * 8); // UTC+8 for Philippines
-      
+
       const currentHour = phTime.getHours();
       const currentMinute = phTime.getMinutes();
-      
+
       // Check if current time is outside operating hours
       const isBeforeOpening =
         currentHour < this.openingHour ||
         (currentHour === this.openingHour &&
           currentMinute < this.openingMinute);
-      
+
       const isAfterClosing =
         currentHour > this.closingHour ||
         (currentHour === this.closingHour &&
           currentMinute >= this.closingMinute);
-      
+
       // Store is closed if before opening or after closing
       const isStoreClosed = isBeforeOpening || isAfterClosing;
-      
+
       // Get current route
       const route = useRoute();
-      
+
       // Skip the check for admin routes, login page and closed page
       const isAdminRoute = route.fullPath.startsWith("/admin");
       const isLoginPage = route.fullPath === "/login";
       const isClosedPage = route.fullPath === "/closed";
-      
+
       // If store is closed and user is not on admin/login/closed page, redirect to closed
       if (isStoreClosed && !isAdminRoute && !isLoginPage && !isClosedPage) {
         if (!this.isAdmin) {
-          navigateTo('/closed');
+          navigateTo("/closed");
           return true; // Store is closed
         }
       }
-      
+
       return false; // Store is open
     },
 
@@ -173,36 +173,50 @@ export const useUserStore = defineStore("user", {
     async initializeTimeSettings() {
       try {
         // Try to get from database first
-        const storeConfig = await $fetch('/api/prisma/get-store-config');
-        
+        const storeConfig = await $fetch("/api/prisma/get-store-config");
+
         if (storeConfig) {
           // Update state with values from database
           this.openingHour = storeConfig.openingHour;
           this.openingMinute = storeConfig.openingMinute;
           this.closingHour = storeConfig.closingHour;
           this.closingMinute = storeConfig.closingMinute;
-          
+
           // Also update localStorage as fallback
-          localStorage.setItem('openingHour', storeConfig.openingHour.toString());
-          localStorage.setItem('openingMinute', storeConfig.openingMinute.toString());
-          localStorage.setItem('closingHour', storeConfig.closingHour.toString());
-          localStorage.setItem('closingMinute', storeConfig.closingMinute.toString());
-          
+          localStorage.setItem(
+            "openingHour",
+            storeConfig.openingHour.toString()
+          );
+          localStorage.setItem(
+            "openingMinute",
+            storeConfig.openingMinute.toString()
+          );
+          localStorage.setItem(
+            "closingHour",
+            storeConfig.closingHour.toString()
+          );
+          localStorage.setItem(
+            "closingMinute",
+            storeConfig.closingMinute.toString()
+          );
+
           return true;
         }
       } catch (error) {
         console.error("Error fetching store hours from database:", error);
-        
+
         // Fallback to localStorage if database fetch fails
-        const storedClosingHour = localStorage.getItem('closingHour');
-        const storedClosingMinute = localStorage.getItem('closingMinute');
-        const storedOpeningHour = localStorage.getItem('openingHour');
-        const storedOpeningMinute = localStorage.getItem('openingMinute');
-        
+        const storedClosingHour = localStorage.getItem("closingHour");
+        const storedClosingMinute = localStorage.getItem("closingMinute");
+        const storedOpeningHour = localStorage.getItem("openingHour");
+        const storedOpeningMinute = localStorage.getItem("openingMinute");
+
         if (storedClosingHour) this.closingHour = parseInt(storedClosingHour);
-        if (storedClosingMinute) this.closingMinute = parseInt(storedClosingMinute);
+        if (storedClosingMinute)
+          this.closingMinute = parseInt(storedClosingMinute);
         if (storedOpeningHour) this.openingHour = parseInt(storedOpeningHour);
-        if (storedOpeningMinute) this.openingMinute = parseInt(storedOpeningMinute);
+        if (storedOpeningMinute)
+          this.openingMinute = parseInt(storedOpeningMinute);
       }
     },
 
@@ -210,52 +224,55 @@ export const useUserStore = defineStore("user", {
     async checkAndRestoreSession() {
       try {
         const client = useSupabaseClient();
-        const { data: { session }, error } = await client.auth.getSession();
-        
+        const {
+          data: { session },
+          error,
+        } = await client.auth.getSession();
+
         if (error) {
           console.error("Error checking session:", error);
           return false;
         }
-        
+
         if (!session) {
           console.warn("No active session found");
           return false;
         }
-        
+
         // If we have a session but user state is not set, restore it
         if (session && !this.user) {
           this.user = session.user;
           try {
             const profileData = await fetchUserProfile(this.user.id);
             this.profile = profileData;
-            
+
             // Check if user is unverified and log them out if so
-            if (this.profile && this.profile.status === 'UNVERIFIED') {
+            if (this.profile && this.profile.status === "UNVERIFIED") {
               console.warn("Unverified user attempted to restore session");
               await client.auth.signOut();
               this.user = null;
               this.profile = null;
               return false;
             }
-            
+
             // Check if user is suspended and log them out if so
-            if (this.profile && this.profile.status === 'SUSPENDED') {
+            if (this.profile && this.profile.status === "SUSPENDED") {
               console.warn("Suspended user attempted to restore session");
               await client.auth.signOut();
               this.user = null;
               this.profile = null;
               return false;
             }
-            
+
             // Check if user is inactive and log them out if so
-            if (this.profile && this.profile.status === 'INACTIVE') {
+            if (this.profile && this.profile.status === "INACTIVE") {
               console.warn("Inactive user attempted to restore session");
               await client.auth.signOut();
               this.user = null;
               this.profile = null;
               return false;
             }
-            
+
             // Only fetch cart items if profile exists and user is not an admin
             if (this.profile && this.profile.role !== "Admin") {
               await this.fetchCartItems();
@@ -265,7 +282,7 @@ export const useUserStore = defineStore("user", {
           }
           return true;
         }
-        
+
         return !!session;
       } catch (err) {
         console.error("Error in checkAndRestoreSession:", err);
@@ -296,7 +313,7 @@ export const useUserStore = defineStore("user", {
           if (!this.isAdmin()) {
             await this.fetchCartItems();
           }
-          
+
           // Initialize time settings
           await this.initializeTimeSettings();
 
@@ -462,57 +479,63 @@ export const useUserStore = defineStore("user", {
         const now = new Date();
         const utcTime = now.getTime() + now.getTimezoneOffset() * 60000;
         const phTime = new Date(utcTime + 3600000 * 8); // UTC+8 for Philippines
-        
+
         const currentHour = phTime.getHours();
         const currentMinute = phTime.getMinutes();
-        
-        const isClosingTime = 
+
+        const isClosingTime =
           currentHour > this.closingHour ||
-          (currentHour === this.closingHour && currentMinute >= this.closingMinute);
-        
+          (currentHour === this.closingHour &&
+            currentMinute >= this.closingMinute);
+
         if (isClosingTime) {
-          const response = await $fetch('/api/prisma/cancel-pending-orders');
+          const response = await $fetch("/api/prisma/cancel-pending-orders");
           if (response.success && response.cancelledOrders.length > 0) {
             this.cancelledOrders = response.cancelledOrders;
             this.hasSeenCancelledOrders = false;
-            localStorage.removeItem('hasSeenCancelledOrders'); // Reset the flag
+            localStorage.removeItem("hasSeenCancelledOrders"); // Reset the flag
           }
         }
       } catch (error) {
-        console.error('Error checking and cancelling pending orders:', error);
+        console.error("Error checking and cancelling pending orders:", error);
       }
     },
 
     async fetchTodaysCancelledOrders() {
       if (!this.user) return;
-      
+
       try {
-        const today = new Date().toISOString().split('T')[0];
-        const response = await $fetch(`/api/prisma/get-cancelled-orders-by-date/${this.user.id}`, {
-          method: 'POST',
-          body: { date: today }
-        });
-        
+        const today = new Date().toISOString().split("T")[0];
+        const response = await $fetch(
+          `/api/prisma/get-cancelled-orders-by-date/${this.user.id}`,
+          {
+            method: "POST",
+            body: { date: today },
+          }
+        );
+
         if (response.success) {
           this.cancelledOrders = response.orders;
-          
+
           // Show popup if there are cancelled orders and user hasn't seen them
           if (response.orders.length > 0 && !this.hasSeenCancelledOrders) {
-            const hasSeenCancelledOrders = localStorage.getItem('hasSeenCancelledOrders');
+            const hasSeenCancelledOrders = localStorage.getItem(
+              "hasSeenCancelledOrders"
+            );
             if (!hasSeenCancelledOrders) {
               this.showCancelledOrdersPopup = true;
             }
           }
         }
       } catch (error) {
-        console.error('Error fetching cancelled orders:', error);
+        console.error("Error fetching cancelled orders:", error);
       }
     },
 
     markCancelledOrdersAsSeen() {
       this.hasSeenCancelledOrders = true;
       this.showCancelledOrdersPopup = false;
-      localStorage.setItem('hasSeenCancelledOrders', 'true');
+      localStorage.setItem("hasSeenCancelledOrders", "true");
     },
   },
   persist: {

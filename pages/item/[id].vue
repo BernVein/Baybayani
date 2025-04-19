@@ -1,162 +1,172 @@
-  <template>
-    <AdminLayout>
-      <Loading v-if="isLoading" />
-      <div id="ItemPage" class="mt-4 max-w-[1200px] mx-auto px-4">
-        <!-- Breadcrumb -->
-        <nav class="mb-6 flex items-center text-sm text-gray-500">
-          <NuxtLink to="/" class="hover:text-green-600 transition-colors">Home</NuxtLink>
-          <span class="mx-2">›</span>
-          <span class="text-gray-800">{{ product?.data?.title || 'Product Details' }}</span>
-        </nav>
+<template>
+  <AdminLayout>
+    <Loading v-if="isLoading" />
+    <div id="ItemPage" class="max-w-[1200px] mx-auto px-4">
+      <!-- Breadcrumb -->
+      <nav class="mb-6 flex items-center text-sm  text-gray-500">
+        <NuxtLink to="/" class="hover:text-green-600 transition-colors">Home</NuxtLink>
+        <span class="mx-2">›</span>
+        <span class="text-gray-800 font-medium">{{ product?.data?.title || 'Product Details' }}</span>
+      </nav>
 
-        <div class="flex flex-col lg:flex-row gap-10 justify-between mx-auto w-full">
-          <!-- Left Section: Images -->
-          <div class="w-full lg:w-[45%]">
-            <div class="sticky top-24">
-              <div class="relative group">
-                <img v-if="currentImage"
-                  class="rounded-2xl object-cover w-full h-[500px] transition-all duration-500 ease-in-out shadow-lg group-hover:shadow-2xl"
-                  :src="currentImage" :alt="product?.data?.title" />
-                
-                <!-- Zoom overlay -->
-                <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-5 transition-all duration-300 rounded-2xl"></div>
-                
-                <!-- Stock badge -->
-                <div v-if="product?.data?.stock <= 0"
-                  class="absolute top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-full font-semibold shadow-lg">
-                  Out of Stock
-                </div>
+      <div class="flex flex-col lg:flex-row gap-10 justify-between mx-auto w-full">
+        <!-- Left Section: Images -->
+        <div class="w-full lg:w-[45%]">
+          <div class="sticky top-24">
+            <div class="relative group">
+              <img v-if="currentImage"
+                class="rounded-2xl object-cover w-full h-[500px] transition-all duration-500 ease-in-out shadow-lg group-hover:shadow-2xl"
+                :src="currentImage" :alt="product?.data?.title" />
+
+              <!-- Zoom overlay -->
+              <div
+                class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-5 transition-all duration-300 rounded-2xl">
               </div>
-              
-              <div class="flex mt-6 gap-4 justify-center">
-                <img v-for="(image, index) in images" :key="index" :src="image"
-                  class="h-24 w-24 object-cover rounded-lg border-2 cursor-pointer transition-all duration-300 ease-in-out hover:scale-105"
-                  :class="currentImage === image ? 'border-green-500 shadow-lg' : 'border-transparent'"
-                  @click="currentImage = image" :alt="`${product?.data?.title} thumbnail ${index + 1}`" />
+
+              <!-- Stock badge -->
+              <div v-if="product?.data?.stock <= 0"
+                class="absolute top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-full font-semibold shadow-lg">
+                Out of Stock
               </div>
             </div>
+
+            <div class="flex mt-6 gap-4 justify-center">
+              <img v-for="(image, index) in images" :key="index" :src="image"
+                class="h-24 w-24 object-cover rounded-lg border-2 cursor-pointer transition-all duration-300 ease-in-out hover:scale-105"
+                :class="currentImage === image ? 'border-green-500 shadow-lg' : 'border-transparent'"
+                @click="currentImage = image" :alt="`${product?.data?.title} thumbnail ${index + 1}`" />
+            </div>
           </div>
+        </div>
 
-          <!-- Right Section: Product Details -->
-          <div class="w-full lg:w-[55%]">
-            <div v-if="product && product.data" class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
-              <!-- Title and Price -->
-              <div class="space-y-4">
-                <h1 class="text-3xl lg:text-4xl font-bold text-gray-800 leading-tight">
-                  {{ product.data.title }}
-                </h1>
-                <div class="flex items-center justify-between">
-                  <div class="text-2xl lg:text-3xl font-bold text-green-600">
-                    ₱{{ product.data.price }} <span class="text-lg text-gray-500 font-normal">per kg</span>
+        <!-- Right Section: Product Details -->
+        <div class="w-full lg:w-[55%]">
+          <div v-if="product && product.data" class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+            <!-- Title and Price -->
+            <div class="space-y-4">
+              <h1 class="text-3xl lg:text-4xl font-bold text-gray-800 leading-tight">
+                {{ product.data.title }}
+              </h1>
+              <div class="flex items-center justify-between">
+                <div class="text-2xl lg:text-3xl font-bold text-green-600">
+                  ₱{{ product.data.price }} <span class="text-lg text-gray-500 font-normal">per kg</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <div class="h-3 w-3 rounded-full" :class="product.data.stock > 0 ? 'bg-green-500' : 'bg-red-500'">
                   </div>
-                  <div class="flex items-center gap-2">
-                    <div class="h-3 w-3 rounded-full" 
-                      :class="product.data.stock > 0 ? 'bg-green-500' : 'bg-red-500'"></div>
-                    <span :class="product.data.stock > 0 ? 'text-green-600' : 'text-red-500'" class="font-medium">
-                      {{ product.data.stock > 0 ? `${product.data.stock} kg available` : 'Out of Stock' }}
-                    </span>
-                  </div>
+                  <span :class="product.data.stock > 0 ? 'text-green-600' : 'text-red-500'" class="font-medium">
+                    {{ product.data.stock > 0 ? `${product.data.stock} kg available` : 'Out of Stock' }}
+                  </span>
                 </div>
               </div>
+            </div>
 
-              <!-- Description -->
-              <div class="mt-8">
-                <h2 class="text-lg font-semibold text-gray-800 mb-3">Product Details</h2>
-                <p class="text-gray-600 leading-relaxed">
-                  {{ product.data.description }}
-                </p>
-              </div>
+            <!-- Description -->
+            <div class="mt-8">
+              <h2 class="text-lg font-semibold text-gray-800 mb-3">Product Details</h2>
+              <p class="text-gray-600 leading-relaxed">
+                {{ product.data.description }}
+              </p>
+            </div>
 
-              <!-- Quantity Selector -->
-              <div class="mt-8 space-y-6">
-                <div class="flex items-center gap-4">
-                  <label class="font-medium text-gray-700">Quantity:</label>
-                  <div class="flex items-center bg-gray-50 rounded-lg border border-gray-200">
-                    <button @click="decreaseQuantity"
-                      class="w-12 h-12 flex items-center justify-center text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-l-lg transition-colors"
-                      :disabled="parseFloat(inputQuantity) <= 1">
-                      <Icon name="material-symbols:remove" size="20" />
-                    </button>
-                    <input type="text"
-                      class="w-20 h-12 text-center bg-transparent border-x border-gray-200 text-lg font-medium"
-                      v-model="inputQuantity" @input="validateInput" @blur="validateAndUpdateQuantity" />
-                    <button @click="increaseQuantity"
-                      class="w-12 h-12 flex items-center justify-center text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-r-lg transition-colors"
-                      :disabled="product.data.stock <= parseFloat(inputQuantity)">
-                      <Icon name="material-symbols:add" size="20" />
-                    </button>
-                  </div>
-                  <span class="text-sm text-gray-500">kg</span>
-                </div>
-
-                <!-- Total Price -->
-                <div class="text-lg text-gray-600">
-                  Total: <span class="font-bold text-gray-800">₱{{ (product.data.price * parseFloat(inputQuantity)).toFixed(2) }}</span>
-                </div>
-
-                <!-- Action Buttons -->
-                <div class="flex gap-4 pt-4">
-                  <button @click="addToCart"
-                    class="flex-1 h-14 rounded-xl text-white font-semibold bg-green-600 hover:bg-green-700 transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                    :disabled="product.data.stock <= 0">
-                    <Icon name="material-symbols:shopping-cart" size="24" />
-                    Add to Cart
+            <!-- Quantity Selector -->
+            <div class="mt-8 space-y-6">
+              <div class="flex items-center gap-4">
+                <label class="font-medium text-gray-700">Quantity:</label>
+                <div class="flex items-center bg-gray-50 rounded-lg border border-gray-200"
+                  :class="{ 'border-red-500': parseFloat(inputQuantity) > product.data.stock }">
+                  <button @click="decreaseQuantity"
+                    class="w-12 h-12 flex items-center justify-center text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-l-lg transition-colors"
+                    :disabled="parseFloat(inputQuantity) <= 0.25 || product.data.stock <= 0">
+                    <Icon name="material-symbols:remove" size="20" />
                   </button>
-                  <button @click="openChatModal"
-                    class="w-14 h-14 rounded-xl text-blue-600 border border-blue-200 hover:bg-blue-50 transition-all duration-300 flex items-center justify-center">
-                    <Icon name="material-symbols:chat" size="24" />
+                  <input type="text"
+                    class="w-20 h-12 text-center bg-transparent border-x border-gray-200 text-lg font-medium"
+                    v-model="inputQuantity" @input="validateInput" @blur="validateAndUpdateQuantity"
+                    @keydown="preventInvalidInput" :disabled="product.data.stock <= 0"
+                    :class="{ 'text-red-500': parseFloat(inputQuantity) > product.data.stock }" />
+                  <button @click="increaseQuantity"
+                    class="w-12 h-12 flex items-center justify-center text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-r-lg transition-colors"
+                    :disabled="product.data.stock <= parseFloat(inputQuantity) || product.data.stock <= 0">
+                    <Icon name="material-symbols:add" size="20" />
                   </button>
                 </div>
+                <span class="text-sm text-gray-500">kg</span>
               </div>
 
-              <!-- Additional Info -->
-              <div class="mt-8 pt-8 border-t border-gray-100">
-                <div class="flex items-center gap-6">
-                  <div class="flex items-center gap-2 text-gray-600">
-                    <Icon name="material-symbols:verified" size="20" class="text-green-500" />
-                    <span>Quality Guaranteed</span>
-                  </div>
-                  <div class="flex items-center gap-2 text-gray-600">
-                    <Icon name="material-symbols:local-shipping" size="20" class="text-green-500" />
-                    <span>Fast Delivery</span>
-                  </div>
+              <!-- Validation message -->
+              <div v-if="parseFloat(inputQuantity) > product.data.stock" class="text-red-500 text-sm animate-pulse">
+                <Icon name="ph:warning" class="inline mr-1" />
+                Maximum available: {{ product.data.stock }} kg
+              </div>
+
+              <!-- Total Price -->
+              <div class="text-lg text-gray-600">
+                Total: <span class="font-bold text-gray-800">₱{{ (product.data.price *
+                  parseFloat(inputQuantity)).toFixed(2) }}</span>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="flex gap-4 pt-4">
+                <button @click="addToCart"
+                  class="flex-1 h-14 rounded-xl text-white font-semibold bg-green-600 hover:bg-green-700 transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  :disabled="product.data.stock <= 0 || parseFloat(inputQuantity) > product.data.stock">
+                  <Icon name="material-symbols:shopping-cart" size="24" />
+                  Add to Cart
+                </button>
+                <button @click="openChatModal"
+                  class="w-14 h-14 rounded-xl text-blue-600 border border-blue-200 hover:bg-blue-50 transition-all duration-300 flex items-center justify-center">
+                  <Icon name="material-symbols:chat" size="24" />
+                </button>
+              </div>
+            </div>
+
+            <!-- Additional Info -->
+            <div class="mt-8 pt-8 border-t border-gray-100">
+              <div class="flex items-center gap-6">
+                <div class="flex items-center gap-2 text-gray-600">
+                  <Icon name="material-symbols:verified" size="20" class="text-green-500" />
+                  <span>Quality Guaranteed</span>
+                </div>
+                <div class="flex items-center gap-2 text-gray-600">
+                  <Icon name="material-symbols:local-shipping" size="20" class="text-green-500" />
+                  <span>Fast Delivery</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
-
-        <!-- Chat Modal -->
-        <div v-if="showChatModal" 
-          class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fade-in">
-          <div class="bg-white rounded-2xl p-6 max-w-md w-full mx-4 transform transition-all duration-300"
-            :class="{ 'scale-95 opacity-0': isFadingOut }">
-            <div class="text-center space-y-4">
-              <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
-                <Icon name="material-symbols:chat" size="32" class="text-blue-600" />
-              </div>
-              <h3 class="text-xl font-semibold text-gray-800">Chat with Seller</h3>
-              <p class="text-gray-600">The chat bubble can be found at the bottom left of your screen.</p>
-              <button @click="closeChatModal"
-                class="w-full py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">
-                Got it!
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Toast Notification -->
-        <div v-if="show" 
-          class="fixed top-24 right-5 max-w-md animate-slide-in">
-          <div class="bg-green-600 text-white p-4 rounded-lg shadow-lg flex items-center gap-3">
-            <Icon name="material-symbols:check-circle" size="24" />
-            <span>{{ message }}</span>
-          </div>
-        </div>
-
       </div>
-    </AdminLayout>
-  </template>
+
+      <!-- Chat Modal -->
+      <div v-if="showChatModal"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fade-in">
+        <div class="bg-white rounded-2xl p-6 max-w-md w-full mx-4 transform transition-all duration-300"
+          :class="{ 'scale-95 opacity-0': isFadingOut }">
+          <div class="text-center space-y-4">
+            <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
+              <Icon name="material-symbols:chat" size="32" class="text-blue-600" />
+            </div>
+            <h3 class="text-xl font-semibold text-gray-800">Chat with Seller</h3>
+            <p class="text-gray-600">The chat bubble can be found at the bottom left of your screen.</p>
+            <button @click="closeChatModal"
+              class="w-full py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">
+              Got it!
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Toast Notification -->
+      <div v-if="show" class="fixed top-24 right-5 max-w-md animate-slide-in">
+        <div class="bg-green-600 text-white p-4 rounded-lg shadow-lg flex items-center gap-3">
+          <Icon name="material-symbols:check-circle" size="24" />
+          <span>{{ message }}</span>
+        </div>
+      </div>
+    </div>
+  </AdminLayout>
+</template>
 
 <script setup>
 import AdminLayout from "~/layouts/AdminLayout.vue";
@@ -164,7 +174,6 @@ import { useUserStore } from "~/stores/user";
 import { ref, computed, onBeforeMount, watchEffect } from "vue";
 
 const user = useSupabaseUser();
-
 const userStore = useUserStore();
 const route = useRoute();
 
@@ -177,32 +186,28 @@ let showGuidedLine = ref(false);
 let isFadingOut = ref(false);
 const role = userStore.profile?.role;
 
-const isLoading = ref(false); // Loading state
-
+const isLoading = ref(false);
 const show = ref(false);
 const message = ref("");
+const inputQuantity = ref("1.00"); // Initialize with 2 decimal places
 
 const showToast = (msg) => {
   message.value = msg;
   show.value = true;
   setTimeout(() => {
     show.value = false;
-  }, 3000); // Hide after 3 seconds
+  }, 3000);
 };
 
 defineExpose({
   showToast,
 });
 
-let inputQuantity = ref(1.0); // Initialize with 1 as the default
-
-
 onBeforeMount(async () => {
   product.value = await useFetch(`/api/prisma/get-product-by-id/${route.params.id}`);
 });
 
 watchEffect(() => {
-
   if (!user.value || role === "Admin") {
     navigateTo("/admin/dashboard");
   }
@@ -210,78 +215,104 @@ watchEffect(() => {
     currentImage.value = product.value.data.url;
     images.value = [product.value.data.url];
     userStore.isLoading = false;
+
+    // Reset quantity to 1 if stock is less than current quantity
+    if (parseFloat(inputQuantity.value) > product.value.data.stock) {
+      inputQuantity.value = "1.00";
+    }
   }
 });
 
+const preventInvalidInput = (e) => {
+  // Allow: backspace, delete, tab, escape, enter, arrows, etc.
+  if ([46, 8, 9, 27, 13, 110, 190].includes(e.keyCode) ||
+    (e.keyCode === 65 && e.ctrlKey === true) ||
+    (e.keyCode === 67 && e.ctrlKey === true) ||
+    (e.keyCode === 86 && e.ctrlKey === true) ||
+    (e.keyCode === 88 && e.ctrlKey === true) ||
+    (e.keyCode >= 35 && e.keyCode <= 39)) {
+    return;
+  }
+
+  // Prevent if not a number or decimal point
+  if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) &&
+    (e.keyCode < 96 || e.keyCode > 105) && e.keyCode !== 110 && e.keyCode !== 190) {
+    e.preventDefault();
+  }
+};
 
 const validateInput = () => {
-  // Regular expression to allow only digits and one decimal point.
-  const regex = /^[0-9]*\.?[0-9]*$/;
+  // Remove any non-numeric characters except decimal point
+  inputQuantity.value = inputQuantity.value.replace(/[^0-9.]/g, '');
 
-  // If the input doesn't match the regex, reset it to the previous value
-  if (!regex.test(inputQuantity.value)) {
-    inputQuantity.value = inputQuantity.value.slice(0, -1); // Remove last character
+  // Ensure only one decimal point
+  const parts = inputQuantity.value.split('.');
+  if (parts.length > 2) {
+    inputQuantity.value = parts[0] + '.' + parts.slice(1).join('');
+  }
+
+  // Limit to 2 decimal places
+  if (parts.length === 2 && parts[1].length > 2) {
+    inputQuantity.value = parts[0] + '.' + parts[1].substring(0, 2);
   }
 };
 
+const validateAndUpdateQuantity = () => {
+  let quantity = parseFloat(inputQuantity.value) || 0.25;
 
-const validateAndUpdateQuantity = async () => {
-  // Parse the value as a float to allow decimals
-  let quantity = parseFloat(inputQuantity.value);
-
-  // If the input is invalid or below 1, set it to 1
-  if (isNaN(quantity) || quantity < 1) {
-    inputQuantity.value = '1';
-  } else if (quantity > 100) {
-    inputQuantity.value = '100'; // Optional: enforce a max quantity
-  } else {
-    // Round the quantity to the nearest 0.25 increment
-    quantity = Math.round(quantity * 4) / 4; // This rounds to the nearest 0.25
-
-    // If the quantity is a whole number, don't display decimals
-    if (Number.isInteger(quantity)) {
-      inputQuantity.value = quantity.toString(); // Remove decimals
-    } else {
-      inputQuantity.value = quantity.toFixed(2); // Keep 2 decimal places
-    }
+  // Ensure minimum of 0.25
+  if (quantity < 0.25) {
+    quantity = 0.25;
   }
 
-  // Update quantity in the store after validation
-  updateQuantity();
+  // Round to nearest 0.25 increment
+  quantity = Math.round(quantity * 4) / 4;
+
+  // Ensure doesn't exceed stock
+  if (product.value?.data?.stock && quantity > product.value.data.stock) {
+    quantity = product.value.data.stock;
+  }
+
+  // Format display
+  inputQuantity.value = quantity % 1 === 0 ? quantity.toString() : quantity.toFixed(2);
 };
-
-
 
 const increaseQuantity = () => {
-  inputQuantity.value = (parseFloat(inputQuantity.value) + 0.25).toFixed(2);
+  let newQuantity = parseFloat(inputQuantity.value) + 0.25;
+
+  if (product.value?.data?.stock && newQuantity > product.value.data.stock) {
+    newQuantity = product.value.data.stock;
+  }
+
+  inputQuantity.value = newQuantity % 1 === 0 ? newQuantity.toString() : newQuantity.toFixed(2);
 };
 
-// Function to decrease quantity
 const decreaseQuantity = () => {
-  if (parseFloat(inputQuantity.value) > 1) {
-    inputQuantity.value = (parseFloat(inputQuantity.value) - 0.25).toFixed(2);
+  let newQuantity = parseFloat(inputQuantity.value) - 0.25;
+
+  if (newQuantity < 0.25) {
+    newQuantity = 0.25;
   }
+
+  inputQuantity.value = newQuantity % 1 === 0 ? newQuantity.toString() : newQuantity.toFixed(2);
 };
 
 const addToCart = async () => {
+  if (!product.value || !userStore.user || parseFloat(inputQuantity.value) > product.value.data.stock) return;
+
   isLoading.value = true;
-
-  if (!product.value || !userStore.user) return;
-
-  const productData = product.value.data;
-  const userId = userStore.user.id;
-
   userStore.isLoading = true;
-
 
   try {
     const quantity = parseFloat(inputQuantity.value);
+    const productData = product.value.data;
+
     addtocartResponse.value = await useFetch(
-      `/api/prisma/add-product-to-cart/${userId}`,
+      `/api/prisma/add-product-to-cart/${userStore.user.id}`,
       {
         method: "POST",
         body: {
-          userId,
+          userId: userStore.user.id,
           productId: productData.id,
           quantity: quantity,
         },
@@ -291,7 +322,7 @@ const addToCart = async () => {
     if (addtocartResponse.value.data.success === 1) {
       userStore.cartItems.push({
         productId: productData.id,
-        quantity: inputQuantity.value,
+        quantity: quantity,
         productTitle: productData.title,
         productPrice: productData.price,
         productUrl: productData.url,
@@ -299,15 +330,14 @@ const addToCart = async () => {
     }
     else if (addtocartResponse.value.data.success === 2) {
       const existingProduct = userStore.cartItems.find(item => item.productId === productData.id);
-      existingProduct.quantity += inputQuantity.value;
+      existingProduct.quantity += quantity;
     }
-
 
     userStore.refreshFlag = 1;
     showToast("Item successfully added to cart!");
-    //await userStore.fetchCartItems();
   } catch (error) {
     console.error("Error adding product to cart:", error);
+    showToast("Failed to add item to cart");
   } finally {
     userStore.isLoading = false;
     isLoading.value = false;
@@ -315,19 +345,12 @@ const addToCart = async () => {
 };
 
 const openChatModal = () => {
-  // Directly open the CometChat widget and start chat with Baybayani Admin
   if (window.CometChatWidget) {
     try {
-      // First make sure the widget is open
       window.CometChatWidget.openOrCloseChat(true);
-
-      // Then start a chat with the specific user "Baybayani Admin"
-      // Note: the parameter should be the UID of the admin user in CometChat
       window.CometChatWidget.chatWithUser("baybayaniadmin");
     } catch (error) {
       console.error("Error opening chat with admin:", error);
-
-      // Fallback to showing the modal if widget can't be opened
       showChatModal.value = true;
       showGuidedLine.value = true;
       setTimeout(() => {
@@ -335,7 +358,6 @@ const openChatModal = () => {
       }, 3000);
     }
   } else {
-    // Fallback to showing the modal if widget isn't available
     showChatModal.value = true;
     showGuidedLine.value = true;
     setTimeout(() => {
@@ -349,7 +371,7 @@ const closeChatModal = () => {
   setTimeout(() => {
     showChatModal.value = false;
     isFadingOut.value = false;
-  }, 500); // Match this duration with the fade-out animation duration
+  }, 500);
 };
 </script>
 
@@ -366,6 +388,7 @@ const closeChatModal = () => {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -376,18 +399,29 @@ const closeChatModal = () => {
     transform: translateX(100%);
     opacity: 0;
   }
+
   to {
     transform: translateX(0);
     opacity: 1;
   }
 }
 
-/* Smooth transitions */
 .scale-95 {
   transform: scale(0.95);
 }
 
 .opacity-0 {
   opacity: 0;
+}
+
+/* Disable number input spinners */
+input[type="text"] {
+  -moz-appearance: textfield;
+}
+
+input[type="text"]::-webkit-outer-spin-button,
+input[type="text"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 </style>

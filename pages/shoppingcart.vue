@@ -3,8 +3,7 @@
   <AdminLayout>
     <div id="ShoppingCartPage" class="mt-4 max-w-[1200px] mx-auto px-2">
       <!-- Empty Cart State -->
-      <div v-if="!filteredCartItems.length" 
-           class="h-[500px] flex items-center justify-center">
+      <div v-if="!filteredCartItems.length" class="h-[500px] flex items-center justify-center">
         <div class="pt-20 transform transition-all duration-500 hover:scale-105">
           <img class="mx-auto drop-shadow-lg" width="250" src="/baybayani-logo.png" />
           <div class="text-xl text-center mt-6 text-gray-700 font-medium">
@@ -13,11 +12,11 @@
           <div class="text-center text-gray-500 mt-2">
             Add some products to get started!
           </div>
-          
+
           <!-- Browse Products Button -->
           <div class="flex justify-center mt-6">
-            <NuxtLink to="/" 
-                      class="bg-[#0C6539] text-white text-lg font-semibold px-6 py-2.5 rounded-lg hover:bg-green-700 transition-colors duration-300 flex items-center">
+            <NuxtLink to="/"
+              class="bg-[#0C6539] text-white text-lg font-semibold px-6 py-2.5 rounded-lg hover:bg-green-700 transition-colors duration-300 flex items-center">
               <Icon name="ph:storefront" class="mr-2" size="22" />
               Browse Products
             </NuxtLink>
@@ -43,20 +42,20 @@
           </h1>
           <p class="text-gray-600 mt-1">Review your items and proceed to checkout</p>
         </div>
-        
+
         <div class="md:flex gap-6 justify-between mx-auto w-full">
           <!-- Left Column - Cart Items -->
           <div class="md:w-[65%]">
-            <div class="bg-white rounded-lg p-5 shadow-sm border border-gray-100">
+            <div class="bg-white rounded-lg px-3 py-2 lg:py-4 lg:px-5  shadow-sm border border-gray-100">
               <div class="flex items-center justify-between mb-4">
                 <div class="flex items-center text-xl font-semibold">
                   <span>Items ({{ filteredCartItems.length }})</span>
                 </div>
-                
+
                 <!-- Select All Feature -->
                 <div class="flex items-center cursor-pointer group" @click="toggleAllItems">
                   <div class="w-5 h-5 border-2 rounded flex items-center justify-center mr-2"
-                      :class="allSelected ? 'border-[#0C6539] bg-[#0C6539]' : 'border-gray-300'">
+                    :class="allSelected ? 'border-[#0C6539] bg-[#0C6539]' : 'border-gray-300'">
                     <Icon v-if="allSelected" name="ph:check" class="text-white" />
                   </div>
                   <span class="text-gray-600 group-hover:text-[#0C6539] transition-colors duration-200">
@@ -64,12 +63,12 @@
                   </span>
                 </div>
               </div>
-              
+
               <!-- Items List with Animation -->
               <div class="divide-y">
                 <TransitionGroup name="cart-item">
                   <div v-for="(cartItem, index) in filteredCartItems" :key="cartItem.id"
-                      class="py-4 transform transition-all duration-300 hover:bg-gray-50">
+                    class="py-4 transform transition-all duration-300 hover:bg-gray-50">
                     <CartItem :product="filteredCartItems[index].product" :selectedArray="selectedArray"
                       @selectedRadio="selectedRadioFunc" />
                   </div>
@@ -84,7 +83,7 @@
               <!-- Order Summary -->
               <div id="Summary" class="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
                 <div class="text-2xl font-bold mb-5 text-gray-800">Order Summary</div>
-                
+
                 <div class="space-y-3 mb-5">
                   <div class="flex items-center justify-between text-gray-600">
                     <div>Selected Items:</div>
@@ -97,18 +96,18 @@
                 </div>
 
                 <div class="border-t border-gray-200 my-4 pt-4"></div>
-                
+
                 <div class="flex items-center justify-between my-2">
                   <div class="font-semibold text-lg text-gray-800">Total</div>
                   <div class="text-2xl font-bold text-[#FD374F]">
                     ₱{{ totalPriceComputed.toLocaleString() }}
                   </div>
                 </div>
-                
+
                 <!-- Checkout Button with Animation -->
                 <button @click="goToCheckout" :disabled="totalItemsCount === 0"
                   class="flex items-center justify-center bg-[#0C6539] w-full text-white text-xl font-semibold p-3 rounded-lg mt-5 hover:bg-green-700 transition-all duration-300 transform hover:scale-[1.02]"
-                  :class="{'opacity-50 cursor-not-allowed': totalItemsCount === 0}">
+                  :class="{ 'opacity-50 cursor-not-allowed': totalItemsCount === 0 }">
                   <Icon name="ph:check-circle" size="24" class="mr-2" />
                   Checkout
                 </button>
@@ -119,7 +118,7 @@
                   Select items to checkout
                 </div>
               </div>
-              
+
               <!-- Shopping Help Card -->
               <div class="bg-blue-50 rounded-lg p-5 mt-4 border border-blue-100">
                 <div class="flex items-start">
@@ -158,18 +157,18 @@ let allSelected = ref(false);
 // Toggle all items selection
 const toggleAllItems = () => {
   allSelected.value = !allSelected.value;
-  
+
   if (allSelected.value) {
     // Select all items
     filteredCartItems.value.forEach(item => {
       if (item.product.stock > 0) { // Only select items in stock
-        const existingIndex = selectedArray.value.findIndex(selectedItem => 
+        const existingIndex = selectedArray.value.findIndex(selectedItem =>
           selectedItem.id === item.product.id);
-          
+
         if (existingIndex === -1) {
-          selectedArray.value.push({ 
-            id: item.product.id, 
-            val: true, 
+          selectedArray.value.push({
+            id: item.product.id,
+            val: true,
             quantity: item.quantity,
             price: item.product.price
           });
@@ -213,7 +212,7 @@ const updateSelectAllState = () => {
   // Check if all available items are selected
   const availableItems = filteredCartItems.value.filter(item => item.product.stock > 0);
   allSelected.value = availableItems.length > 0 && availableItems.every(item => {
-    return selectedArray.value.some(selectedItem => 
+    return selectedArray.value.some(selectedItem =>
       selectedItem.id === item.product.id && selectedItem.val);
   });
 };

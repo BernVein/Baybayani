@@ -1,4 +1,3 @@
-<!--/components/CartItem.vue -->
 <template>
   <div class="flex justify-start my-2">
     <!-- Check Button -->
@@ -9,7 +8,7 @@
 
         <!-- Checkbox to select/deselect product -->
         <div @click="!product.stock <= 0 && toggleSelection()"
-          class="flex items-center border-[#0C6539] justify-center h-[20px] w-[20px] rounded border mr-5 ml-2" :class="{
+          class="flex items-center border-[#0C6539] justify-center h-[20px] w-[20px] rounded border mr-3" :class="{
             'border-[#0C6539] border-2': isSelected,
             'border-gray-300 opacity-50': product.stock <= 0
           }">
@@ -25,7 +24,7 @@
     </div>
 
     <!-- Product Image -->
-    <img class="rounded-md md:w-[150px] w-[90px]" :src="product.url" loading="lazy"
+    <img class="rounded-md w-[140px] h-[138px] md:w-[150px] " :src="product.url" loading="lazy"
       :class="{ 'opacity-50': product.stock <= 0 }" />
 
     <div class="overflow-hidden pl-2 w-full">
@@ -62,14 +61,15 @@
             <!-- Decrease Button -->
             <button @click="decreaseQuantity"
               class="w-[34px] h-[34px] bg-gray-200 hover:bg-gray-300 border border-gray-300 rounded-l-md flex items-center justify-center"
-              :disabled="product.quantity <= 1">
+              :disabled="product.quantity <= 0.25">
               -
             </button>
 
             <!-- Quantity Input -->
             <input type="text" class="w-[45px] h-[34px] text-center border-t border-b border-gray-300 mx-0"
-              v-model="product.quantity" @blur="validateAndUpdateQuantity" @input="validateInput"
-              :max="product.stock" />
+              v-model="quantityDisplay" @blur="validateAndUpdateQuantity" @input="validateInput"
+              @keydown="preventInvalidInput"
+              :class="{ 'border-red-500': parseFloat(product.quantity) > product.stock }" />
 
             <!-- Increase Button -->
             <button @click="increaseQuantity"
@@ -79,40 +79,30 @@
             </button>
           </div>
 
-          <!-- Out of stock message -->
+          <!-- Validation messages -->
           <div v-if="product.stock <= 0" class="text-red-500 text-sm mt-1">
             This product is currently out of stock
           </div>
-          <div v-else-if="product.quantity > product.stock" class="text-red-500 text-sm mt-1">
-            Only {{ product.stock }} kg available
+          <div v-else-if="parseFloat(product.quantity) > product.stock" class="text-red-500 text-xs mt-1 animate-pulse">
+            <Icon name="ph:warning" class="inline mr-1" />
+            Maximum available: {{ product.stock }} kg
           </div>
       </div>
     </div>
 </template>
 
-
 <script setup>
-import { onBeforeMount } from "vue";
-import { useUserStore } from "~/stores/user"; // Import the user store to interact with the global state (e.g., cart)
-const userStore = useUserStore(); // Initialize the user store, allowing access to the cart and other user-related data
+import { onMounted, ref, watch, toRefs } from "vue";
+import { useUserStore } from "~/stores/user";
 
-const props = defineProps(["product", "selectedArray"]); // Define props for `product` and `selectedArray` that will be passed from the parent
-const { product, selectedArray } = toRefs(props); // Create reactive references for `product` and `selectedArray` for use in the component
-
-const emit = defineEmits(["selectedRadio"]); // Define the event `selectedRadio` that this component can emit to its parent
+const userStore = useUserStore();
+const props = defineProps(["product", "selectedArray"]);
+const { product, selectedArray } = toRefs(props);
+const emit = defineEmits(["selectedRadio"]);
 
 let isHover = ref(false);
 let isSelected = ref(false);
-
-watch(
-  () => product.value.stock,
-  (newStock) => {
-    if (newStock <= 0 && isSelected.value) {
-      // Automatically uncheck if product goes out of stock
-      uncheckProduct();
-    }
-  }
-);
+let quantityDisplay = ref('');
 
 onMounted(() => {
   const cartIndex = userStore.cartItems.findIndex(
@@ -122,11 +112,26 @@ onMounted(() => {
   if (cartIndex !== -1) {
     isSelected.value = userStore.cartItems[cartIndex].checked;
     product.value.quantity = userStore.cartItems[cartIndex].quantity;
+    quantityDisplay.value = product.value.quantity.toString();
 
-    // Uncheck if product is out of stock on mount
     if (product.value.stock <= 0 && isSelected.value) {
       uncheckProduct();
     }
+  } else {
+    quantityDisplay.value = product.value.quantity.toString();
+  }
+});
+
+watch(() => product.value.quantity, (newVal) => {
+  quantityDisplay.value = newVal.toString();
+});
+
+watch(() => product.value.stock, (newStock) => {
+  if (newStock <= 0 && isSelected.value) {
+    uncheckProduct();
+  } else if (parseFloat(product.value.quantity) > newStock) {
+    product.value.quantity = newStock;
+    updateQuantity();
   }
 });
 
@@ -136,27 +141,9 @@ const uncheckProduct = async () => {
   emitSelectionUpdate();
 };
 
-
-
-// onMounted(() => {
-//   const cartIndex = userStore.cartItems.findIndex(
-//     (item) => item.productId === product.value.id
-//   );
-
-//   if (cartIndex !== -1) {
-//     isSelected.value = userStore.cartItems[cartIndex].checked;
-//     product.value.quantity = userStore.cartItems[cartIndex].quantity;
-//   } else {
-//     product.value.quantity = 1;
-//   }
-// });
-
 const toggleSelection = async () => {
   if (product.value.stock <= 0) {
-    // Ensure it stays unchecked if out of stock
-    if (isSelected.value) {
-      await uncheckProduct();
-    }
+    if (isSelected.value) await uncheckProduct();
     return;
   }
 
@@ -165,25 +152,19 @@ const toggleSelection = async () => {
   emitSelectionUpdate();
 };
 
-
-
-
 const deleteFromCart = async () => {
-  const userId = userStore.user.id; // Assuming userStore holds user data
-  const productId = props.product.id; // Assuming props.product holds the product to delete
-
-  //console.log("Deleting product:", productId);
+  const userId = userStore.user.id;
+  const productId = props.product.id;
 
   userStore.cartItems = userStore.cartItems.filter(
     (item) => item.productId !== productId
   );
 
   if (isSelected.value) {
-    // This will also notify the parent component to remove this product from `selectedArray`
     emit("selectedRadio", {
       id: product.value.id,
-      quantity: product.value.quantity, // Send the quantity as well
-      val: false, // Unselect the product
+      quantity: product.value.quantity,
+      val: false,
     });
   }
 
@@ -196,240 +177,161 @@ const deleteFromCart = async () => {
     );
 
     const data = await response.json();
-
     if (data.success === 1) {
-      //  console.log("Product successfully removed from cart!");
       await userStore.fetchCartItems();
-      // Optionally update the store or UI here
-    } else {
-      //console.log("Error:", data.message);
     }
   } catch (error) {
     console.error("Error deleting product from cart:", error);
   }
 };
 
-// const toggleSelection = async () => {
-//   console.log("Toggle Clicked!");
-//   isSelected.value = !isSelected.value;
-//   await saveSelectionToDatabase(); // Save the updated selection to the database
-
-//   emitSelectionUpdate();
-// };
-
-// const toggleSelection = async () => {
-//   console.log("Toggle Clicked!");
-//   isSelected.value = !isSelected.value;  // Toggle the selection state
-//   await saveSelectionToDatabase();  // Save the updated selection to the database
-//   emitSelectionUpdate();  // Notify parent component of the selection change
-// };
-
-
 const emitSelectionUpdate = () => {
   emit("selectedRadio", {
     id: product.value.id,
-    quantity: product.value.quantity, // Send the quantity as well
+    quantity: product.value.quantity,
     price: product.value.price,
     val: isSelected.value,
   });
 };
 
-watch(
-  () => isSelected.value,
-  (val) => {
-    emitSelectionUpdate(); // Emit the updated selection state
-  }
-);
+watch(() => isSelected.value, (val) => {
+  emitSelectionUpdate();
+});
 
 const updateQuantity = () => {
-  // Find the product index in the cartItems array
   const cartIndex = userStore.cartItems.findIndex(
     (item) => item.productId === product.value.id
   );
 
   if (cartIndex !== -1) {
-    // Update the quantity in the store
     userStore.cartItems[cartIndex].quantity = product.value.quantity;
-    //console.log("current quantity", userStore.cartItems[cartIndex].quantity);
     emitSelectionUpdate();
-  } else {
-    //console.log("Product not found in cart");
   }
 };
 
-// Function to increase quantity
-// const increaseQuantity = () => {
-//   product.value.quantity++; // Increment quantity
-//   // console.log("QUAnityt type", typeof product.value.quantity);
+const preventInvalidInput = (e) => {
+  if ([46, 8, 9, 27, 13, 110, 190].includes(e.keyCode) ||
+    (e.keyCode === 65 && e.ctrlKey === true) ||
+    (e.keyCode === 67 && e.ctrlKey === true) ||
+    (e.keyCode === 86 && e.ctrlKey === true) ||
+    (e.keyCode === 88 && e.ctrlKey === true) ||
+    (e.keyCode >= 35 && e.keyCode <= 39)) {
+    return;
+  }
 
-//   updateQuantity(); // Update the quantity in the store
-// };
-
-const increaseQuantity = async () => {
-  product.value.quantity = parseFloat(product.value.quantity) + 0.25;
-  await updateQuantityInDatabase();
-  updateQuantity();
-};
-
-// Function to decrease quantity
-const decreaseQuantity = async () => {
-  if (props.product.quantity > 1) {
-    // Prevent decreasing quantity below 1
-    product.value.quantity = parseFloat(product.value.quantity) - .25; // Decrement quantity
-    await updateQuantityInDatabase();
-    updateQuantity(); // Update the quantity in the store
+  if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) &&
+    (e.keyCode < 96 || e.keyCode > 105) && e.keyCode !== 110 && e.keyCode !== 190) {
+    e.preventDefault();
   }
 };
-
-// const validateInput = () => {
-//   // Only sanitize non-numeric characters but allow partial input
-//   product.value.quantity = product.value.quantity.replace(/\D/g, '');
-// };
 
 const validateInput = () => {
-  // Allow numeric input with one decimal point
-  product.value.quantity = product.value.quantity.replace(/[^0-9.]/g, ''); // Remove any non-numeric and non-dot characters
-  // Ensure there's only one decimal point
-  if ((product.value.quantity.match(/\./g) || []).length > 1) {
-    product.value.quantity = product.value.quantity.replace(/\.+$/, ''); // Remove extra decimal points
+  quantityDisplay.value = quantityDisplay.value.replace(/[^0-9.]/g, '');
+
+  const parts = quantityDisplay.value.split('.');
+  if (parts.length > 2) {
+    quantityDisplay.value = parts[0] + '.' + parts.slice(1).join('');
+  }
+
+  if (parts.length === 2 && parts[1].length > 2) {
+    quantityDisplay.value = parts[0] + '.' + parts[1].substring(0, 2);
   }
 };
 
-
-// const validateAndUpdateQuantity = () => {
-//   // Ensure the quantity is a valid number and within the expected range when the input loses focus
-//   let quantity = parseFloat(product.value.quantity);
-
-//   console.log("CLLLLLLLLLLLLLLED");
-
-//   console.log("quanitty", quantity);
-//   console.log("Data type of quantity:", typeof quantity);
-
-
-//   // If invalid, default to 1
-//   if (isNaN(quantity) || quantity < 1) {
-//     product.value.quantity = '1'; // Default to 1 if invalid or less than 1
-//   } else if (quantity > 100) {
-//     product.value.quantity = '1000'; // Optional: enforce a max quantity of 100
-//   } else {
-//     product.value.quantity = quantity;
-//   }
-
-//   // Update quantity in the store after validation
-//   updateQuantity();
-// };
-
 const validateAndUpdateQuantity = async () => {
+  let quantity = parseFloat(quantityDisplay.value) || 0.25;
 
-  // Parse the value as a float to allow decimals
-  let quantity = parseFloat(product.value.quantity);
-
-  // If the input is invalid or below 1, set it to 1
-  if (isNaN(quantity) || quantity < 1) {
-    product.value.quantity = '1';
-  } else if (quantity > 100) {
-    product.value.quantity = '100'; // Optional: enforce a max quantity
-  } else {
-    // Round the quantity to the nearest 0.25 increment
-    quantity = Math.round(quantity * 4) / 4; // This rounds to the nearest 0.25
-    product.value.quantity = quantity.toFixed(2); // Convert back to string with 2 decimals
+  if (quantity < 0.25) {
+    quantity = 0.25;
   }
 
-  await updateQuantityInDatabase();
+  quantity = Math.round(quantity * 4) / 4;
 
-  // Update quantity in the store after validation
+  if (quantity > product.value.stock) {
+    quantity = product.value.stock;
+  }
+
+  quantityDisplay.value = quantity.toFixed(2);
+  product.value.quantity = quantity;
+
+  await updateQuantityInDatabase();
   updateQuantity();
 };
 
+const increaseQuantity = async () => {
+  let newQuantity = parseFloat(product.value.quantity) + 0.25;
+
+  if (newQuantity > product.value.stock) {
+    newQuantity = product.value.stock;
+  }
+
+  product.value.quantity = newQuantity;
+  quantityDisplay.value = newQuantity.toFixed(2);
+  await updateQuantityInDatabase();
+  updateQuantity();
+};
+
+const decreaseQuantity = async () => {
+  let newQuantity = parseFloat(product.value.quantity) - 0.25;
+
+  if (newQuantity < 0.25) {
+    newQuantity = 0.25;
+  }
+
+  product.value.quantity = newQuantity;
+  quantityDisplay.value = newQuantity.toFixed(2);
+  await updateQuantityInDatabase();
+  updateQuantity();
+};
 
 const updateQuantityInDatabase = async () => {
-  // console.log("Falag1");
-
-  // console.log(userStore.cart.id);
-  // console.log(product.value.id);
-  // console.log(product.value.quantity);
-
   try {
     const quantity = parseFloat(product.value.quantity);
-    // Sending the request to update the quantity
     const response = await $fetch('/api/prisma/update-quantity', {
       method: 'POST',
       body: {
-        cartId: userStore.cart.id, // User's ID
-        productId: product.value.id, // Product's ID
-        quantity: quantity, // Updated quantity
+        cartId: userStore.cart.id,
+        productId: product.value.id,
+        quantity: quantity,
       },
     });
 
-    // Check if the response indicates success
-    if (response.success) {
-      console.log("Cart item updated:", response.updatedCartItem);
-    } else {
+    if (!response.success) {
       console.error("Error updating quantity:", response.error);
     }
   } catch (error) {
-    // Error handling if the fetch fails
     console.error("Error:", error);
   }
 };
 
 const saveSelectionToDatabase = async () => {
-  const userId = userStore.user.id;  // Assuming the user ID is stored in the userStore
-  const productId = product.value.id; // Assuming product ID is accessible
-
   try {
     const response = await $fetch('/api/prisma/update-selection', {
       method: 'POST',
       body: {
-        cartId: userStore.cart.id,  // User's cart ID
-        productId: product.value.id,  // Product's ID
-        isSelected: isSelected.value,  // New selected state (true/false)
+        cartId: userStore.cart.id,
+        productId: product.value.id,
+        isSelected: isSelected.value,
       },
     });
 
-    if (response.success) {
-      console.log('Selection updated successfully');
-    } else {
+    if (!response.success) {
       console.error('Error updating selection:', response.error);
     }
   } catch (error) {
     console.error('Error saving selection to database:', error);
   }
 };
-
-
-
-// const updateQuantityInDatabase = async () => {
-//   const userId = userStore.user.id;
-//   const productId = product.value.id;
-
-//   console.log("CALLLED 1");
-
-//   try {
-//     const response = await fetch(
-//       `/api/prisma/update-quantity/${userId}/${productId}`,
-//       {
-//         method: "PUT",
-//         headers: {
-//           "Content-Type": "application/json",
-//         },
-//         body: JSON.stringify({
-//           quantity: product.value.quantity,
-//         }),
-//       }
-//     );
-//     console.log("CALLLED 3");
-//     const data = await response.json();
-//     if (data.success === 1) {
-//       console.log("Quantity successfully updated in the database!");
-//     } else {
-//       console.log("CALLLED error");
-//       console.error("Error updating quantity:", data.message);
-//     }
-//   } catch (error) {
-//     console.log("CALLLED error daan");
-//     console.error("Error updating quantity in database:", error);
-//   }
-// };
-
 </script>
+
+<style scoped>
+input[type="text"] {
+  -moz-appearance: textfield;
+}
+
+input[type="text"]::-webkit-outer-spin-button,
+input[type="text"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+</style>
