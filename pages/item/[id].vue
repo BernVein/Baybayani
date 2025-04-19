@@ -15,29 +15,28 @@
           <div class="sticky top-24">
             <div class="relative group">
               <img v-if="currentImage"
-                class="rounded-2xl object-cover w-full h-[500px] transition-all duration-500 ease-in-out shadow-lg group-hover:shadow-2xl"
+                class="rounded-2xl object-cover w-full h-[300px] sm:h-[350px] md:h-[400px] lg:h-[500px] transition-all duration-500 ease-in-out shadow-lg group-hover:shadow-2xl"
                 :src="currentImage" :alt="product?.data?.title" />
 
-              <!-- Zoom overlay -->
               <div
                 class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-5 transition-all duration-300 rounded-2xl">
               </div>
 
-              <!-- Stock badge -->
               <div v-if="product?.data?.stock <= 0"
-                class="absolute top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-full font-semibold shadow-lg">
+                class="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 sm:px-4 sm:py-2 rounded-full font-semibold shadow-lg text-sm sm:text-base">
                 Out of Stock
               </div>
             </div>
 
-            <div class="flex mt-6 gap-4 justify-center">
+            <div class="flex mt-4 sm:mt-6 gap-2 sm:gap-4 overflow-x-auto py-2 px-1">
               <img v-for="(image, index) in images" :key="index" :src="image"
-                class="h-24 w-24 object-cover rounded-lg border-2 cursor-pointer transition-all duration-300 ease-in-out hover:scale-105"
+                class="h-16 w-16 sm:h-20 sm:w-20 md:h-24 md:w-24 object-cover rounded-lg border-2 cursor-pointer transition-all duration-300 ease-in-out hover:scale-105 flex-shrink-0"
                 :class="currentImage === image ? 'border-green-500 shadow-lg' : 'border-transparent'"
                 @click="currentImage = image" :alt="`${product?.data?.title} thumbnail ${index + 1}`" />
             </div>
           </div>
         </div>
+
 
         <!-- Right Section: Product Details -->
         <div class="w-full lg:w-[55%]">
@@ -70,7 +69,7 @@
             </div>
 
             <!-- Quantity Selector -->
-            <div class="mt-8 space-y-6">
+            <!-- <div class="mt-8 space-y-4 md:space-y-6 lg:space-y-8">
               <div class="flex items-center gap-4">
                 <label class="font-medium text-gray-700">Quantity:</label>
                 <div class="flex items-center bg-gray-50 rounded-lg border border-gray-200"
@@ -92,7 +91,34 @@
                   </button>
                 </div>
                 <span class="text-sm text-gray-500">kg</span>
+              </div> -->
+
+            <div class="mt-8 space-y-4 md:space-y-6 lg:space-y-8">
+              <div class="flex items-center gap-4">
+                <label class="font-medium text-gray-700 text-sm sm:text-base">Quantity:</label>
+                <div class="flex items-center bg-gray-50 rounded-lg border border-gray-200"
+                  :class="{ 'border-red-500': parseFloat(inputQuantity) > product.data.stock }">
+                  <button @click="decreaseQuantity"
+                    class="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 flex items-center justify-center text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-l-lg transition-colors"
+                    :disabled="parseFloat(inputQuantity) <= 0.25 || product.data.stock <= 0">
+                    <Icon name="material-symbols:remove" size="16" class="sm:size-5" />
+                  </button>
+
+                  <input type="text"
+                    class="w-14 sm:w-16 md:w-20 h-8 sm:h-10 md:h-12 text-center bg-transparent border-x border-gray-200 text-sm sm:text-base md:text-lg font-medium"
+                    v-model="inputQuantity" @input="validateInput" @blur="validateAndUpdateQuantity"
+                    @keydown="preventInvalidInput" :disabled="product.data.stock <= 0"
+                    :class="{ 'text-red-500': parseFloat(inputQuantity) > product.data.stock }" />
+
+                  <button @click="increaseQuantity"
+                    class="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 flex items-center justify-center text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-r-lg transition-colors"
+                    :disabled="product.data.stock <= parseFloat(inputQuantity) || product.data.stock <= 0">
+                    <Icon name="material-symbols:add" size="16" class="sm:size-5" />
+                  </button>
+                </div>
+                <span class="text-sm text-gray-700">kg</span>
               </div>
+
 
               <!-- Validation message -->
               <div v-if="parseFloat(inputQuantity) > product.data.stock" class="text-red-500 text-sm animate-pulse">
@@ -101,7 +127,7 @@
               </div>
 
               <!-- Total Price -->
-              <div class="text-lg text-gray-600">
+              <div class="text-md font-medium text-gray-700">
                 Total: <span class="font-bold text-gray-800">₱{{ (product.data.price *
                   parseFloat(inputQuantity)).toFixed(2) }}</span>
               </div>
