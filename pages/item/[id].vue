@@ -39,9 +39,8 @@
 
 
         <!-- Right Section: Product Details -->
-        <div class="w-full lg:w-[55%]">
+        <!-- <div class="w-full lg:w-[55%]">
           <div v-if="product && product.data" class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
-            <!-- Title and Price -->
             <div class="space-y-4">
               <h1 class="text-3xl lg:text-4xl font-bold text-gray-800 leading-tight">
                 {{ product.data.title }}
@@ -54,6 +53,35 @@
                   <div class="h-3 w-3 rounded-full" :class="product.data.stock > 0 ? 'bg-green-500' : 'bg-red-500'">
                   </div>
                   <span :class="product.data.stock > 0 ? 'text-green-600' : 'text-red-500'" class="font-medium">
+                    {{ product.data.stock > 0 ? `${product.data.stock} kg available` : 'Out of Stock' }}
+                  </span>
+                </div>
+              </div>
+            </div> -->
+        <!-- Right Section: Product Details -->
+        <div class="w-full lg:w-[55%]">
+          <div v-if="product && product.data"
+            class="bg-white p-4 sm:p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100">
+            <!-- Title and Price -->
+            <div class="space-y-3 sm:space-y-4">
+              <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 leading-tight">
+                {{ product.data.title }}
+              </h1>
+
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+                <!-- Price - Stacked on mobile, row on larger screens -->
+                <div class="text-xl sm:text-2xl md:text-3xl font-bold text-green-600">
+                  ₱{{ product.data.price }}
+                  <span class="text-base sm:text-lg text-gray-500 font-normal">per kg</span>
+                </div>
+
+                <!-- Stock Status - Better mobile layout -->
+                <div class="flex items-center gap-2">
+                  <div class="h-2.5 sm:h-3 w-2.5 sm:w-3 rounded-full flex-shrink-0"
+                    :class="product.data.stock > 0 ? 'bg-green-500' : 'bg-red-500'">
+                  </div>
+                  <span :class="product.data.stock > 0 ? 'text-green-600' : 'text-red-500'"
+                    class="text-sm sm:text-base font-medium whitespace-nowrap">
                     {{ product.data.stock > 0 ? `${product.data.stock} kg available` : 'Out of Stock' }}
                   </span>
                 </div>
