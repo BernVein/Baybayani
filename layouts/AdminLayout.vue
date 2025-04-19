@@ -197,7 +197,7 @@
   </div>
 
   <div class="lg:pt-32 md:pt-32 pt-[100px] px-4" />
-  <div class="pb-12 pt-5 px-3 md:pt-2 md:pb-16 lg:pb-2  0 lg:pt-2">
+  <div class="pb-12 pt-5 px-3 md:pt-2 md:pb-16 lg:pb-20 lg:pt-2">
     <slot />
   </div>
 </template>
