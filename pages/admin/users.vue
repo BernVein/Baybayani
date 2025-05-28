@@ -1,11 +1,11 @@
 <template>
-    <div class="flex h-screen">
+    <div class="flex h-screen overflow-hidden">
         <!-- Sidebar Layout -->
-        <SideBarLayout class="sidebar" />
+        <SideBarLayout class="sidebar flex-shrink-0" />
 
         <!-- Admin Layout -->
-        <AdminLayout class="admin-layout">
-            <div class="main-content flex-1 overflow-y-auto p-6">
+        <AdminLayout class="flex-1 overflow-hidden">
+            <div class="main-content h-full overflow-y-auto p-6 max-w-[calc(100vw-256px)]">
                 <!-- Title -->
                 <h1 class="text-3xl font-semibold mb-8">User Management</h1>
 
@@ -627,8 +627,47 @@
 </script>
 
 <style scoped>
+    .sidebar {
+        width: 256px; /* Fixed width for sidebar */
+        flex-shrink: 0;
+    }
+
     .main-content {
-        padding-top: 100px;
+        width: 100%;
+        margin: 0 auto;
+    }
+
+    /* Ensure table container doesn't overflow */
+    .overflow-x-auto {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    /* Make table fill container width */
+    table {
+        width: 100%;
+        table-layout: fixed;
+    }
+
+    /* Add column widths */
+    th, td {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    th:nth-child(1), td:nth-child(1) { width: 15%; } /* Name */
+    th:nth-child(2), td:nth-child(2) { width: 15%; } /* Contact */
+    th:nth-child(3), td:nth-child(3) { width: 25%; } /* Email */
+    th:nth-child(4), td:nth-child(4) { width: 15%; } /* Role */
+    th:nth-child(5), td:nth-child(5) { width: 15%; } /* Status */
+    th:nth-child(6), td:nth-child(6) { width: 15%; } /* Actions */
+
+    /* Add responsive padding for smaller screens */
+    @media (max-width: 1024px) {
+        .main-content {
+            padding: 1rem;
+        }
     }
 
     button:hover .group-hover\:text-white {
