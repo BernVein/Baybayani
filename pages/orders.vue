@@ -156,14 +156,10 @@ const route = useRoute();
 const role = userStore.profile?.role;
 
 watchEffect(() => {
-  if (route.fullPath == "/orders" &&
-    (!user.value || role === "Admin")) {
-    navigateTo("/admin/dashboard");
-  }
-  else if (route.fullPath == "/orders" && !user.value) {
+  if (route.fullPath == "/orders" && 
+      (!user.value || userStore.isAdmin())) {
     navigateTo("/login");
   }
-
 });
 
 // Handle clicks outside the dropdown to close it

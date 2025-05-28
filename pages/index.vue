@@ -1,8 +1,23 @@
 <template>
   <AdminLayout>
     <div id="IndexPage" class="max-w-[1200px] mx-auto px-2">
-      <div class="grid xl:grid-cols-6 lg:grid-cols-5 md:grid-cols-4 sm:grid-cols-3 grid-cols-2 gap-4">
-        <div v-if="filteredProducts" v-for="product in filteredProducts" :key="product.id" :class="[
+      <!-- Loading state -->
+      <div v-if="isLoading" class="flex justify-center items-center min-h-[200px]">
+        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
+      </div>
+
+      <!-- Error state -->
+      <div v-else-if="!products?.data" class="text-center text-gray-600 py-8">
+        Unable to load products. Please try again later.
+      </div>
+
+      <!-- Products grid -->
+      <div v-else class="grid xl:grid-cols-6 lg:grid-cols-5 md:grid-cols-4 sm:grid-cols-3 grid-cols-2 gap-4">
+        <div v-if="filteredProducts.length === 0" class="col-span-full text-center text-gray-600 py-8">
+          No products available at the moment.
+        </div>
+        
+        <div v-for="product in filteredProducts" :key="product.id" :class="[
           'transition-all duration-500 ease-in-out transform rounded-md overflow-hidden'
         ]" @click="product.stock > 0 ? handleProductClick(product) : null">
           <div :class="[
@@ -41,7 +56,12 @@ const user = useSupabaseUser();
 const userStore = useUserStore();
 let products = ref(null);
 const route = useRoute();
-const role = userStore.profile?.role;
+
+// Add loading state
+const isLoading = ref(true);
+
+// Function to get user role
+const getUserRole = computed(() => userStore.profile?.role || null);
 
 // Add state for cancelled orders popup
 const showCancelledOrders = ref(false);
@@ -63,24 +83,68 @@ const fetchCancelledOrders = async () => {
 
 // Initialize data and check for cancelled orders
 onMounted(async () => {
-  if (user.value && role === "Buyer") {
-    await fetchCancelledOrders();
+  try {
+    // Wait for user profile to load
+    await userStore.fetchUser();
+    
+    const role = getUserRole.value;
+    console.log("User role after profile load:", role);
+    
+    if (user.value && role?.toUpperCase() === "BUYER") {
+      await fetchCancelledOrders();
+    }
+  } catch (error) {
+    console.error("Error in onMounted:", error);
+  } finally {
+    isLoading.value = false;
   }
 });
 
 watchEffect(async () => {
-  // First check if user is logged in and is a buyer
-  if (user.value && role === "Buyer") {
+  const role = getUserRole.value;
+  console.log("watchEffect running with user:", user.value, "role:", role, "route:", route.fullPath);
+  
+  // Wait until we have both user and role
+  if (!user.value || !role) {
+    console.log("User or role not yet available");
+    return;
+  }
+
+  // Make role comparison case-insensitive
+  if (user.value && role.toUpperCase() === "BUYER") {
+    console.log("User is logged in as Buyer");
     if (route.fullPath === "/") {
-      // Fetch products and check for cancelled orders
-      products.value = await useFetch("/api/prisma/get-all-products");
-      await fetchCancelledOrders();
+      try {
+        console.log("Fetching products...");
+        const response = await useFetch("/api/prisma/get-all-products", {
+          key: 'products',
+          // Ensure fresh data on each request
+          cache: 'no-cache'
+        });
+        
+        console.log("Raw response:", response);
+        console.log("Products response data:", response.data.value);
+        console.log("Products response error:", response.error.value);
+        
+        if (response.error.value) {
+          console.error("Error fetching products:", response.error.value);
+          products.value = { data: [] };
+        } else {
+          // Change how we structure the data
+          products.value = { data: Array.isArray(response.data.value) ? response.data.value : [] };
+          console.log("Set products.value to:", products.value);
+        }
+      } catch (err) {
+        console.error("Error in watchEffect:", err);
+        products.value = { data: [] };
+      }
     }
   } else if (route.fullPath === "/") {
+    console.log("User is not a buyer or not logged in. User:", user.value, "Role:", role);
     // Handle redirects for non-buyers
     if (!user.value) {
       navigateTo("/login");
-    } else if (role === "Admin") {
+    } else if (role.toUpperCase() === "ADMIN") {
       navigateTo("/admin/dashboard");
     }
   }
@@ -123,13 +187,17 @@ onMounted(() => {
   // }
 });
 
-// Compute filtered products to exclude hidden and deleted products
+// Add debugging to computed property
 const filteredProducts = computed(() => {
+  console.log("Computing filteredProducts with products.value:", products.value);
   if (products.value && products.value.data) {
-    return products.value.data.filter(
+    const filtered = products.value.data.filter(
       (product) => !product.hidden && !product.isDeleted
     );
+    console.log("Filtered products:", filtered);
+    return filtered;
   }
+  console.log("No products data available");
   return [];
 });
 

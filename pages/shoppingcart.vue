@@ -291,22 +291,20 @@ onMounted(() => {
   userStore.initializeTimeSettings();
 
   // Check if store is closed and redirect if needed
-  if (isStoreClosed() && role !== "Admin") {
+  if (isStoreClosed() && !userStore.isAdmin()) {
     navigateTo("/closed");
   }
 });
 
 // Redirect to the login page if the user is not logged in
 watchEffect(() => {
-  if (route.fullPath == "/shoppingcart" &&
-    (!user.value || role === "Admin")) {
-    navigateTo("/admin/dashboard");
-  }
-  else if (route.fullPath == "/shoppingcart" && !user.value) {
+  if (route.fullPath == "/shoppingcart" && 
+      (!user.value || userStore.isAdmin())) {
     navigateTo("/login");
   }
   // Check if store is closed
-  else if (route.fullPath == "/shoppingcart" && isStoreClosed() && role !== "Admin") {
+  else if (route.fullPath == "/shoppingcart" && 
+      isStoreClosed() && !userStore.isAdmin()) {
     navigateTo("/closed");
   }
 });

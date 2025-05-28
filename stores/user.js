@@ -160,7 +160,8 @@ export const useUserStore = defineStore("user", {
 
       // If store is closed and user is not on admin/login/closed page, redirect to closed
       if (isStoreClosed && !isAdminRoute && !isLoginPage && !isClosedPage) {
-        if (!this.isAdmin) {
+        // Allow both admin and client users to browse when store is closed
+        if (this.profile?.role !== "ADMIN" && this.profile?.role !== "CLIENT") {
           navigateTo("/closed");
           return true; // Store is closed
         }

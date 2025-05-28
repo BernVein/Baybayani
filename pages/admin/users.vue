@@ -468,7 +468,7 @@
 
     // Function to update statistics for user roles
     const updateStats = () => {
-        buyers.value = users.value.filter((user) => user.role === "Buyer").length;
+        buyers.value = users.value.filter((user) => user.role.toUpperCase() === "BUYER").length;
         suspendedUsers.value = users.value.filter((user) => user.status === "SUSPENDED").length;
         unverifiedUsers.value = users.value.filter((user) => user.status === "UNVERIFIED").length;
     };

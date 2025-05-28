@@ -2,6 +2,18 @@ import { PrismaClient } from '@prisma/client'
 
 let prisma;
 
+// Test database connection
+async function testConnection(client) {
+  try {
+    await client.$connect();
+    console.log('Successfully connected to the database');
+    return true;
+  } catch (error) {
+    console.error('Failed to connect to the database:', error);
+    return false;
+  }
+}
+
 // Check if we are in a development environment
 if (process.env.NODE_ENV !== 'production') {
   // Use a global variable to store the PrismaClient instance
@@ -21,6 +33,8 @@ if (process.env.NODE_ENV !== 'production') {
         }
       }
     });
+    // Test connection in development
+    testConnection(globalThis.prisma);
   }
   prisma = globalThis.prisma;
 } else {
@@ -40,6 +54,8 @@ if (process.env.NODE_ENV !== 'production') {
       }
     }
   });
+  // Test connection in production
+  testConnection(prisma);
 }
 
 export default prisma 

@@ -85,10 +85,10 @@ const checkStoreClosed = () => {
   const isAdminRoute = route.fullPath.startsWith('/admin');
   const isLoginPage = route.fullPath === "/login";
   const isClosedPage = route.fullPath === "/closed";
-  const role = userStore.profile?.role;
+  const role = userStore.profile?.role?.toUpperCase();
 
-  // Only redirect regular users, not admins, and not on admin/login/closed pages
-  if (isStoreClosed() && !isAdminRoute && !isLoginPage && !isClosedPage && role !== "Admin") {
+  // Only redirect regular users (not admins or clients), and not on admin/login/closed pages
+  if (isStoreClosed() && !isAdminRoute && !isLoginPage && !isClosedPage && role !== "ADMIN" && role !== "CLIENT") {
     showToast(`The store is now closed. Operating hours: ${userStore.formattedOpeningTime()} - ${userStore.formattedClosingTime()} PHT`, "warning");
     navigateTo("/closed");
   }

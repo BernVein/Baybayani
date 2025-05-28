@@ -200,10 +200,8 @@ const fetchLatestOrder = async () => {
 
 // Redirect to the login page if the user is not logged in
 watchEffect(() => {
-  if (route.fullPath == "/success" && (!user.value || userStore.user?.role === "Admin")) {
-    navigateTo("/admin/dashboard");
-  }
-  else if (route.fullPath == "/success" && !user.value) {
+  if (route.fullPath == "/success" && 
+      (!user.value || userStore.isAdmin())) {
     navigateTo("/login");
   }
 });

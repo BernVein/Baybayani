@@ -142,12 +142,10 @@ let total = ref(0);
 const route = useRoute();
 const role = userStore.profile?.role;
 watchEffect(() => {
-  if (route.fullPath == "/checkout" &&
-    (!user.value || role === "Admin")) {
-    //navigateTo("/admin/dashboard");
-    window.location.href = "/admin/dashboard";
+  if (route.fullPath == "/checkout" && 
+      (!user.value || userStore.isAdmin())) {
+    navigateTo("/login");
   }
-
 
   else if (route.fullPath == "/checkout" && !user.value) {
     //navigateTo("/login");
