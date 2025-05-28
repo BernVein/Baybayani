@@ -297,10 +297,7 @@ const selectedProductId = ref(null);
 
 const role = userStore?.profile?.role;
 watchEffect(() => {
-  if (
-    route.fullPath == "/admin/orders" &&
-    (!user.value || role === "User")
-  ) {
+  if (route.fullPath == "/admin/orders" && (!user.value || !userStore.isAdmin())) {
     navigateTo("/login");
   }
 });

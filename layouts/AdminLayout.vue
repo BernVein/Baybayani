@@ -306,18 +306,21 @@ onMounted(() => {
   }, 500); // 500ms delay
   document.addEventListener("click", closeSearchBar);
 
-  const defaultUID = userStore.profile?.name
-    ? userStore.profile.name.replace(/\s+/g, "").toLowerCase()
-    : "defaultuid";
+  // Only initialize CometChat for non-admin users
+  if (!userStore.isAdmin) {
+    const defaultUID = userStore.profile?.name
+      ? userStore.profile.name.replace(/\s+/g, "").toLowerCase()
+      : "defaultuid";
 
-  const script = document.createElement("script");
-  script.src = "https://widget-js.cometchat.io/v3/cometchatwidget.js";
-  script.defer = true;
+    const script = document.createElement("script");
+    script.src = "https://widget-js.cometchat.io/v3/cometchatwidget.js";
+    script.defer = true;
 
-  script.onload = () => {
-    initializeCometChatWidget(defaultUID);
-  };
-  document.body.appendChild(script);
+    script.onload = () => {
+      initializeCometChatWidget(defaultUID);
+    };
+    document.body.appendChild(script);
+  }
 });
 
 const initializeCometChatWidget = (defaultUID) => {

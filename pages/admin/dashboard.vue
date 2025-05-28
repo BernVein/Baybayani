@@ -298,14 +298,7 @@ const toggleSidebar = () => {
 };
 
 watchEffect(() => {
-  // console.log("IsAdmin(Sa Dashboard)??");
-  //console.log(role);
-
-  // console.log(!user.value && userStore.isAdmin === true);
-  if (
-    route.fullPath == "/admin/dashboard" &&
-    (!user.value || role === "User")
-  ) {
+  if (route.fullPath == "/admin/dashboard" && (!user.value || !userStore.isAdmin())) {
     navigateTo("/login");
   }
 });

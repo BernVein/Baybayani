@@ -434,10 +434,7 @@ const route = useRoute();
 
 const role = userStore.profile?.role;
 watchEffect(() => {
-  if (
-    route.fullPath == "/admin/products" &&
-    (!user.value || role === "User")
-  ) {
+  if (route.fullPath == "/admin/products" && (!user.value || !userStore.isAdmin())) {
     navigateTo("/login");
   }
 });

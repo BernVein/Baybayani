@@ -238,7 +238,6 @@ let addtocartResponse = ref(null);
 let showChatModal = ref(false);
 let showGuidedLine = ref(false);
 let isFadingOut = ref(false);
-const role = userStore.profile?.role;
 
 const isLoading = ref(false);
 const show = ref(false);
@@ -262,8 +261,10 @@ onBeforeMount(async () => {
 });
 
 watchEffect(() => {
-  if (!user.value || role === "Admin") {
+  if (userStore.isAdmin()) {
     navigateTo("/admin/dashboard");
+  } else if (!user.value) {
+    navigateTo("/login");
   }
   if (product.value && product.value.data) {
     currentImage.value = product.value.data.url;

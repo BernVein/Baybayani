@@ -96,9 +96,9 @@
                         <label for="role" class="block text-base md:text-lg pb-2 font-medium text-gray-700">Register as</label>
                         <select id="role" v-model="registerRole"
                                class="w-full p-3 border border-gray-400 rounded-md focus:ring-2 focus:ring-[#0C6539]" required>
-                            <option value="Buyer">Buyer</option>
-                            <option value="Client">Client</option>
-                            <option value="Admin">Admin</option>
+                            <option value="BUYER">Buyer</option>
+                            <option value="CLIENT">Client</option>
+                            <option value="ADMIN">Admin</option>
                         </select>
                     </div>
 
@@ -147,7 +147,7 @@
     const registerPassword = ref("");
     const registerName = ref("");
     const registerContact = ref("");
-    const registerRole = ref("Buyer"); // Default to Buyer
+    const registerRole = ref("BUYER"); // Default to Buyer
 
     // Add new ref for valid ID
     const validIdFile = ref(null);
@@ -276,12 +276,12 @@
                 const isStoreClosed = isBeforeOpening || isAfterClosing;
                 
                 // Redirect to closed page if store is closed (for non-admin users)
-                if (isStoreClosed && !userStore.isAdmin) {
+                if (isStoreClosed && !userStore.isAdmin()) {
                     return navigateTo("/closed");
                 }
 
                 // Otherwise redirect based on role
-                if (userStore.isAdmin) {
+                if (userStore.isAdmin()) {
                     navigateTo("/admin/dashboard");
                 } else {
                     navigateTo("/");
@@ -392,7 +392,7 @@
             registerPassword.value = "";
             registerName.value = "";
             registerContact.value = "";
-            registerRole.value = "Buyer";
+            registerRole.value = "BUYER";
             validIdFile.value = null;
             document.getElementById('validId').value = ''; // Reset file input
 

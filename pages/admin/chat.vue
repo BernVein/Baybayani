@@ -35,10 +35,7 @@ export default {
 
 
     watchEffect(() => {
-      if (
-        route.fullPath == "/admin/chat" &&
-        (!user.value || role === "User")
-      ) {
+      if (route.fullPath == "/admin/chat" && (!user.value || !userStore.isAdmin())) {
         navigateTo("/login");
       }
     });

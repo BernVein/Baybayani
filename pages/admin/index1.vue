@@ -54,10 +54,7 @@ const user = useSupabaseUser();
 const role = userStore.profile?.role;
 const route = useRoute();
 watchEffect(() => {
-    if (
-        route.fullPath == "/admin/index1" &&
-        (!user.value || role === "User")
-    ) {
+    if (route.fullPath == "/admin/index1" && (!user.value || !userStore.isAdmin())) {
         navigateTo("/login");
     }
 });
@@ -84,18 +81,21 @@ const filteredProducts = computed(() => {
 onMounted(() => {
     // userStore.fetchCartItems();
 
-    const defaultUID = userStore.profile?.name
-        ? userStore.profile.name.replace(/\s+/g, "").toLowerCase()
-        : "defaultuid";
+    // Only initialize CometChat for non-admin users
+    if (!userStore.isAdmin) {
+        const defaultUID = userStore.profile?.name
+            ? userStore.profile.name.replace(/\s+/g, "").toLowerCase()
+            : "defaultuid";
 
-    const script = document.createElement("script");
-    script.src = "https://widget-js.cometchat.io/v3/cometchatwidget.js";
-    script.defer = true;
+        const script = document.createElement("script");
+        script.src = "https://widget-js.cometchat.io/v3/cometchatwidget.js";
+        script.defer = true;
 
-    script.onload = () => {
-        initializeCometChatWidget(defaultUID);
-    };
-    document.body.appendChild(script);
+        script.onload = () => {
+            initializeCometChatWidget(defaultUID);
+        };
+        document.body.appendChild(script);
+    }
 });
 
 const initializeCometChatWidget = (defaultUID) => {
