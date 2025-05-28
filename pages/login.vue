@@ -1,104 +1,106 @@
 <template>
-    <div id="AuthPage" class="flex flex-col items-center justify-center w-full h-screen bg-white md:flex-row">
+    <div id="AuthPage" class="flex flex-col items-center w-full min-h-screen bg-white md:flex-row">
         <!-- Logo Section for Desktop -->
-        <div class="hidden md:flex items-center justify-center w-full md:w-1/2 h-1/3 md:h-full bg-gray-100 shadow-lg">
+        <div class="hidden md:flex items-center justify-center w-full md:w-1/2 h-screen md:h-full bg-gray-100 shadow-lg md:sticky md:top-0">
             <img src="/logo.png" alt="Logo" class="h-full max-h-[90%] p-10 object-contain animate-fade-in" />
         </div>
 
         <!-- Login Form Section -->
-        <div class="w-full md:w-1/2 max-w-[400px] mx-auto px-6 relative z-10 bg-white bg-opacity-90 rounded-lg shadow-2xl p-8">
-            <!-- Toggle between Login and Register -->
-            <div class="flex justify-center mb-6">
-                <button @click="isLogin = true"
-                        :class="['px-4 py-2 font-medium', isLogin ? 'text-[#0C6539] border-b-2 border-[#0C6539]' : 'text-gray-500']">
-                    Login
-                </button>
-                <button @click="isLogin = false"
-                        :class="['px-4 py-2 font-medium', !isLogin ? 'text-[#0C6539] border-b-2 border-[#0C6539]' : 'text-gray-500']">
-                    Register
-                </button>
-            </div>
-
-            <!-- Login Form -->
-            <form @submit.prevent="login" v-if="isLogin" class="space-y-5">
-                <div>
-                    <label for="email" class="block text-base md:text-lg pb-2 font-medium text-gray-700">Email</label>
-                    <input type="email" id="email" v-model="email" @input="resetMessages"
-                           class="w-full p-3 border border-gray-400 rounded-md focus:ring-2 focus:ring-[#0C6539]"
-                           placeholder="Enter your email" required />
-                </div>
-
-                <div>
-                    <label for="password" class="block text-base md:text-lg pb-2 font-medium text-gray-700">Password</label>
-                    <input type="password" id="password" v-model="password" @input="resetMessages"
-                           class="w-full p-3 border border-gray-400 rounded-md focus:ring-2 focus:ring-[#0C6539]"
-                           placeholder="Enter your password" required />
-                </div>
-
-                <div>
-                    <button type="submit" :disabled="loading"
-                            class="w-full py-3 bg-[#0C6539] text-white font-semibold rounded-md hover:bg-[#0A5230] focus:outline-none focus:ring-2 focus:ring-blue-400">
-                        <span v-if="loading">Logging in...</span>
-                        <span v-else>Login</span>
+        <div class="w-full md:w-1/2 flex items-center justify-center min-h-screen md:min-h-0 px-4 py-8 relative">
+            <div class="w-full max-w-[400px] bg-white bg-opacity-90 rounded-lg shadow-2xl p-8 mx-auto my-4 relative z-10">
+                <!-- Toggle between Login and Register -->
+                <div class="flex justify-center mb-6">
+                    <button @click="isLogin = true"
+                            :class="['px-4 py-2 font-medium', isLogin ? 'text-[#0C6539] border-b-2 border-[#0C6539]' : 'text-gray-500']">
+                        Login
+                    </button>
+                    <button @click="isLogin = false"
+                            :class="['px-4 py-2 font-medium', !isLogin ? 'text-[#0C6539] border-b-2 border-[#0C6539]' : 'text-gray-500']">
+                        Register
                     </button>
                 </div>
-            </form>
 
-            <!-- Registration Form -->
-            <form @submit.prevent="register" v-else class="space-y-5">
-                <div>
-                    <label for="reg-email" class="block text-base md:text-lg pb-2 font-medium text-gray-700">Email</label>
-                    <input type="email" id="reg-email" v-model="registerEmail"
-                           class="w-full p-3 border border-gray-400 rounded-md focus:ring-2 focus:ring-[#0C6539]"
-                           placeholder="Enter your email" required />
+                <!-- Login Form -->
+                <form @submit.prevent="login" v-if="isLogin" class="space-y-5">
+                    <div>
+                        <label for="email" class="block text-base md:text-lg pb-2 font-medium text-gray-700">Email</label>
+                        <input type="email" id="email" v-model="email" @input="resetMessages"
+                               class="w-full p-3 border border-gray-400 rounded-md focus:ring-2 focus:ring-[#0C6539]"
+                               placeholder="Enter your email" required />
+                    </div>
+
+                    <div>
+                        <label for="password" class="block text-base md:text-lg pb-2 font-medium text-gray-700">Password</label>
+                        <input type="password" id="password" v-model="password" @input="resetMessages"
+                               class="w-full p-3 border border-gray-400 rounded-md focus:ring-2 focus:ring-[#0C6539]"
+                               placeholder="Enter your password" required />
+                    </div>
+
+                    <div>
+                        <button type="submit" :disabled="loading"
+                                class="w-full py-3 bg-[#0C6539] text-white font-semibold rounded-md hover:bg-[#0A5230] focus:outline-none focus:ring-2 focus:ring-blue-400">
+                            <span v-if="loading">Logging in...</span>
+                            <span v-else>Login</span>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Registration Form -->
+                <form @submit.prevent="register" v-else class="space-y-5">
+                    <div>
+                        <label for="reg-email" class="block text-base md:text-lg pb-2 font-medium text-gray-700">Email</label>
+                        <input type="email" id="reg-email" v-model="registerEmail"
+                               class="w-full p-3 border border-gray-400 rounded-md focus:ring-2 focus:ring-[#0C6539]"
+                               placeholder="Enter your email" required />
+                    </div>
+
+                    <div>
+                        <label for="reg-password" class="block text-base md:text-lg pb-2 font-medium text-gray-700">Password</label>
+                        <input type="password" id="reg-password" v-model="registerPassword"
+                               class="w-full p-3 border border-gray-400 rounded-md focus:ring-2 focus:ring-[#0C6539]"
+                               placeholder="Create a password" required />
+                    </div>
+
+                    <div>
+                        <label for="name" class="block text-base md:text-lg pb-2 font-medium text-gray-700">Full Name</label>
+                        <input type="text" id="name" v-model="registerName"
+                               class="w-full p-3 border border-gray-400 rounded-md focus:ring-2 focus:ring-[#0C6539]"
+                               placeholder="Enter your full name" required />
+                    </div>
+
+                    <div>
+                        <label for="contact" class="block text-base md:text-lg pb-2 font-medium text-gray-700">Contact Number</label>
+                        <input type="text" id="contact" v-model="registerContact"
+                               class="w-full p-3 border border-gray-400 rounded-md focus:ring-2 focus:ring-[#0C6539]"
+                               placeholder="Enter phone number" required />
+                    </div>
+
+                    <div>
+                        <label for="role" class="block text-base md:text-lg pb-2 font-medium text-gray-700">Register as</label>
+                        <select id="role" v-model="registerRole"
+                               class="w-full p-3 border border-gray-400 rounded-md focus:ring-2 focus:ring-[#0C6539]" required>
+                            <option value="Buyer">Buyer</option>
+                            <option value="Admin">Admin</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <button type="submit" :disabled="loading"
+                                class="w-full py-3 bg-[#0C6539] text-white font-semibold rounded-md hover:bg-[#0A5230] focus:outline-none focus:ring-2 focus:ring-blue-400">
+                            <span v-if="loading">Creating account...</span>
+                            <span v-else>Register</span>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Toast Notification -->
+                <div v-if="toastMessage" :class="['fixed top-5 right-5 p-4 rounded shadow-lg', toastClass, 'animate-toast']">
+                    {{ toastMessage }}
                 </div>
 
-                <div>
-                    <label for="reg-password" class="block text-base md:text-lg pb-2 font-medium text-gray-700">Password</label>
-                    <input type="password" id="reg-password" v-model="registerPassword"
-                           class="w-full p-3 border border-gray-400 rounded-md focus:ring-2 focus:ring-[#0C6539]"
-                           placeholder="Create a password" required />
-                </div>
-
-                <div>
-                    <label for="name" class="block text-base md:text-lg pb-2 font-medium text-gray-700">Full Name</label>
-                    <input type="text" id="name" v-model="registerName"
-                           class="w-full p-3 border border-gray-400 rounded-md focus:ring-2 focus:ring-[#0C6539]"
-                           placeholder="Enter your full name" required />
-                </div>
-
-                <div>
-                    <label for="contact" class="block text-base md:text-lg pb-2 font-medium text-gray-700">Contact Number</label>
-                    <input type="text" id="contact" v-model="registerContact"
-                           class="w-full p-3 border border-gray-400 rounded-md focus:ring-2 focus:ring-[#0C6539]"
-                           placeholder="Enter phone number" required />
-                </div>
-
-                <div>
-                    <label for="role" class="block text-base md:text-lg pb-2 font-medium text-gray-700">Register as</label>
-                    <select id="role" v-model="registerRole"
-                           class="w-full p-3 border border-gray-400 rounded-md focus:ring-2 focus:ring-[#0C6539]" required>
-                        <option value="Buyer">Buyer</option>
-                        <option value="Admin">Admin</option>
-                    </select>
-                </div>
-
-                <div>
-                    <button type="submit" :disabled="loading"
-                            class="w-full py-3 bg-[#0C6539] text-white font-semibold rounded-md hover:bg-[#0A5230] focus:outline-none focus:ring-2 focus:ring-blue-400">
-                        <span v-if="loading">Creating account...</span>
-                        <span v-else>Register</span>
-                    </button>
-                </div>
-            </form>
-
-            <!-- Toast Notification -->
-            <div v-if="toastMessage" :class="['fixed top-5 right-5 p-4 rounded shadow-lg', toastClass, 'animate-toast']">
-                {{ toastMessage }}
+                <!-- Loading Component -->
+                <Loading v-if="loading" />
             </div>
-
-            <!-- Loading Component -->
-            <Loading v-if="loading" />
         </div>
     </div>
 </template>
@@ -346,78 +348,71 @@
         animation: slideIn 0.5s ease-out;
     }
 
-    @keyframes toastIn {
-        from {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
-    }
-
-    @keyframes toastOut {
-        from {
-            transform: translateX(0);
-            opacity: 1;
-        }
-
-        to {
-            transform: translateX(100%);
-            opacity: 0;
-        }
+    @keyframes toast {
+        0% { transform: translateX(100%); opacity: 0; }
+        10% { transform: translateX(0); opacity: 1; }
+        90% { transform: translateX(0); opacity: 1; }
+        100% { transform: translateX(100%); opacity: 0; }
     }
 
     .animate-toast {
-        animation: toastIn 0.5s ease-out, toastOut 0.5s ease-in 2.5s forwards;
+        animation: toast 3s ease-in-out forwards;
+    }
+
+    #AuthPage {
+        min-height: 100vh;
+        min-height: 100dvh;
     }
 
     @media (max-width: 768px) {
         #AuthPage {
+            padding: 0;
             position: relative;
-            overflow: hidden;
-            padding: 20px;
+            overflow-y: auto;
         }
 
-            #AuthPage::before {
-                content: '';
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background-image: url('/logo.png');
-                background-size: cover;
-                background-position: center;
-                filter: blur(8px);
-                z-index: 0;
-            }
+        #AuthPage::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url('/logo.png');
+            background-size: cover;
+            background-position: center;
+            filter: blur(8px);
+            z-index: 0;
+        }
 
         .relative.z-10 {
             position: relative;
             z-index: 10;
-            background-color: rgba(255, 255, 255, 0.9);
-            border-radius: 8px;
-            padding: 16px;
-            margin: 0 10px;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin: 1rem auto;
         }
 
-        .text-center {
-            font-size: 1.5rem;
+        /* Form container spacing */
+        form.space-y-5 {
+            margin-bottom: 1rem;
         }
 
-        .block {
-            font-size: 0.8rem;
+        /* Input field spacing */
+        .space-y-5 > div {
+            margin-bottom: 1rem;
         }
 
-        .w-full {
-            padding: 8px;
+        /* Ensure buttons are easily tappable */
+        button {
+            min-height: 44px;
         }
 
-        .py-3 {
-            padding: 8px;
+        /* Improve input readability */
+        input, select {
+            font-size: 16px !important;
+            padding: 12px !important;
         }
     }
 </style>
