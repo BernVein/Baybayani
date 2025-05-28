@@ -296,7 +296,9 @@ const isConfirmModalVisible = ref(false);
 const selectedProductId = ref(null);
 
 const role = userStore?.profile?.role;
-watchEffect(() => {
+watchEffect(async () => {
+  // Wait for user profile to be loaded
+  await userStore.fetchUser();
   if (route.fullPath == "/admin/orders" && (!user.value || !userStore.isAdmin())) {
     navigateTo("/login");
   }

@@ -297,7 +297,9 @@ const toggleSidebar = () => {
   isSidebarOpen.value = !isSidebarOpen.value;
 };
 
-watchEffect(() => {
+watchEffect(async () => {
+  // Wait for user profile to be loaded
+  await userStore.fetchUser();
   if (route.fullPath == "/admin/dashboard" && (!user.value || !userStore.isAdmin())) {
     navigateTo("/login");
   }

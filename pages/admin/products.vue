@@ -413,7 +413,7 @@
 
 <script setup>
 import axios from "axios";
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, onMounted, watch, watchEffect } from "vue";
 import LayoutAdmin from "~/layouts/LayoutAdmin.vue";
 import SideBarLayout from "~/layouts/SideBarLayout.vue";
 import { useUserStore } from "~/stores/user";
@@ -433,7 +433,9 @@ const route = useRoute();
 
 
 const role = userStore.profile?.role;
-watchEffect(() => {
+watchEffect(async () => {
+  // Wait for user profile to be loaded
+  await userStore.fetchUser();
   if (route.fullPath == "/admin/products" && (!user.value || !userStore.isAdmin())) {
     navigateTo("/login");
   }

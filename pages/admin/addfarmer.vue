@@ -83,13 +83,10 @@ const userStore = useUserStore();
 const user = useSupabaseUser();
 const route = useRoute();
 
-await userStore.isAdmin();
-
-watchEffect(() => {
-  if (
-    route.fullPath == "/admin/addfarmer" &&
-    (!user.value || !userStore.isAdmin)
-  ) {
+watchEffect(async () => {
+  // Wait for user profile to be loaded
+  await userStore.fetchUser();
+  if (route.fullPath == "/admin/addfarmer" && (!user.value || !userStore.isAdmin())) {
     navigateTo("/login");
   }
 });
