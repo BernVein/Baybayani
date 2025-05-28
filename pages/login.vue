@@ -152,6 +152,42 @@
     // Add new ref for valid ID
     const validIdFile = ref(null);
 
+    // Add new function for image compression
+    const compressImage = async (file) => {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+
+                    // Calculate new dimensions while maintaining aspect ratio
+                    const maxDimension = 800; // Max width or height
+                    if (width > height && width > maxDimension) {
+                        height = (height * maxDimension) / width;
+                        width = maxDimension;
+                    } else if (height > maxDimension) {
+                        width = (width * maxDimension) / height;
+                        height = maxDimension;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // Convert to base64 with reduced quality
+                    const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
+                    resolve(compressedBase64);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    };
+
     // Login function (existing - kept exactly as is)
     const login = async () => {
         loading.value = true;
@@ -246,11 +282,9 @@
 
                 // Otherwise redirect based on role
                 if (userStore.isAdmin) {
-                    router.push("/admin/dashboard").then(() => {
-                        location.reload();
-                    });
+                    navigateTo("/admin/dashboard");
                 } else {
-                    router.push("/");
+                    navigateTo("/");
                 }
             }
         } catch (error) {
@@ -270,8 +304,8 @@
         registerContact.value = event.target.value.replace(/\D/g, '');
     };
 
-    // File upload handler
-    const handleFileUpload = (event) => {
+    // Update the file upload handler
+    const handleFileUpload = async (event) => {
         const file = event.target.files[0];
         if (file) {
             // Check file type
@@ -282,19 +316,20 @@
                 return;
             }
             
-            // Check file size (max 5MB)
-            if (file.size > 5 * 1024 * 1024) {
-                toastMessage.value = "File size should be less than 5MB";
+            try {
+                // Compress the image
+                const compressedImage = await compressImage(file);
+                validIdFile.value = compressedImage;
+            } catch (error) {
+                console.error('Error compressing image:', error);
+                toastMessage.value = "Error processing image";
                 toastClass.value = "bg-red-500 text-white";
-                event.target.value = ''; // Clear the input
-                return;
+                event.target.value = '';
             }
-
-            validIdFile.value = file;
         }
     };
 
-    // Update the register function to include the valid ID
+    // Update the register function
     const register = async () => {
         loading.value = true;
         toastMessage.value = null;
@@ -304,15 +339,19 @@
                 throw new Error('Please upload a valid ID');
             }
 
+            // Normalize the email and role
+            const normalizedEmail = registerEmail.value.toLowerCase().trim();
+            const normalizedRole = registerRole.value.toUpperCase();
+
             // 1. Create user in Supabase Auth
             const { data, error } = await client.auth.signUp({
-                email: registerEmail.value,
+                email: normalizedEmail,
                 password: registerPassword.value,
                 options: {
                     data: {
                         name: registerName.value,
                         contact: registerContact.value,
-                        role: registerRole.value
+                        role: normalizedRole
                     }
                 }
             });
@@ -321,18 +360,22 @@
             
             // 2. Save user to Prisma database
             if (data.user) {
-                const formData = new FormData();
-                formData.append('id', data.user.id);
-                formData.append('email', registerEmail.value);
-                formData.append('name', registerName.value);
-                formData.append('contact', registerContact.value);
-                formData.append('role', registerRole.value);
-                formData.append('status', 'UNVERIFIED');
-                formData.append('validId', validIdFile.value);
+                const userData = {
+                    id: data.user.id,
+                    email: normalizedEmail,
+                    name: registerName.value,
+                    contact: registerContact.value,
+                    role: normalizedRole,
+                    status: 'UNVERIFIED',
+                    validId: validIdFile.value // This is now the base64 compressed image
+                };
 
                 const createUserResponse = await fetch('/api/prisma/createUser', {
                     method: 'POST',
-                    body: formData
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(userData)
                 });
 
                 const createUserResult = await createUserResponse.json();

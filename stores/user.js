@@ -332,14 +332,7 @@ export const useUserStore = defineStore("user", {
 
     isAdmin() {
       if (!this.user || !this.profile) return false;
-      //  console.log("ROLE", this.profile.role);
-      if (this.profile.role === "Admin") {
-        this.isAdmin = true;
-        return true;
-      }
-
-      this.isAdmin = false;
-      return false;
+      return this.profile.role === "Admin";
     },
 
     // Logout action
