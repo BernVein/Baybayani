@@ -70,19 +70,21 @@
                                 <th class="py-3 px-4 text-left font-semibold text-gray-700">Email</th>
                                 <th class="py-3 px-4 text-left font-semibold text-gray-700">Role</th>
                                 <th class="py-3 px-4 text-left font-semibold text-gray-700">Status</th>
+                                <th class="py-3 px-4 text-center font-semibold text-gray-700">Valid ID</th>
                                 <th class="py-3 px-4 text-center font-semibold text-gray-700">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             <!-- Loading Spinner -->
                             <tr v-if="loading" class="text-center">
-                                <td colspan="6" class="py-4">Loading users...</td>
+                                <td colspan="7" class="py-4">Loading users...</td>
                             </tr>
 
                             <!-- Users -->
                             <tr v-for="user in filteredUsers"
                                 :key="user.id"
-                                class="hover:bg-gray-200 hover:scale-[1.02] transition duration-150 ease-in-out">
+                                class="hover:bg-gray-200 transition duration-150 ease-in-out cursor-pointer"
+                                @click="openUserDetailsModal(user)">
                                 <td class="py-4 px-4 border-b text-left truncate">{{ user.name }}</td>
                                 <td class="py-4 px-4 border-b text-left truncate">{{ user.contact }}</td>
                                 <td class="py-4 px-4 border-b text-left truncate">{{ user.email }}</td>
@@ -99,7 +101,16 @@
                                     </span>
                                 </td>
                                 <td class="py-4 px-4 border-b text-center">
-                                    <div class="flex justify-center gap-2">
+                                    <button @click.stop="openValidIdModal(user)" 
+                                            class="px-3 py-1.5 bg-blue-100 text-blue-700 rounded-md text-sm font-medium hover:bg-blue-200 border border-blue-300 transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <span class="flex items-center">
+                                            <Icon name="ph:eye" class="mr-1" size="16" />
+                                            View
+                                        </span>
+                                    </button>
+                                </td>
+                                <td class="py-4 px-4 border-b text-center">
+                                    <div class="flex justify-center gap-2" @click.stop>
                                         <button v-if="user.status === 'UNVERIFIED'" 
                                                 @click="verifyUser(user.email)" 
                                                 class="px-3 py-1.5 bg-green-100 text-green-700 rounded-md text-sm font-medium hover:bg-green-200 border border-green-300 transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-500">
@@ -258,6 +269,88 @@
                             </button>
                         </div>
                     </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Details Modal -->
+        <div v-if="isUserDetailsModalVisible" 
+             class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white w-full max-w-[600px] p-6 rounded-md shadow-lg relative max-h-[80vh] overflow-y-auto">
+                <!-- Close Button -->
+                <button @click="closeUserDetailsModal" 
+                        class="absolute top-3 right-3 text-gray-500 hover:text-gray-800">✕</button>
+
+                <!-- User Details Content -->
+                <div v-if="selectedUser" class="space-y-6">
+                    <h2 class="text-2xl font-bold text-center mb-6">User Details</h2>
+                    
+                    <!-- Profile Section -->
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-center mb-6">
+                            <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center">
+                                <Icon name="ph:user" size="40" class="text-green-600" />
+                            </div>
+                        </div>
+
+                        <!-- User Information -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-sm text-gray-600">Name</p>
+                                <p class="font-medium">{{ selectedUser.name }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">Contact</p>
+                                <p class="font-medium">{{ selectedUser.contact }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">Email</p>
+                                <p class="font-medium">{{ selectedUser.email }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">Role</p>
+                                <p class="font-medium">{{ selectedUser.role }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">Status</p>
+                                <span :class="{
+                                    'px-2 py-1 rounded-full text-xs font-semibold': true,
+                                    'bg-green-100 text-green-800': selectedUser.status === 'ACTIVE',
+                                    'bg-red-100 text-red-800': selectedUser.status === 'SUSPENDED',
+                                    'bg-yellow-100 text-yellow-800': selectedUser.status === 'UNVERIFIED',
+                                    'bg-gray-100 text-gray-800': selectedUser.status === 'INACTIVE'
+                                }">
+                                    {{ selectedUser.status }}
+                                </span>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">Created At</p>
+                                <p class="font-medium">{{ formatDate(selectedUser.created_at) }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Valid ID Modal -->
+        <div v-if="isValidIdModalVisible"
+             class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white w-full max-w-[800px] p-6 rounded-md shadow-lg relative">
+                <!-- Close Button -->
+                <button @click="closeValidIdModal"
+                        class="absolute top-3 right-3 text-gray-500 hover:text-gray-800">✕</button>
+
+                <h2 class="text-2xl font-bold text-center mb-6">Valid ID</h2>
+
+                <!-- Valid ID Image -->
+                <div v-if="selectedUser && selectedUser.validId" class="flex justify-center">
+                    <img :src="'data:image/jpeg;base64,' + selectedUser.validId" 
+                         alt="Valid ID" 
+                         class="max-w-full max-h-[60vh] object-contain rounded-lg shadow-lg" />
+                </div>
+                <div v-else class="text-center text-gray-500 py-8">
+                    No valid ID available
                 </div>
             </div>
         </div>
@@ -624,6 +717,45 @@
     });
 
     const searchQuery = ref("");
+
+    // Add these new refs for modals
+    const isUserDetailsModalVisible = ref(false);
+    const isValidIdModalVisible = ref(false);
+    const selectedUser = ref(null);
+
+    // Function to format date
+    const formatDate = (dateString) => {
+        if (!dateString) return 'N/A';
+        return new Date(dateString).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    };
+
+    // Functions to handle user details modal
+    const openUserDetailsModal = (user) => {
+        selectedUser.value = user;
+        isUserDetailsModalVisible.value = true;
+    };
+
+    const closeUserDetailsModal = () => {
+        selectedUser.value = null;
+        isUserDetailsModalVisible.value = false;
+    };
+
+    // Functions to handle valid ID modal
+    const openValidIdModal = (user) => {
+        selectedUser.value = user;
+        isValidIdModalVisible.value = true;
+    };
+
+    const closeValidIdModal = () => {
+        selectedUser.value = null;
+        isValidIdModalVisible.value = false;
+    };
 </script>
 
 <style scoped>
@@ -658,10 +790,11 @@
 
     th:nth-child(1), td:nth-child(1) { width: 15%; } /* Name */
     th:nth-child(2), td:nth-child(2) { width: 15%; } /* Contact */
-    th:nth-child(3), td:nth-child(3) { width: 25%; } /* Email */
-    th:nth-child(4), td:nth-child(4) { width: 15%; } /* Role */
+    th:nth-child(3), td:nth-child(3) { width: 20%; } /* Email */
+    th:nth-child(4), td:nth-child(4) { width: 10%; } /* Role */
     th:nth-child(5), td:nth-child(5) { width: 15%; } /* Status */
-    th:nth-child(6), td:nth-child(6) { width: 15%; } /* Actions */
+    th:nth-child(6), td:nth-child(6) { width: 12%; } /* Valid ID */
+    th:nth-child(7), td:nth-child(7) { width: 13%; } /* Actions */
 
     /* Add responsive padding for smaller screens */
     @media (max-width: 1024px) {
