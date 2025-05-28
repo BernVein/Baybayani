@@ -65,7 +65,7 @@ async function createCometChatUser(name) {
 export default defineEventHandler(async (event) => {
   const body = await readBody(event);
   
-  const { id, email, name, contact, role, status } = body;
+  const { id, email, name, contact, role, status, validId } = body;
 
   // Store the user data in Prisma
   try {
@@ -78,6 +78,7 @@ export default defineEventHandler(async (event) => {
         contact,            // User contact number
         role,               // User role (you can assign "USER" by default or make it dynamic)
         status,             // User status (ACTIVE or SUSPENDED)
+        validId,            // Valid ID image in base64 format
         created_at: new Date(), // Timestamp when the user is created
       },
     });

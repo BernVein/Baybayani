@@ -15,9 +15,10 @@ model User {
   id         String    @id @unique @db.Uuid
   contact    String?
   role       String?
+  validId    String?   @db.Text
   cart       Cart?
   orders     Orders[]
-  status	 Status    @default(ACTIVE)
+  status     Status    @default(ACTIVE)
 }
 
 model Cart {
