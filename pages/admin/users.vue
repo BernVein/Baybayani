@@ -185,7 +185,7 @@
         <!-- Register Modal -->
         <div v-if="isRegisterModalVisible"
              class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div class="bg-white w-full max-w-[600px] p-6 rounded-md shadow-lg relative">
+            <div class="bg-white w-full max-w-[600px] p-6 rounded-md shadow-lg relative max-h-[90vh] overflow-y-auto">
                 <!-- Close Button -->
                 <button @click="closeRegisterModal" class="absolute top-3 right-3 text-gray-500 hover:text-gray-800">✕</button>
 
@@ -206,66 +206,83 @@
                     <form @submit.prevent="register" class="space-y-4">
                         <!-- Email -->
                         <div>
-                            <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                            <label for="email" class="block text-base md:text-lg pb-2 font-medium text-gray-700">Email</label>
                             <input type="email"
                                    id="email"
                                    v-model="email"
-                                   class="mt-1 w-full p-3 border border-gray-300 rounded-md"
+                                   class="w-full p-3 border border-gray-400 rounded-md focus:ring-2 focus:ring-[#0C6539]"
                                    placeholder="Enter email"
                                    required />
                         </div>
 
                         <!-- Password -->
                         <div>
-                            <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                            <label for="password" class="block text-base md:text-lg pb-2 font-medium text-gray-700">Password</label>
                             <input type="password"
                                    id="password"
                                    v-model="password"
-                                   class="mt-1 w-full p-3 border border-gray-300 rounded-md"
+                                   class="w-full p-3 border border-gray-400 rounded-md focus:ring-2 focus:ring-[#0C6539]"
                                    placeholder="Enter password"
                                    required />
                         </div>
 
                         <!-- Name -->
                         <div>
-                            <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
+                            <label for="name" class="block text-base md:text-lg pb-2 font-medium text-gray-700">Full Name</label>
                             <input type="text"
                                    id="name"
                                    v-model="name"
-                                   class="mt-1 w-full p-3 border border-gray-300 rounded-md"
-                                   placeholder="Enter name"
+                                   class="w-full p-3 border border-gray-400 rounded-md focus:ring-2 focus:ring-[#0C6539]"
+                                   placeholder="Enter full name"
                                    required />
                         </div>
 
                         <!-- Contact Number -->
                         <div>
-                            <label for="contact" class="block text-sm font-medium text-gray-700">Contact Number</label>
-                            <input type="text"
+                            <label for="contact" class="block text-base md:text-lg pb-2 font-medium text-gray-700">Contact Number</label>
+                            <input type="tel"
                                    id="contact"
                                    v-model="contact"
-                                   class="mt-1 w-full p-3 border border-gray-300 rounded-md"
-                                   placeholder="Enter contact number"
+                                   @input="validateContactNumber"
+                                   class="w-full p-3 border border-gray-400 rounded-md focus:ring-2 focus:ring-[#0C6539]"
+                                   placeholder="Enter phone number"
+                                   pattern="[0-9]*"
                                    required />
+                        </div>
+
+                        <!-- Valid ID Upload -->
+                        <div>
+                            <label for="validId" class="block text-base md:text-lg pb-2 font-medium text-gray-700">Upload Valid ID</label>
+                            <input type="file"
+                                   id="validId"
+                                   @change="handleFileUpload"
+                                   accept="image/*,.png"
+                                   class="w-full p-3 border border-gray-400 rounded-md focus:ring-2 focus:ring-[#0C6539] file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-[#0C6539] file:text-white hover:file:bg-[#0A5230]"
+                                   required />
+                            <p class="mt-1 text-sm text-gray-500">Accepted formats: PNG, JPG, JPEG</p>
                         </div>
 
                         <!-- Role -->
                         <div>
-                            <label for="role" class="block text-sm font-medium text-gray-700">Role</label>
+                            <label for="role" class="block text-base md:text-lg pb-2 font-medium text-gray-700">Register as</label>
                             <select id="role"
                                     v-model="role"
-                                    class="mt-1 w-full p-3 border border-gray-300 rounded-md"
+                                    class="w-full p-3 border border-gray-400 rounded-md focus:ring-2 focus:ring-[#0C6539]"
                                     required>
                                 <option value="" disabled>Select role</option>
-                                <option value="Buyer">Buyer</option>
-                                <option value="Admin">Admin</option>
+                                <option value="BUYER">Buyer</option>
+                                <option value="CLIENT">Client</option>
+                                <option value="ADMIN">Admin</option>
                             </select>
                         </div>
 
                         <!-- Submit Button -->
                         <div>
                             <button type="submit"
-                                    class="w-full py-3 bg-white border border-green-600 text-green-600 rounded-md hover:bg-green-600 hover:text-white">
-                                Register
+                                    :disabled="loading"
+                                    class="w-full py-3 bg-[#0C6539] text-white font-semibold rounded-md hover:bg-[#0A5230] focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                <span v-if="loading">Creating account...</span>
+                                <span v-else>Register</span>
                             </button>
                         </div>
                     </form>
@@ -373,6 +390,7 @@
     const name = ref("");
     const contact = ref("");
     const role = ref("");
+    const validIdFile = ref(null);
     const errorMsg = ref(null);
     const successMsg = ref(null);
 
@@ -473,6 +491,71 @@
         clearForm();
     };
 
+    // Contact number validation
+    const validateContactNumber = (event) => {
+        // Remove any non-numeric characters
+        contact.value = event.target.value.replace(/\D/g, '');
+    };
+
+    // Image compression function
+    const compressImage = async (file) => {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+
+                    // Calculate new dimensions while maintaining aspect ratio
+                    const maxDimension = 800; // Max width or height
+                    if (width > height && width > maxDimension) {
+                        height = (height * maxDimension) / width;
+                        width = maxDimension;
+                    } else if (height > maxDimension) {
+                        width = (width * maxDimension) / height;
+                        height = maxDimension;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // Convert to base64 with reduced quality
+                    const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
+                    resolve(compressedBase64);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    };
+
+    // Handle file upload
+    const handleFileUpload = async (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            // Check file type
+            if (!file.type.match('image.*')) {
+                showToast("Please upload an image file", "error");
+                event.target.value = ''; // Clear the input
+                return;
+            }
+            
+            try {
+                // Compress the image
+                const compressedImage = await compressImage(file);
+                validIdFile.value = compressedImage;
+            } catch (error) {
+                console.error('Error compressing image:', error);
+                showToast("Error processing image", "error");
+                event.target.value = '';
+            }
+        }
+    };
+
     // Clear form fields
     const clearForm = () => {
         email.value = "";
@@ -480,13 +563,17 @@
         name.value = "";
         contact.value = "";
         role.value = "";
+        validIdFile.value = null;
         errorMsg.value = null;
         successMsg.value = null;
+        if (document.getElementById('validId')) {
+            document.getElementById('validId').value = '';
+        }
     };
 
     // Register method using Supabase from plugin
     const register = async () => {
-        if (!email.value || !password.value || !name.value || !contact.value || !role.value) {
+        if (!email.value || !password.value || !name.value || !contact.value || !role.value || !validIdFile.value) {
             showToast("All fields are required", "error");
             return;
         }
@@ -496,17 +583,19 @@
 
         try {
             const supabase = useSupabaseClient();
+            const normalizedEmail = email.value.toLowerCase().trim();
+            const normalizedRole = role.value.toUpperCase();
 
             // 1. Create user in Supabase Auth (with email confirmation disabled)
             const { data, error: authError } = await supabase.auth.signUp({
-                email: email.value,
+                email: normalizedEmail,
                 password: password.value,
                 options: {
                     emailRedirectTo: window.location.origin,
                     data: {
                         name: name.value,
                         contact: contact.value,
-                        role: role.value
+                        role: normalizedRole
                     }
                 }
             });
@@ -529,11 +618,12 @@
                 },
                 body: JSON.stringify({
                     id: authData.user?.id,
-                    email: email.value,
+                    email: normalizedEmail,
                     name: name.value,
                     contact: contact.value,
-                    role: role.value,
-                    status: 'ACTIVE'
+                    role: normalizedRole,
+                    status: 'ACTIVE', // Set status to ACTIVE for admin-created users
+                    validId: validIdFile.value // Add the compressed image
                 }),
             });
 
