@@ -70,9 +70,26 @@
 
                     <div>
                         <label for="contact" class="block text-base md:text-lg pb-2 font-medium text-gray-700">Contact Number</label>
-                        <input type="text" id="contact" v-model="registerContact"
+                        <input type="tel" 
+                               id="contact" 
+                               v-model="registerContact"
+                               @input="validateContactNumber"
                                class="w-full p-3 border border-gray-400 rounded-md focus:ring-2 focus:ring-[#0C6539]"
-                               placeholder="Enter phone number" required />
+                               placeholder="Enter phone number" 
+                               pattern="[0-9]*"
+                               required />
+                    </div>
+
+                    <!-- Valid ID Upload -->
+                    <div>
+                        <label for="validId" class="block text-base md:text-lg pb-2 font-medium text-gray-700">Upload Valid ID</label>
+                        <input type="file" 
+                               id="validId" 
+                               @change="handleFileUpload"
+                               accept="image/*,.png"
+                               class="w-full p-3 border border-gray-400 rounded-md focus:ring-2 focus:ring-[#0C6539] file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-[#0C6539] file:text-white hover:file:bg-[#0A5230]"
+                               required />
+                        <p class="mt-1 text-sm text-gray-500">Accepted formats: PNG, JPG, JPEG</p>
                     </div>
 
                     <div>
@@ -80,6 +97,7 @@
                         <select id="role" v-model="registerRole"
                                class="w-full p-3 border border-gray-400 rounded-md focus:ring-2 focus:ring-[#0C6539]" required>
                             <option value="Buyer">Buyer</option>
+                            <option value="Client">Client</option>
                             <option value="Admin">Admin</option>
                         </select>
                     </div>
@@ -130,6 +148,9 @@
     const registerName = ref("");
     const registerContact = ref("");
     const registerRole = ref("Buyer"); // Default to Buyer
+
+    // Add new ref for valid ID
+    const validIdFile = ref(null);
 
     // Login function (existing - kept exactly as is)
     const login = async () => {
@@ -243,12 +264,46 @@
         }
     };
 
-    // New registration function (only addition)
+    // Contact number validation
+    const validateContactNumber = (event) => {
+        // Remove any non-numeric characters
+        registerContact.value = event.target.value.replace(/\D/g, '');
+    };
+
+    // File upload handler
+    const handleFileUpload = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            // Check file type
+            if (!file.type.match('image.*')) {
+                toastMessage.value = "Please upload an image file";
+                toastClass.value = "bg-red-500 text-white";
+                event.target.value = ''; // Clear the input
+                return;
+            }
+            
+            // Check file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                toastMessage.value = "File size should be less than 5MB";
+                toastClass.value = "bg-red-500 text-white";
+                event.target.value = ''; // Clear the input
+                return;
+            }
+
+            validIdFile.value = file;
+        }
+    };
+
+    // Update the register function to include the valid ID
     const register = async () => {
         loading.value = true;
         toastMessage.value = null;
 
         try {
+            if (!validIdFile.value) {
+                throw new Error('Please upload a valid ID');
+            }
+
             // 1. Create user in Supabase Auth
             const { data, error } = await client.auth.signUp({
                 email: registerEmail.value,
@@ -266,19 +321,18 @@
             
             // 2. Save user to Prisma database
             if (data.user) {
+                const formData = new FormData();
+                formData.append('id', data.user.id);
+                formData.append('email', registerEmail.value);
+                formData.append('name', registerName.value);
+                formData.append('contact', registerContact.value);
+                formData.append('role', registerRole.value);
+                formData.append('status', 'UNVERIFIED');
+                formData.append('validId', validIdFile.value);
+
                 const createUserResponse = await fetch('/api/prisma/createUser', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        id: data.user.id,
-                        email: registerEmail.value,
-                        name: registerName.value,
-                        contact: registerContact.value,
-                        role: registerRole.value,
-                        status: 'UNVERIFIED' // New users start as unverified
-                    }),
+                    body: formData
                 });
 
                 const createUserResult = await createUserResponse.json();
@@ -296,6 +350,8 @@
             registerName.value = "";
             registerContact.value = "";
             registerRole.value = "Buyer";
+            validIdFile.value = null;
+            document.getElementById('validId').value = ''; // Reset file input
 
             // Switch back to login view
             isLogin.value = true;
@@ -307,7 +363,7 @@
             loading.value = false;
             setTimeout(() => {
                 toastMessage.value = null;
-            }, 5000); // Increased to 5 seconds for the longer message
+            }, 5000);
         }
     };
 
