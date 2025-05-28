@@ -302,9 +302,9 @@ watchEffect(() => {
       (!user.value || userStore.isAdmin())) {
     navigateTo("/login");
   }
-  // Check if store is closed
+  // Check if store is closed - only affect buyers
   else if (route.fullPath == "/shoppingcart" && 
-      isStoreClosed() && !userStore.isAdmin()) {
+      isStoreClosed() && !userStore.isAdmin() && !userStore.isClient()) {
     navigateTo("/closed");
   }
 });

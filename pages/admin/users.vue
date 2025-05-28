@@ -10,29 +10,77 @@
                 <h1 class="text-3xl font-semibold mb-8">User Management</h1>
 
                 <!-- User Stats Boxes -->
-                <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
                     <!-- Total Users -->
                     <div class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-red-600">
-                        <p class="text-lg font-medium">Total Users</p>
-                        <p class="text-4xl font-bold">{{ totalUsers }}</p>
+                        <div class="flex items-center justify-center mb-2 text-red-600">
+                            <Icon name="ph:users" size="24" />
+                        </div>
+                        <p class="text-lg font-medium text-gray-600">Total Users</p>
+                        <p class="text-4xl font-bold text-gray-800">{{ totalUsers }}</p>
                     </div>
 
                     <!-- Buyers -->
                     <div class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-blue-600">
-                        <p class="text-lg font-medium">Buyers</p>
-                        <p class="text-4xl font-bold">{{ buyers }}</p>
+                        <div class="flex items-center justify-center mb-2 text-blue-600">
+                            <Icon name="ph:shopping-cart" size="24" />
+                        </div>
+                        <p class="text-lg font-medium text-gray-600">Buyers</p>
+                        <p class="text-4xl font-bold text-gray-800">{{ buyers }}</p>
+                    </div>
+
+                    <!-- Clients -->
+                    <div class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-green-600">
+                        <div class="flex items-center justify-center mb-2 text-green-600">
+                            <Icon name="ph:storefront" size="24" />
+                        </div>
+                        <p class="text-lg font-medium text-gray-600">Clients</p>
+                        <p class="text-4xl font-bold text-gray-800">{{ clients }}</p>
+                    </div>
+
+                    <!-- Admins -->
+                    <div class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-purple-600">
+                        <div class="flex items-center justify-center mb-2 text-purple-600">
+                            <Icon name="ph:shield-star" size="24" />
+                        </div>
+                        <p class="text-lg font-medium text-gray-600">Admins</p>
+                        <p class="text-4xl font-bold text-gray-800">{{ admins }}</p>
+                    </div>
+
+                    <!-- Active Users -->
+                    <div class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-emerald-600">
+                        <div class="flex items-center justify-center mb-2 text-emerald-600">
+                            <Icon name="ph:check-circle" size="24" />
+                        </div>
+                        <p class="text-lg font-medium text-gray-600">Active Users</p>
+                        <p class="text-4xl font-bold text-gray-800">{{ activeUsers }}</p>
                     </div>
 
                     <!-- Suspended Users -->
                     <div class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-yellow-600">
-                        <p class="text-lg font-medium">Suspended Users</p>
-                        <p class="text-4xl font-bold">{{ suspendedUsers }}</p>
+                        <div class="flex items-center justify-center mb-2 text-yellow-600">
+                            <Icon name="ph:prohibit" size="24" />
+                        </div>
+                        <p class="text-lg font-medium text-gray-600">Suspended Users</p>
+                        <p class="text-4xl font-bold text-gray-800">{{ suspendedUsers }}</p>
                     </div>
-                    
+
                     <!-- Unverified Users -->
                     <div class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-orange-600">
-                        <p class="text-lg font-medium">Unverified Users</p>
-                        <p class="text-4xl font-bold">{{ unverifiedUsers }}</p>
+                        <div class="flex items-center justify-center mb-2 text-orange-600">
+                            <Icon name="ph:warning-circle" size="24" />
+                        </div>
+                        <p class="text-lg font-medium text-gray-600">Unverified Users</p>
+                        <p class="text-4xl font-bold text-gray-800">{{ unverifiedUsers }}</p>
+                    </div>
+
+                    <!-- Inactive Users -->
+                    <div class="bg-white p-4 rounded-lg shadow text-center border-t-4 border-gray-600">
+                        <div class="flex items-center justify-center mb-2 text-gray-600">
+                            <Icon name="ph:x-circle" size="24" />
+                        </div>
+                        <p class="text-lg font-medium text-gray-600">Inactive Users</p>
+                        <p class="text-4xl font-bold text-gray-800">{{ inactiveUsers }}</p>
                     </div>
                 </div>
 
@@ -362,7 +410,7 @@
 
                 <!-- Valid ID Image -->
                 <div v-if="selectedUser && selectedUser.validId" class="flex justify-center">
-                    <img :src="'data:image/jpeg;base64,' + selectedUser.validId" 
+                    <img :src="selectedUser.validId" 
                          alt="Valid ID" 
                          class="max-w-full max-h-[60vh] object-contain rounded-lg shadow-lg" />
                 </div>
@@ -438,8 +486,12 @@
 
     // State for user statistics
     const buyers = ref(0);
+    const clients = ref(0);
+    const admins = ref(0);
+    const activeUsers = ref(0);
     const suspendedUsers = ref(0);
     const unverifiedUsers = ref(0);
+    const inactiveUsers = ref(0);
 
     // Fetch users from Prisma API
     const fetchUsers = async () => {
@@ -469,8 +521,12 @@
     // Function to update statistics for user roles
     const updateStats = () => {
         buyers.value = users.value.filter((user) => user.role.toUpperCase() === "BUYER").length;
+        clients.value = users.value.filter((user) => user.role.toUpperCase() === "CLIENT").length;
+        admins.value = users.value.filter((user) => user.role.toUpperCase() === "ADMIN").length;
+        activeUsers.value = users.value.filter((user) => user.status === "ACTIVE").length;
         suspendedUsers.value = users.value.filter((user) => user.status === "SUSPENDED").length;
         unverifiedUsers.value = users.value.filter((user) => user.status === "UNVERIFIED").length;
+        inactiveUsers.value = users.value.filter((user) => user.status === "INACTIVE").length;
     };
 
     // Lifecycle hook to load users when the component is mounted
@@ -523,9 +579,9 @@
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
 
-                    // Convert to base64 with reduced quality
+                    // Convert to base64 with reduced quality and proper data URL format
                     const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
-                    resolve(compressedBase64);
+                    resolve(compressedBase64); // This already includes the data:image/jpeg;base64 prefix
                 };
                 img.src = e.target.result;
             };
@@ -545,9 +601,9 @@
             }
             
             try {
-                // Compress the image
+                // Compress the image and store with data URL format
                 const compressedImage = await compressImage(file);
-                validIdFile.value = compressedImage;
+                validIdFile.value = compressedImage; // This now includes the data:image/jpeg;base64 prefix
             } catch (error) {
                 console.error('Error compressing image:', error);
                 showToast("Error processing image", "error");

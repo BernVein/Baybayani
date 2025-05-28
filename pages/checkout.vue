@@ -146,17 +146,11 @@ watchEffect(() => {
       (!user.value || userStore.isAdmin())) {
     navigateTo("/login");
   }
-
-  else if (route.fullPath == "/checkout" && !user.value) {
-    //navigateTo("/login");
-    window.location.href = "/login";
-
+  // Check if store is closed - only affect buyers
+  else if (route.fullPath == "/checkout" && 
+      isStoreClosed() && !userStore.isAdmin() && !userStore.isClient()) {
+    navigateTo("/closed");
   }
-  // else if (route.fullPath == "/checkout" && userStore.checkout.length === 0) {
-  //   //navigateTo("/shoppingcart");
-  //   window.location.href = "/shoppingcart";
-
-  // }
 });
 
 
