@@ -60,33 +60,42 @@ const cancelledOrders = ref([]);
 
 // Check if store is open and redirect if it is
 const checkAndRedirect = async () => {
-  // Initialize time settings first
-  await userStore.initializeTimeSettings();
-  
-  // Get current time in Philippines
-  const now = new Date();
-  const utcTime = now.getTime() + now.getTimezoneOffset() * 60000;
-  const phTime = new Date(utcTime + 3600000 * 8); // UTC+8 for Philippines
-  
-  const currentHour = phTime.getHours();
-  const currentMinute = phTime.getMinutes();
-  
-  // Check if current time is within operating hours
-  const isBeforeOpening =
-    currentHour < userStore.openingHour ||
-    (currentHour === userStore.openingHour &&
-    currentMinute < userStore.openingMinute);
-  
-  const isAfterClosing =
-    currentHour > userStore.closingHour ||
-    (currentHour === userStore.closingHour &&
-    currentMinute >= userStore.closingMinute);
-  
-  const isStoreClosed = isBeforeOpening || isAfterClosing;
-  
-  if (!isStoreClosed) {
-    // Store is open, redirect to homepage
-    navigateTo("/");
+  try {
+    // Initialize time settings first
+    await userStore.initializeTimeSettings();
+    
+    // Get current time in Philippines
+    const now = new Date();
+    const utcTime = now.getTime() + now.getTimezoneOffset() * 60000;
+    const phTime = new Date(utcTime + 3600000 * 8); // UTC+8 for Philippines
+    
+    const currentHour = phTime.getHours();
+    const currentMinute = phTime.getMinutes();
+    
+    console.log('Current Time (PH):', currentHour + ':' + currentMinute);
+    console.log('Store Hours:', userStore.openingHour + ':' + userStore.openingMinute, 
+                'to', userStore.closingHour + ':' + userStore.closingMinute);
+    
+    // Check if current time is within operating hours
+    const isBeforeOpening =
+      currentHour < userStore.openingHour ||
+      (currentHour === userStore.openingHour &&
+      currentMinute < userStore.openingMinute);
+    
+    const isAfterClosing =
+      currentHour > userStore.closingHour ||
+      (currentHour === userStore.closingHour &&
+      currentMinute >= userStore.closingMinute);
+    
+    const isStoreClosed = isBeforeOpening || isAfterClosing;
+    console.log('Store is closed:', isStoreClosed);
+    
+    if (!isStoreClosed) {
+      // Store is open, redirect to homepage
+      window.location.href = "/";
+    }
+  } catch (error) {
+    console.error('Error in checkAndRedirect:', error);
   }
 };
 
