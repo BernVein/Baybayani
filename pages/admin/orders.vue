@@ -78,6 +78,7 @@
                   <th class="py-3 px-4 text-left font-semibold text-gray-700">Order ID</th>
                   <th class="py-3 px-4 text-left font-semibold text-gray-700">Date</th>
                   <th class="py-3 px-4 text-left font-semibold text-gray-700">Customer Name</th>
+                  <th class="py-3 px-4 text-left font-semibold text-gray-700">Role</th>
                   <th class="py-3 px-4 text-left font-semibold text-gray-700">Total</th>
                   <th class="py-3 px-4 text-center font-semibold text-gray-700">Status</th>
                 </tr>
@@ -94,6 +95,15 @@
                   </td>
                   <td class="py-4 px-4">
                     <span v-html="highlightMatch(order.userName)"></span>
+                  </td>
+                  <td class="py-4 px-4">
+                    <span :class="{
+                      'bg-blue-100 text-blue-800': order.userRole === 'ADMIN',
+                      'bg-green-100 text-green-800': order.userRole === 'BUYER',
+                      'bg-purple-100 text-purple-800': order.userRole === 'CLIENT'
+                    }" class="px-2 py-1 rounded-full text-xs font-semibold">
+                      {{ order.userRole }}
+                    </span>
                   </td>
                   <td class="py-4 px-4">&#8369;{{ formatCurrency(order.totalPrice) }}</td>
                   <td class="py-4 px-4 text-center">
@@ -314,10 +324,11 @@ const fetchOrders = async () => {
     const response = await $fetch("/api/prisma/get-all-orders");
     orders.value = await Promise.all(
       response.map(async (order) => {
-        const userName = await fetchUserName(order.userId);
+        const userInfo = await fetchUserName(order.userId);
         return {
           ...order,
-          userName,
+          userName: userInfo.name || "Unknown User",
+          userRole: userInfo.role || "UNKNOWN",
           date: new Date(order.created_at).toLocaleDateString(),
         };
       })
@@ -340,14 +351,17 @@ const fetchUserName = async (userId) => {
     if (!user || !user.role) {
       alert("Your session is invalid. Please log in again.");
       navigateTo("/login");
-      return null; // Return null as the user is redirected
+      return { name: null, role: null };
     }
 
-    return user.name || "Unknown User";
+    return {
+      name: user.name || "Unknown User",
+      role: user.role
+    };
   } catch (error) {
     console.error("Error fetching user:", error);
     navigateTo("/login"); // Redirect to login on error
-    return null;
+    return { name: null, role: null };
   }
 };
 
