@@ -470,11 +470,18 @@ export const useUserStore = defineStore("user", {
 
     async checkAndCancelPendingOrders() {
       try {
+        // Make sure we have the user profile and time settings
+        if (!this.profile) {
+          await this.fetchUser();
+        }
+        await this.initializeTimeSettings();
+
         // Only proceed if the user is a buyer
         if (this.profile?.role?.toUpperCase() !== "BUYER") {
           return;
         }
 
+        // Get current time in Philippines
         const now = new Date();
         const utcTime = now.getTime() + now.getTimezoneOffset() * 60000;
         const phTime = new Date(utcTime + 3600000 * 8); // UTC+8 for Philippines
@@ -482,17 +489,28 @@ export const useUserStore = defineStore("user", {
         const currentHour = phTime.getHours();
         const currentMinute = phTime.getMinutes();
 
+        // Check if it's closing time
         const isClosingTime =
           currentHour > this.closingHour ||
-          (currentHour === this.closingHour &&
-            currentMinute >= this.closingMinute);
+          (currentHour === this.closingHour && currentMinute >= this.closingMinute);
 
         if (isClosingTime) {
+          console.log("Store is closing, checking for pending orders to cancel...");
           const response = await $fetch("/api/prisma/cancel-pending-orders");
-          if (response.success && response.cancelledOrders.length > 0) {
-            this.cancelledOrders = response.cancelledOrders;
-            this.hasSeenCancelledOrders = false;
-            localStorage.removeItem("hasSeenCancelledOrders"); // Reset the flag
+          
+          if (response.success) {
+            if (response.cancelledOrders.length > 0) {
+              console.log(`Cancelled ${response.cancelledOrders.length} pending orders`);
+              this.cancelledOrders = response.cancelledOrders;
+              this.hasSeenCancelledOrders = false;
+              localStorage.removeItem("hasSeenCancelledOrders"); // Reset the flag
+              
+              // Show a notification about cancelled orders
+              const message = `${response.cancelledOrders.length} order(s) have been automatically cancelled due to store closing.`;
+              // You can implement a notification system here if needed
+            }
+          } else {
+            console.error("Failed to cancel pending orders:", response.message);
           }
         }
       } catch (error) {

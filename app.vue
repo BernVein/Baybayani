@@ -94,31 +94,28 @@ const checkStoreClosed = () => {
   }
 };
 
-onMounted(() => {
+// Initialize time settings and start periodic checks
+onMounted(async () => {
   userStore.isLoading = true;
 
   // Check and restore session if needed
-  userStore.checkAndRestoreSession().then(hasSession => {
-    if (hasSession) {
-      console.log("Session restored successfully");
-    }
-  });
+  await userStore.checkAndRestoreSession();
 
   // Initialize time settings
-  userStore.initializeTimeSettings().then(() => {
-    // Initial check for store hours and pending orders
-    checkStoreClosed();
-    userStore.checkAndCancelPendingOrders();
-    
-    if (userStore.user) {
-      userStore.fetchTodaysCancelledOrders();
-    }
-  });
+  await userStore.initializeTimeSettings();
+  
+  // Initial check for store hours and pending orders
+  checkStoreClosed();
+  await userStore.checkAndCancelPendingOrders();
+  
+  if (userStore.user) {
+    await userStore.fetchTodaysCancelledOrders();
+  }
 
   // Set up periodic checks
-  const checkInterval = setInterval(() => {
+  const checkInterval = setInterval(async () => {
     checkStoreClosed();
-    userStore.checkAndCancelPendingOrders();
+    await userStore.checkAndCancelPendingOrders();
   }, 60000); // Check every minute
 
   // Clean up interval on component unmount
@@ -129,7 +126,9 @@ onMounted(() => {
   window.addEventListener('resize', function () {
     windowWidth.value = window.innerWidth;
   });
-})
+
+  userStore.isLoading = false;
+});
 
 watch(() => windowWidth.value, () => {
   if (windowWidth.value >= 767) {

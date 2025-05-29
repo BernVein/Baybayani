@@ -12,7 +12,12 @@ export default defineEventHandler(async (event) => {
         }
       },
       include: {
-        user: true // Include user info to verify role
+        user: true, // Include user info to verify role
+        orderItem: {
+          include: {
+            product: true // Include product info for reference
+          }
+        }
       }
     });
 
@@ -27,6 +32,9 @@ export default defineEventHandler(async (event) => {
     // Cancel all pending orders from buyers
     const cancelledOrders = await prisma.orders.updateMany({
       where: {
+        id: {
+          in: pendingOrders.map(order => order.id)
+        },
         orderStatus: OrderStatus.PENDING,
         user: {
           role: "BUYER"
@@ -37,6 +45,9 @@ export default defineEventHandler(async (event) => {
         modified_at: new Date() // Update modification time
       }
     });
+
+    // Log the cancellation for monitoring
+    console.log(`Cancelled ${cancelledOrders.count} pending orders at ${new Date().toISOString()}`);
 
     return {
       success: true,
