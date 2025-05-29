@@ -140,6 +140,8 @@
 import AdminLayout from "~/layouts/AdminLayout.vue";
 import { useUserStore } from "~/stores/user";
 import { ref, onBeforeMount, onBeforeUnmount, onMounted, watchEffect } from "vue";
+import { isStoreClosed } from "~/utils/timeUtils";
+
 const userStore = useUserStore();
 const user = useSupabaseUser();
 let orders = ref(null);
@@ -149,20 +151,24 @@ let dropdownOpen = ref(false);  // Track dropdown visibility
 let showModal = ref(false);  // Track modal visibility
 let orderIdToCancel = ref(null);  // Track which order to cancel
 
-
-
 // Watch effect to check if the user is logged in
 const route = useRoute();
 const role = userStore.profile?.role;
 
-watchEffect(() => {
+watchEffect(async () => {
+  // Wait for user profile and time settings to be loaded
+  if (!userStore.profile) {
+    await userStore.fetchUser();
+  }
+  await userStore.initializeTimeSettings();
+
   if (route.fullPath == "/orders" && 
       (!user.value || userStore.isAdmin())) {
     navigateTo("/login");
   }
   // Check if store is closed - only affect buyers
   else if (route.fullPath == "/orders" && 
-      isStoreClosed() && !userStore.isAdmin() && !userStore.isClient()) {
+      isStoreClosed(userStore) && !userStore.isAdmin() && !userStore.isClient()) {
     navigateTo("/closed");
   }
 });

@@ -129,6 +129,7 @@
 import AdminLayout from "~/layouts/AdminLayout.vue";
 import { useUserStore } from "~/stores/user";
 import Loading from "~/components/Loading.vue";
+import { isStoreClosed } from "~/utils/timeUtils";
 
 const userStore = useUserStore();
 const user = useSupabaseUser();
@@ -138,22 +139,26 @@ const isLoading = ref(false);
 
 let total = ref(0);
 
-
 const route = useRoute();
 const role = userStore.profile?.role;
-watchEffect(() => {
+
+watchEffect(async () => {
+  // Wait for user profile and time settings to be loaded
+  if (!userStore.profile) {
+    await userStore.fetchUser();
+  }
+  await userStore.initializeTimeSettings();
+
   if (route.fullPath == "/checkout" && 
       (!user.value || userStore.isAdmin())) {
     navigateTo("/login");
   }
   // Check if store is closed - only affect buyers
   else if (route.fullPath == "/checkout" && 
-      isStoreClosed() && !userStore.isAdmin() && !userStore.isClient()) {
+      isStoreClosed(userStore) && !userStore.isAdmin() && !userStore.isClient()) {
     navigateTo("/closed");
   }
 });
-
-
 
 onMounted(() => {
   if (route.fullPath == "/checkout" && !user.value) {

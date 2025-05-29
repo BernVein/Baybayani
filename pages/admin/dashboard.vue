@@ -227,18 +227,16 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, onUnmounted } from "vue";
+import { ref, onMounted, computed, onUnmounted, watchEffect } from "vue";
 import LayoutAdmin from "~/layouts/LayoutAdmin.vue";
 import SideBarLayout from "~/layouts/SideBarLayout.vue";
 import Chart from "chart.js/auto";
 import Loading from "~/components/Loading.vue";
-
 import { useUserStore } from "~/stores/user";
+
 const userStore = useUserStore();
 const user = useSupabaseUser();
 const route = useRoute();
-
-const role = userStore.profile?.role;
 
 // Loading state
 const isLoading = ref(false);
@@ -297,11 +295,16 @@ const toggleSidebar = () => {
   isSidebarOpen.value = !isSidebarOpen.value;
 };
 
+// Add admin route protection
 watchEffect(async () => {
   // Wait for user profile to be loaded
-  await userStore.fetchUser();
+  if (!userStore.profile) {
+    await userStore.fetchUser();
+  }
+  
   if (route.fullPath == "/admin/dashboard" && (!user.value || !userStore.isAdmin())) {
     navigateTo("/login");
+    return;
   }
 });
 

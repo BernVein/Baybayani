@@ -51,6 +51,7 @@ import { useUserStore } from "~/stores/user";
 import { ref, onBeforeMount, computed, onMounted, watchEffect } from "vue";
 import { useRoute } from "vue-router";
 import CancelledOrdersPopup from "~/components/CancelledOrdersPopup.vue";
+import { isStoreClosed } from "~/utils/timeUtils";
 
 const user = useSupabaseUser();
 const userStore = useUserStore();
@@ -84,19 +85,32 @@ const fetchCancelledOrders = async () => {
 // Initialize data and check for cancelled orders
 onMounted(async () => {
   try {
-    // Start fetching products immediately if user is logged in
-    if (user.value) {
-      fetchProducts();
+    // Start loading state
+    isLoading.value = true;
+
+    // Wait for user profile and time settings to be loaded
+    if (!userStore.profile) {
+      await userStore.fetchUser();
     }
+    await userStore.initializeTimeSettings();
     
-    // Fetch user profile in parallel
-    await userStore.fetchUser();
-    
-    const role = getUserRole.value;
+    const role = userStore.profile?.role?.toUpperCase();
     console.log("User role after profile load:", role);
     
-    if (user.value && role?.toUpperCase() === "BUYER") {
-      await fetchCancelledOrders();
+    // Check if store is closed (only for buyers)
+    if (role === "BUYER" && isStoreClosed(userStore)) {
+      navigateTo("/closed");
+      return;
+    }
+
+    // Start fetching products if user is logged in and is a buyer or client
+    if (user.value && (role === "BUYER" || role === "CLIENT")) {
+      await fetchProducts();
+      
+      // Fetch cancelled orders only for buyers
+      if (role === "BUYER") {
+        await fetchCancelledOrders();
+      }
     }
   } catch (error) {
     console.error("Error in onMounted:", error);
@@ -136,15 +150,29 @@ watchEffect(async () => {
       navigateTo("/login");
       return;
     }
+
+    // Wait for user profile and time settings to be loaded
+    if (!userStore.profile) {
+      await userStore.fetchUser();
+    }
+    await userStore.initializeTimeSettings();
+    
+    const role = userStore.profile?.role?.toUpperCase();
     
     // If admin, redirect to dashboard
-    if (role?.toUpperCase() === "ADMIN") {
+    if (role === "ADMIN") {
       navigateTo("/admin/dashboard");
       return;
     }
 
+    // Check if store is closed (only for buyers)
+    if (role === "BUYER" && isStoreClosed(userStore)) {
+      navigateTo("/closed");
+      return;
+    }
+
     // For buyers and clients, fetch products if not already loaded
-    if ((role?.toUpperCase() === "BUYER" || role?.toUpperCase() === "CLIENT") && !products.value) {
+    if ((role === "BUYER" || role === "CLIENT") && !products.value) {
       fetchProducts();
     }
   }
@@ -153,38 +181,6 @@ watchEffect(async () => {
 // Middleware to check if the store is open
 definePageMeta({
   middleware: ["auth"]
-});
-
-// Function to check if store is closed
-const isStoreClosed = () => {
-  // Check if website is closed based on Philippines time (UTC+8)
-  const now = new Date();
-  const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
-  const phTime = new Date(utcTime + (3600000 * 8)); // UTC+8 for Philippines
-
-  const currentHour = phTime.getHours();
-  const currentMinute = phTime.getMinutes();
-
-  // Check if current time is outside operating hours
-  const isBeforeOpening =
-    currentHour < userStore.openingHour ||
-    (currentHour === userStore.openingHour && currentMinute < userStore.openingMinute);
-
-  const isAfterClosing =
-    currentHour > userStore.closingHour ||
-    (currentHour === userStore.closingHour && currentMinute >= userStore.closingMinute);
-
-  return isBeforeOpening || isAfterClosing;
-};
-
-// Initialize time settings
-onMounted(() => {
-  // userStore.initializeTimeSettings();
-
-  // // Check if store is closed and redirect if needed
-  // if (isStoreClosed() && role !== "Admin") {
-  //   navigateTo("/closed");
-  // }
 });
 
 // Add debugging to computed property

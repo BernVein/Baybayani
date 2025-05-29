@@ -423,10 +423,28 @@
 </template>
 
 <script setup>
-    import { ref, computed, onMounted } from "vue";
+    import { ref, computed, onMounted, watchEffect } from "vue";
     import { useNuxtApp } from "#app";
     import AdminLayout from "~/layouts/AdminLayout.vue";
     import SideBarLayout from "~/layouts/SideBarLayout.vue";
+    import { useUserStore } from "~/stores/user";
+
+    const userStore = useUserStore();
+    const user = useSupabaseUser();
+    const route = useRoute();
+
+    // Add admin route protection
+    watchEffect(async () => {
+        // Wait for user profile to be loaded
+        if (!userStore.profile) {
+            await userStore.fetchUser();
+        }
+        
+        if (route.fullPath == "/admin/users" && (!user.value || !userStore.isAdmin())) {
+            navigateTo("/login");
+            return;
+        }
+    });
 
     // Modal Visibility
     const isRegisterModalVisible = ref(false);
