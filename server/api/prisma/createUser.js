@@ -26,36 +26,31 @@ async function createCometChatUser(name) {
     const apiUrl = `https://${COMETCHAT_APP_ID}.api-${COMETCHAT_REGION}.cometchat.io/v3/users`;
     
     // Make API call to CometChat
-    try {
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apiKey': COMETCHAT_AUTH_KEY,
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify(userData)
-      });
-      
-      const responseData = await response.json();
-      
-      if (!response.ok) {
-        // Check if error is because user already exists
-        if (responseData.error && responseData.error.code === "ERR_UID_ALREADY_EXISTS") {
-          console.log("CometChat user already exists, skipping creation");
-          return { success: true, data: { uid }, alreadyExists: true };
-        }
-        
-        console.error("Failed to create CometChat user:", responseData);
-        return { success: false, error: responseData };
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apiKey': COMETCHAT_AUTH_KEY,
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(userData)
+    });
+    
+    const responseData = await response.json();
+    
+    if (!response.ok) {
+      // Check if error is because user already exists
+      if (responseData.error && responseData.error.code === "ERR_UID_ALREADY_EXISTS") {
+        console.log("CometChat user already exists, skipping creation");
+        return { success: true, data: { uid }, alreadyExists: true };
       }
       
-      console.log("CometChat user created successfully:", responseData);
-      return { success: true, data: responseData };
-    } catch (fetchError) {
-      console.error("Failed to create CometChat user:", fetchError);
-      return { success: false, error: fetchError.message };
+      console.error("Failed to create CometChat user:", responseData);
+      return { success: false, error: responseData };
     }
+    
+    console.log("CometChat user created successfully:", responseData);
+    return { success: true, data: responseData };
   } catch (error) {
     console.error("Error creating CometChat user:", error);
     return { success: false, error: error.message };

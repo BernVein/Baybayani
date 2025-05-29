@@ -382,6 +382,15 @@
                 if (!createUserResponse.ok) {
                     throw new Error(createUserResult.error || 'Failed to create user record');
                 }
+
+                // Log CometChat creation result
+                if (createUserResult.cometChat) {
+                    if (createUserResult.cometChat.success) {
+                        console.log('CometChat user created/verified successfully');
+                    } else {
+                        console.error('CometChat user creation failed:', createUserResult.cometChat.error);
+                    }
+                }
             }
 
             toastMessage.value = "Registration successful! Your account requires admin verification before you can log in.";

@@ -310,37 +310,41 @@ onMounted(() => {
   }, 500); // 500ms delay
   document.addEventListener("click", closeSearchBar);
 
-  // Only initialize CometChat for non-admin users
-  if (!userStore.isAdmin) {
+  // Initialize CometChat for all non-admin users
+  if (!userStore.isAdmin()) {
     const defaultUID = userStore.profile?.name
       ? userStore.profile.name.replace(/\s+/g, "").toLowerCase()
-      : "defaultuid";
+      : null;
 
-    const script = document.createElement("script");
-    script.src = "https://widget-js.cometchat.io/v3/cometchatwidget.js";
-    script.defer = true;
+    if (defaultUID) {
+      const script = document.createElement("script");
+      script.src = "https://widget-js.cometchat.io/v3/cometchatwidget.js";
+      script.defer = true;
 
-    script.onload = () => {
-      initializeCometChatWidget(defaultUID);
-    };
-    document.body.appendChild(script);
+      script.onload = () => {
+        initializeCometChatWidget(defaultUID);
+      };
+      document.body.appendChild(script);
+    }
   }
 });
 
 const initializeCometChatWidget = (defaultUID) => {
+  console.log("Initializing CometChat for user:", defaultUID);
+  
   CometChatWidget.init({
     appID: "267505e7582e8c70",
     appRegion: "us",
     authKey: "aab766213fba5c11e11ede09f1f0d0d0735dd6f9",
   })
     .then(() => {
-      //console.log("Initialization completed successfully");
+      console.log("CometChat initialization completed successfully");
 
       CometChatWidget.login({
         uid: defaultUID,
       })
         .then(() => {
-          // console.log("User login successful");
+          console.log("CometChat user login successful");
 
           CometChatWidget.launch({
             widgetID: "ce919709-5388-4331-a9c4-64c5ced133f5",
@@ -349,16 +353,16 @@ const initializeCometChatWidget = (defaultUID) => {
             roundedCorners: "true",
             height: "450px",
             width: "400px",
-            defaultID: defaultUID,
+            defaultID: "baybayaniadmin", // Always set admin as the default chat target
             defaultType: "user",
           });
         })
         .catch((error) => {
-          console.error("User login failed:", error);
+          console.error("CometChat user login failed:", error);
         });
     })
     .catch((error) => {
-      console.error("Widget initialization failed:", error);
+      console.error("CometChat initialization failed:", error);
     });
 };
 
