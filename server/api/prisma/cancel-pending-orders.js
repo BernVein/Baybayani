@@ -3,19 +3,19 @@ const prisma = new PrismaClient();
 
 export default defineEventHandler(async (event) => {
   try {
-    // Find all pending orders from buyers only
+    // First get all pending orders from buyers (for reference)
     const pendingOrders = await prisma.orders.findMany({
       where: {
         orderStatus: OrderStatus.PENDING,
         user: {
-          role: "BUYER" // Only get orders from buyers
+          role: "BUYER" // Only get orders from buyers, regardless of date
         }
       },
       include: {
-        user: true, // Include user info to verify role
+        user: true,
         orderItem: {
           include: {
-            product: true // Include product info for reference
+            product: true
           }
         }
       }
@@ -29,12 +29,9 @@ export default defineEventHandler(async (event) => {
       };
     }
 
-    // Cancel all pending orders from buyers
+    // Cancel ALL pending orders from buyers
     const cancelledOrders = await prisma.orders.updateMany({
       where: {
-        id: {
-          in: pendingOrders.map(order => order.id)
-        },
         orderStatus: OrderStatus.PENDING,
         user: {
           role: "BUYER"
@@ -42,17 +39,16 @@ export default defineEventHandler(async (event) => {
       },
       data: {
         orderStatus: OrderStatus.CANCELED,
-        modified_at: new Date() // Update modification time
+        modified_at: new Date()
       }
     });
 
-    // Log the cancellation for monitoring
     console.log(`Cancelled ${cancelledOrders.count} pending orders at ${new Date().toISOString()}`);
 
     return {
       success: true,
       message: `Successfully cancelled ${cancelledOrders.count} pending orders from buyers.`,
-      cancelledOrders: pendingOrders // Return the original pending orders for reference
+      cancelledOrders: pendingOrders
     };
   } catch (error) {
     console.error("Error cancelling pending orders:", error);

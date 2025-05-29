@@ -476,11 +476,6 @@ export const useUserStore = defineStore("user", {
         }
         await this.initializeTimeSettings();
 
-        // Only proceed if the user is a buyer
-        if (this.profile?.role?.toUpperCase() !== "BUYER") {
-          return;
-        }
-
         // Get current time in Philippines
         const now = new Date();
         const utcTime = now.getTime() + now.getTimezoneOffset() * 60000;
@@ -495,17 +490,19 @@ export const useUserStore = defineStore("user", {
           (currentHour === this.closingHour && currentMinute >= this.closingMinute);
 
         if (isClosingTime) {
-          console.log("Store is closing, checking for pending orders to cancel...");
-          const response = await $fetch("/api/prisma/cancel-pending-orders");
+          console.log("Store is closing, cancelling all pending buyer orders...");
+          const response = await $fetch("/api/prisma/cancel-pending-orders", {
+            method: "POST"
+          });
           
           if (response.success) {
             if (response.cancelledOrders.length > 0) {
               console.log(`Cancelled ${response.cancelledOrders.length} pending orders`);
               this.cancelledOrders = response.cancelledOrders;
               this.hasSeenCancelledOrders = false;
-              localStorage.removeItem("hasSeenCancelledOrders"); // Reset the flag
+              localStorage.removeItem("hasSeenCancelledOrders");
               
-              // Show a notification about cancelled orders
+              // Show toast notification about cancelled orders
               const message = `${response.cancelledOrders.length} order(s) have been automatically cancelled due to store closing.`;
               // You can implement a notification system here if needed
             }
