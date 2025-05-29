@@ -3,10 +3,16 @@ const prisma = new PrismaClient();
 
 export default defineEventHandler(async (event) => {
   try {
-    // Find all pending orders
+    // Find all pending orders from buyers only
     const pendingOrders = await prisma.orders.findMany({
       where: {
-        orderStatus: OrderStatus.PENDING
+        orderStatus: OrderStatus.PENDING,
+        user: {
+          role: "BUYER" // Only get orders from buyers
+        }
+      },
+      include: {
+        user: true // Include user info to verify role
       }
     });
 
@@ -18,10 +24,13 @@ export default defineEventHandler(async (event) => {
       };
     }
 
-    // Cancel all pending orders
+    // Cancel all pending orders from buyers
     const cancelledOrders = await prisma.orders.updateMany({
       where: {
-        orderStatus: OrderStatus.PENDING
+        orderStatus: OrderStatus.PENDING,
+        user: {
+          role: "BUYER"
+        }
       },
       data: {
         orderStatus: OrderStatus.CANCELED,
@@ -31,7 +40,7 @@ export default defineEventHandler(async (event) => {
 
     return {
       success: true,
-      message: `Successfully cancelled ${cancelledOrders.count} pending orders.`,
+      message: `Successfully cancelled ${cancelledOrders.count} pending orders from buyers.`,
       cancelledOrders: pendingOrders // Return the original pending orders for reference
     };
   } catch (error) {

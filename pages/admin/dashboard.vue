@@ -681,10 +681,30 @@ const dashboardSummary = computed(() => {
   };
 });
 
-// Update onMounted to just fetch once
-onMounted(() => {
-  initializeCharts();
-  fetchDashboardData();
+// Initialize store hours when component mounts
+onMounted(async () => {
+  try {
+    isLoading.value = true;
+    
+    // Initialize time settings first
+    await userStore.initializeTimeSettings();
+    
+    // Update the refs with current store hours
+    openingHour.value = userStore.openingHour;
+    openingMinute.value = userStore.openingMinute;
+    closingHour.value = userStore.closingHour;
+    closingMinute.value = userStore.closingMinute;
+    
+    // Initialize charts and fetch dashboard data
+    initializeCharts();
+    fetchDashboardData();
+    
+  } catch (error) {
+    console.error("Error initializing store hours:", error);
+    showToast("Failed to load store hours. Please refresh the page.", "error");
+  } finally {
+    isLoading.value = false;
+  }
 });
 
 // Add onUnmounted to clean up charts

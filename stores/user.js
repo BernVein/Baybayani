@@ -470,6 +470,11 @@ export const useUserStore = defineStore("user", {
 
     async checkAndCancelPendingOrders() {
       try {
+        // Only proceed if the user is a buyer
+        if (this.profile?.role?.toUpperCase() !== "BUYER") {
+          return;
+        }
+
         const now = new Date();
         const utcTime = now.getTime() + now.getTimezoneOffset() * 60000;
         const phTime = new Date(utcTime + 3600000 * 8); // UTC+8 for Philippines
