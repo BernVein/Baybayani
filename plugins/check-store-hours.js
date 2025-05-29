@@ -28,6 +28,10 @@ export default defineNuxtPlugin((nuxtApp) => {
         currentRoute.value.path.startsWith('/admin') || 
         currentRoute.value.path === '/login'
       ) return;
+
+      // Skip check for admin and client users
+      const role = userStore.profile?.role?.toUpperCase();
+      if (role === "ADMIN" || role === "CLIENT") return;
       
       // Get current time in Philippines
       const now = new Date();
@@ -50,8 +54,8 @@ export default defineNuxtPlugin((nuxtApp) => {
       
       const isStoreClosed = isBeforeOpening || isAfterClosing;
       
-      // If store is closed and user is on a normal page, redirect to closed
-      if (isStoreClosed) {
+      // If store is closed and user is a buyer, redirect to closed
+      if (isStoreClosed && role === "BUYER") {
         navigateTo('/closed');
       }
     } catch (error) {

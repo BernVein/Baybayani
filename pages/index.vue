@@ -84,7 +84,12 @@ const fetchCancelledOrders = async () => {
 // Initialize data and check for cancelled orders
 onMounted(async () => {
   try {
-    // Wait for user profile to load
+    // Start fetching products immediately if user is logged in
+    if (user.value) {
+      fetchProducts();
+    }
+    
+    // Fetch user profile in parallel
     await userStore.fetchUser();
     
     const role = getUserRole.value;
@@ -100,52 +105,47 @@ onMounted(async () => {
   }
 });
 
+// Separate function to fetch products
+const fetchProducts = async () => {
+  try {
+    console.log("Fetching products...");
+    const response = await useFetch("/api/prisma/get-all-products", {
+      key: 'products',
+      cache: 'no-cache'
+    });
+    
+    if (response.error.value) {
+      console.error("Error fetching products:", response.error.value);
+      products.value = { data: [] };
+    } else {
+      products.value = { data: Array.isArray(response.data.value) ? response.data.value : [] };
+    }
+  } catch (err) {
+    console.error("Error fetching products:", err);
+    products.value = { data: [] };
+  }
+};
+
 watchEffect(async () => {
   const role = getUserRole.value;
   console.log("watchEffect running with user:", user.value, "role:", role, "route:", route.fullPath);
   
-  // Wait until we have both user and role
-  if (!user.value || !role) {
-    console.log("User or role not yet available");
-    return;
-  }
-
-  // Make role comparison case-insensitive
-  if (user.value && role.toUpperCase() === "BUYER") {
-    console.log("User is logged in as Buyer");
-    if (route.fullPath === "/") {
-      try {
-        console.log("Fetching products...");
-        const response = await useFetch("/api/prisma/get-all-products", {
-          key: 'products',
-          // Ensure fresh data on each request
-          cache: 'no-cache'
-        });
-        
-        console.log("Raw response:", response);
-        console.log("Products response data:", response.data.value);
-        console.log("Products response error:", response.error.value);
-        
-        if (response.error.value) {
-          console.error("Error fetching products:", response.error.value);
-          products.value = { data: [] };
-        } else {
-          // Change how we structure the data
-          products.value = { data: Array.isArray(response.data.value) ? response.data.value : [] };
-          console.log("Set products.value to:", products.value);
-        }
-      } catch (err) {
-        console.error("Error in watchEffect:", err);
-        products.value = { data: [] };
-      }
-    }
-  } else if (route.fullPath === "/") {
-    console.log("User is not a buyer or not logged in. User:", user.value, "Role:", role);
-    // Handle redirects for non-buyers
+  if (route.fullPath === "/") {
+    // If no user, redirect to login
     if (!user.value) {
       navigateTo("/login");
-    } else if (role.toUpperCase() === "ADMIN") {
+      return;
+    }
+    
+    // If admin, redirect to dashboard
+    if (role?.toUpperCase() === "ADMIN") {
       navigateTo("/admin/dashboard");
+      return;
+    }
+
+    // For buyers and clients, fetch products if not already loaded
+    if ((role?.toUpperCase() === "BUYER" || role?.toUpperCase() === "CLIENT") && !products.value) {
+      fetchProducts();
     }
   }
 });

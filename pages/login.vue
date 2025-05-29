@@ -244,15 +244,17 @@
                     return;
                 }
                 
-                userStore.isLoading = 1;
+                userStore.isLoading = true;
                 await userStore.fetchCartItems();
                 await userStore.fetchOrders();
                 toastMessage.value = "Successfully logged in!";
                 toastClass.value = "bg-green-500 text-white";
 
-                // Check store hours immediately after login
                 // Initialize time settings first
                 await userStore.initializeTimeSettings();
+                
+                // Get user role after profile is loaded
+                const role = userStore.profile?.role?.toUpperCase();
                 
                 // Check if store is closed using Philippines time
                 const now = new Date();
@@ -275,15 +277,13 @@
                 
                 const isStoreClosed = isBeforeOpening || isAfterClosing;
                 
-                // Redirect to closed page if store is closed (for non-admin users)
-                if (isStoreClosed && !userStore.isAdmin()) {
-                    return navigateTo("/closed");
-                }
-
-                // Otherwise redirect based on role
-                if (userStore.isAdmin()) {
+                // Redirect based on role and store hours
+                if (role === "ADMIN") {
                     navigateTo("/admin/dashboard");
+                } else if (role === "BUYER" && isStoreClosed) {
+                    navigateTo("/closed");
                 } else {
+                    // For clients or when store is open
                     navigateTo("/");
                 }
             }

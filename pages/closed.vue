@@ -88,6 +88,13 @@ const updateTime = () => {
 };
 
 onMounted(async () => {
+  // Check if user is a client, redirect to homepage
+  const role = userStore.profile?.role?.toUpperCase();
+  if (role === "CLIENT") {
+    navigateTo("/");
+    return;
+  }
+
   // Initialize time settings first (now async)
   await userStore.initializeTimeSettings();
   
