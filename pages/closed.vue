@@ -85,8 +85,8 @@ const checkAndRedirect = async () => {
   const isStoreClosed = isBeforeOpening || isAfterClosing;
   
   if (!isStoreClosed) {
-    // Store is open, redirect to products page
-    navigateTo("/products");
+    // Store is open, redirect to homepage
+    navigateTo("/");
   }
 };
 
